@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkelement_web=self.webpackChunkelement_web||[]).push([[1377],{"./src/modules.ts":(e,s,n)=>{n.d(s,{INSTALLED_MODULES:()=>a});var t=n("./node_modules/tchap-translations/TchapTranslationsModule.js");const a=[];a.push(t.A)}}]);
+//# sourceMappingURL=1377.js.map
