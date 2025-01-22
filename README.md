@@ -1,7 +1,25 @@
-# Tauri + Vanilla
 
-This template should help get you started developing with Tauri in vanilla HTML, CSS and Javascript.
+# Tchap Desktop
 
-## Recommended IDE Setup
+Client Desktop Tchap avec Tauri ( https://tauri.app )
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+## Dev
+
+- Télécharger une release de Tchap Web et placer le contenu de dist dans src
+```
+curl https://github.com/tchapgouv/tchap-web-v4/releases/download/tchap-4.13.0/tchap-4.13.0-prod-20250115.tar.gz
+tar -xvf tchap-4.13.0/tchap-4.13.0-prod-20250115.tar.gz
+mv dist src
+```
+
+- Tester localement (installer les prérequis au préalable https://v2.tauri.app/start/prerequisites/)
+```
+cargo tauri dev
+```
+
+- Compiler tchap pour votre système
+```
+cargo tauri build
+```
+
+
