@@ -12,9 +12,9 @@ dist
 dist-ssr
 *.local
 
+deploys
 # Editor directories and files
 .vscode/*
-!.vscode/extensions.json
 .idea
 .DS_Store
 *.suo
@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# tchap
+archives/*
+!archives/.gitkeep
+src/*
+!src/.gitkeep
