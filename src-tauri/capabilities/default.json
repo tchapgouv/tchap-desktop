@@ -22,6 +22,9 @@
     "core:menu:default",
     "core:tray:default",
     "core:window:allow-set-title",
-    "fs:default"
+    "core:webview:default",
+    "fs:default",
+    "notification:default",
+    "dialog:default"
   ]
 }

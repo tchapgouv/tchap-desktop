@@ -22,4 +22,12 @@ cargo tauri dev
 cargo tauri build
 ```
 
+- Live testing with tchap-web
+Create a sumbolic link to tchap-web-v4 webapp folder into 
+```
+ln -s $PATH_TO_TCHAPWEB src/
+
+```
+Then you will be able to build your tchap webb and have the modification directly here
+
 
