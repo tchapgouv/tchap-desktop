@@ -70,6 +70,7 @@ async function main(): Promise<number | undefined> {
         }, ['dist']);
     } catch (e) {
         console.log("Failed to clean and extract", e);
+        return 1;
     }
 
     console.log("Done!");

@@ -15,9 +15,7 @@
         "height": 600
       }
     ],
-    "security": {
-      "csp": "default-src 'self' blob: data: media:; script-src 'self' 'unsafe-eval'"
-    }
+    "security": {}
   },
   "bundle": {
     "active": true,
