@@ -31,7 +31,7 @@ jobs:
       - name: install frontend dependencies
         run: |
           npm install
-          npm run fetch-packages
+          npm run fetch-package
 
       # If tagName and releaseId are omitted tauri-action will only build the app and won't try to upload any assets.
       - uses: tauri-apps/tauri-action@v0
