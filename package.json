@@ -1,0 +1,21 @@
+{
+  "name": "tchap-desktop",
+  "version": "0.0.0",
+  "description": "",
+  "main": "./scripts/index.ts",
+  "scripts": {
+    "fetch-package": "tsx ./scripts/fetch-package.ts"
+  },
+  "tchapConfig": {
+    "tchap-web_version": "4.12.1",
+    "tchap-web_archive_name": "tchap-4.12.1-prod-20250113.tar.gz"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.13.0",
+    "tar": "^7.4.3",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
