@@ -1,19 +1,29 @@
-use crate::action_handler::ActionHandler;
-mod common_commands;
-mod action_handler;
+use taurpc::{Router};
 
-use std::{string::String, collections::HashMap};
-use serde::{Serialize, Deserialize};
-use serde_json::{Value};
-use std::string::ToString;
+// mod common_commands;
 
-use common_service::CommonService;
+// use crate::common_commands::CommonImpl;
 
+#[taurpc::procedures(event_trigger = ApiEventTrigger, path = "common", export_to = "./bindings/bindings.ts")]
+trait Common {
+    async fn set_homeserver_url();
+}
+
+#[derive(Clone)]
+pub struct CommonImpl;
+
+#[taurpc::resolvers]
+impl Common for CommonImpl {
+    async fn set_homeserver_url(self) {
+        println!("Hello world");
+    }
+}
+
+#[tokio::main]
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub fn run() {
-    let mut handlers : dyn ActionHandler = HashMap::new();
-    let service = CommonService{};
-    handlers.insert(service.domain(), &service);
+pub async fn run() {
+    let router = Router::new()
+        .merge(CommonImpl.into_handler());
 
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
@@ -22,24 +32,7 @@ pub fn run() {
         .plugin(tauri_plugin_persisted_scope::init())
         .plugin(tauri_plugin_upload::init())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![commands::ipc_message])
+        .invoke_handler(router.into_handler())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
-
-#[tauri::command]
-fn ipc_message(message: IpcMessage) -> IpcMessage {
-    let message_handler = handlers.get(&*message.domain).unwrap(); 
-    let response = message_handler.receive_action(message.action).unwrap();
-    IpcMessage {
-        domain: message_handler.domain().to_string(),
-        action: response
-    }
-}
-
-
-#[derive(Deserialize, Serialize)]
-struct IpcMessage {
-    domain: String,
-    action: Value
-} 

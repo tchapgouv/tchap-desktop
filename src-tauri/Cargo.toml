@@ -27,6 +27,9 @@ tauri-plugin-fs = "2"
 tauri-plugin-notification = "2"
 tauri-plugin-persisted-scope = "2"
 tauri-plugin-dialog = "2"
+taurpc = "0.4.1"
+specta = { version = "=2.0.0-rc.22", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
 
 [features]
 # by default Tauri runs in production mode
