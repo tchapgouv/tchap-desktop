@@ -10,7 +10,7 @@ Client Desktop Tchap avec Tauri ( https://tauri.app )
 - Live testing with tchap-web
 - Create a symbolic link to tchap-web-v4 webapp folder into 
 ```
-ln -s $PATH_TO_TCHAP_WEB_WEBAPP src/
+ln -s $PATH_TO_TCHAP_WEB_WEBAPP/* ./src/
 ```
 - if the webapp folder doesnt exist you need to run first in tchap-web-v4
 ```
