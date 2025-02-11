@@ -30,6 +30,9 @@ tauri-plugin-dialog = "2"
 taurpc = "0.4.1"
 specta = { version = "=2.0.0-rc.22", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
+tauri-plugin-stronghold = "2"
+seshat = { git = "https://github.com/tchapgouv/seshat.git", branch = "main_tchap" }
+lazy_static = "1.4.0"
 
 [features]
 # by default Tauri runs in production mode
@@ -38,4 +41,3 @@ default = [ "custom-protocol" ]
 # this feature is used used for production builds where `devPath` points to the filesystem
 # DO NOT remove this
 custom-protocol = [ "tauri/custom-protocol" ]
-

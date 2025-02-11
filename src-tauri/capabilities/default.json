@@ -25,6 +25,7 @@
     "core:webview:default",
     "fs:default",
     "notification:default",
-    "dialog:default"
+    "dialog:default",
+    "stronghold:default"
   ]
 }

@@ -3,21 +3,33 @@
 
 Client Desktop Tchap avec Tauri ( https://tauri.app )
 
-## Dev
+## Dev local
 
 - Install prerequisites https://v2.tauri.app/start/prerequisites/)
 
-- Live testing with tchap-web
-- Create a symbolic link to tchap-web-v4 webapp folder into 
-```
-ln -s $PATH_TO_TCHAP_WEB_WEBAPP/* ./src/
-```
-- if the webapp folder doesnt exist you need to run first in tchap-web-v4
+- Live testing with tchap-web (symbolic link doesnt work)
+
+- Go to the frontend folder and find  the webapp folder
+
+- If it doesnt exist you need to run first 
 ```
 CONFIG=dev ./scripts/tchap/package-tchap.sh
 ```
 
+- copy the generated content into `./src`
+
 - Then come back to tchap-desktop
+
+```
+cargo tauri dev
+
+```
+## Dev using a specific web archive version
+
+- you can change in `package.json` the version of tchap-web that you want to use in `tchapConfig.tchap-web_version` and `tchapConfig.tchap-web_version`. 
+
+- Then you can run
+
 ```
 npm install
 
@@ -26,10 +38,6 @@ npm run fetch-package
 cargo tauri dev
 
 ```
-
-- you can change in `package.json` the version of tchap-web that you want to use in `tchapConfig.tchap-web_version` and `tchapConfig.tchap-web_version`. Make the change before running `fetch-package` script
-
-Then you will be able to build your tchap webb and have the modification directly here
 
 
 ## Build
