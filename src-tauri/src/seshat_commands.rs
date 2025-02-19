@@ -6,52 +6,63 @@
 // use tokio::task;
 // use serde_json::Value;
 // use async_trait::async_trait;
-use std::sync::{Arc, Mutex};
+use std::{sync::{Arc, Mutex}, thread};
 use lazy_static::lazy_static;
+use seshat::{Database, Config};
+use tauri::{AppHandle, Manager, Runtime};
+use std::fs;
 
-use seshat::{Event};
+// lazy_static! {
+//     static ref DATABASE: Mutex<Option<Database>>> = Mutex::new(None);
+// }
 
-lazy_static! {
-    static ref SESHAT_SUPPORTED: Arc<Mutex<bool>> = Arc::new(Mutex::new(false));
-    static ref EVENT_INDEX: Arc<Mutex<Option<Event>>> = Arc::new(Mutex::new(None));
-}
-
-pub fn init_seshat() {
-    set_seshat_supported(true);
-}
-
-fn is_seshat_supported() -> bool {
-    let supported = SESHAT_SUPPORTED.lock().unwrap();
-    *supported
-}
-
-fn set_seshat_supported(supported: bool) {
-    let mut seshat_supported = SESHAT_SUPPORTED.lock().unwrap();
-    *seshat_supported = supported;
-}
-
-fn get_or_create_passphrase(key: String) {
-
-}
+// fn set_seshat_supported(supported: bool) {
+//     let mut seshat_supported = SESHAT_SUPPORTED.lock().unwrap();
+//     *seshat_supported = supported;
+// }
 
 // making the exported binding outside of src-tauri, otherwise tauri dev will make infinite loop
 #[taurpc::procedures(event_trigger = ApiEventTrigger, path = "seshat", export_to = "../bindings/bindings.ts")]
 pub trait TchapSeshat {
-    async fn supportsEventIndexing();
-    async fn initEventIndex(_user_id: String, _device_id: String);
+    async fn supportsEventIndexing() -> bool;
+    async fn initEventIndex<R: Runtime>(app_handle: AppHandle<R>, passphrase: String);
 }
 
 #[derive(Clone)]
-pub struct SeshatImpl;
+pub struct TchapSeshatImpl {
+    database: Arc<Mutex<Database>>,
+}
 
 #[taurpc::resolvers]
-impl TchapSeshat for SeshatImpl {
-    async fn supportsEventIndexing(self) {
+impl TchapSeshat for TchapSeshatImpl {
+    async fn supportsEventIndexing(self) -> bool{
         println!("Supports event indexing");
-        set_seshat_supported(true);
+        true
     }
 
-    async fn initEventIndex(self, _user_id: String, _device_id: String) {
+    async fn initEventIndex<R: Runtime>(self, app_handle: AppHandle<R>, passphrase: String) {
+
+        let config = Config::new().set_passphrase(passphrase);
+
+        let db_path = app_handle.path()
+            .app_local_data_dir()
+            .expect("could not resolve app local data path")
+            .join("seshat_db");
+
+        fs::create_dir_all(&db_path);
+        let database = Database::new_with_config(&db_path, &config).unwrap();
+
+        // Clone Arc to share ownership across threads
+        let database_clone = Arc::clone(&self.database);
+
+        // Spawn a new thread to update the variable
+        let handle = thread::spawn(move || {
+            let mut db = database_clone.lock().unwrap(); // Lock the mutex
+            *db = database;
+        });
+
+        handle.join().unwrap();
 
     }
 }
+

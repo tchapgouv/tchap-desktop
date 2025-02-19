@@ -1,17 +1,21 @@
+mod seshat_commands;
+mod common_commands;
+
 use taurpc::Router;
 use tauri::Manager;
 
-mod common_commands;
-mod seshat_commands;
-
-use crate::common_commands::CommonImpl;
-use crate::common_commands::Common;
+use common_commands::CommonImpl;
+use common_commands::Common;
+use seshat_commands::TchapSeshatImpl;
+use seshat_commands::TchapSeshat;
 
 
 
 #[tokio::main]
 pub async fn run() {
-    let router = Router::new().merge(CommonImpl.into_handler());
+    let router = Router::new()
+        .merge(CommonImpl.into_handler())
+        .merge(TchapSeshatImpl.into_handler());
 
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
@@ -29,8 +33,6 @@ pub async fn run() {
                 .join("salt.txt");
             app.handle().plugin(tauri_plugin_stronghold::Builder::with_argon2(&salt_path).build())?;
 
-            // initialize seshat
-            crate::seshat_commands::init_seshat();
             Ok(())
         })
         .invoke_handler(router.into_handler())
