@@ -1,5 +1,5 @@
 // making the exported binding outside of src-tauri, otherwise tauri dev will make infinite loop
-#[taurpc::procedures(event_trigger = ApiEventTrigger, path = "common", export_to = "../bindings/bindings.ts")]
+#[taurpc::procedures(event_trigger = ApiEventTrigger, path = "common", export_to = "../bindings/common.ts")]
 pub trait Common {
     async fn set_homeserver_url();
 }

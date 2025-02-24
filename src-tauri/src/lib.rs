@@ -10,12 +10,10 @@ use seshat_commands::TchapSeshatImpl;
 use seshat_commands::TchapSeshat;
 
 
-
 #[tokio::main]
 pub async fn run() {
     let router = Router::new()
-        .merge(CommonImpl.into_handler())
-        .merge(TchapSeshatImpl.into_handler());
+        .merge(CommonImpl.into_handler());
 
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
@@ -36,6 +34,11 @@ pub async fn run() {
             Ok(())
         })
         .invoke_handler(router.into_handler())
+        .invoke_handler(taurpc::create_ipc_handler(
+            TchapSeshatImpl {
+                database: None,
+            }.into_handler(),
+        ))
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
