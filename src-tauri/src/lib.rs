@@ -1,13 +1,12 @@
 mod seshat_commands;
 mod common_commands;
+mod common_error;
 
 use taurpc::Router;
 use tauri::Manager;
 
-use common_commands::CommonImpl;
-use common_commands::Common;
-use seshat_commands::TchapSeshatImpl;
-use seshat_commands::TchapSeshat;
+use common_commands::{Common, CommonImpl};
+use seshat_commands::{TchapSeshatImpl, TchapSeshat};
 
 
 #[tokio::main]
@@ -34,6 +33,7 @@ pub async fn run() {
             Ok(())
         })
         .invoke_handler(router.into_handler())
+        // we dont use the merge in the router like common commands because we have a state to initialize, the db
         .invoke_handler(taurpc::create_ipc_handler(
             TchapSeshatImpl {
                 database: None,
