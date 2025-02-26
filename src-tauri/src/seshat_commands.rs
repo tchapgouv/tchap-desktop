@@ -1,27 +1,174 @@
 
 use std::sync::{Arc, Mutex};
-use seshat::{Config, CrawlerCheckpoint, Database, DatabaseStats, Event, LoadConfig, Profile, SearchBatch, SearchConfig};
+use serde::{Deserialize, Serialize};
+use seshat::{Config, CrawlerCheckpoint, Database, DatabaseStats, Event, EventType, LoadConfig, Profile, SearchBatch, SearchConfig};
 use tauri::{AppHandle, Manager, Runtime};
+use uuid::Uuid;
 use std::fs;
 use std::sync::mpsc;
 
 use crate::common_error::CommonError as Error;
 
+#[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
+pub enum TEventType {
+    /// Matrix room messages, corresponds to the m.room.message type, has a body
+    /// inside of the content.
+    #[serde(alias = "m.room.message", alias = "content.body")]
+    Message,
+    /// Matrix room messages, corresponds to the m.room.name type, has a name
+    /// inside of the content.
+    #[serde(alias = "m.room.name", alias = "content.name")]
+    Name,
+    /// Matrix room messages, corresponds to the m.room.topic type, has a topic
+    /// inside of the content.
+    #[serde(alias = "m.room.topic", alias = "content.topic")]
+    Topic,
+}
+
+#[taurpc::ipc_type]
+pub struct TEvent {
+    /// The type of the event.
+        #[specta(type = TEventType)]
+        pub event_type: EventType,
+        /// The textual representation of a message, this part of the event will be
+        /// indexed.
+        pub content_value: String,
+        /// The type of the message if the event is of a m.room.message type.
+        pub msgtype: Option<String>,
+        /// The unique identifier of this event.
+        pub event_id: String,
+        /// The MXID of the user who sent this event.
+        pub sender: String,
+        /// Timestamp in milliseconds on the originating Homeserver when this event
+        /// was sent.
+        pub server_ts: i64,
+        /// The ID of the room associated with this event.
+        pub room_id: String,
+        /// The serialized JSON string of the event. This string will be returned
+        /// by a search later on.
+        pub source: String,
+}
+
+#[derive(Debug, PartialEq, Default, Clone, Serialize, Deserialize, specta::Type)]
+pub struct TProfile {
+    pub displayname: Option<String>,
+    /// The user's avatar URL if they have set one.
+    pub avatar_url: Option<String>,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize, specta::Type)]
+pub struct TCrawlerCheckpoint {
+    /// The unique id of the room that this checkpoint belongs to.
+    pub room_id: String,
+    /// The token that can be used to go further back in the event timeline of
+    /// the room and fetch more messages from the room history.
+    pub token: String,
+    /// Is this a checkpoint for a complete crawl of the message history.
+    // bool defaults to `false`
+    #[serde(default)]
+    pub full_crawl: bool,
+    /// The direction which should be used to crawl the room timeline.
+    pub direction: TCheckpointDirection,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize, specta::Type)]
+pub enum TCheckpointDirection {
+    #[serde(rename = "f", alias = "forwards", alias = "forward")]
+    Forwards,
+    #[serde(rename = "b", alias = "backwards", alias = "backward")]
+    Backwards,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
+pub struct TLoadConfig {
+    pub(crate) room_id: String,
+    pub(crate) limit: usize,
+    pub(crate) from_event: Option<String>,
+    #[serde(default)]
+    pub(crate) direction: TLoadDirection,
+}
+
+#[derive(Debug, Default, Clone, Serialize, Deserialize, specta::Type)]
+pub enum TLoadDirection {
+    #[default]
+    #[serde(rename = "b", alias = "backwards", alias = "backward")]
+    Backwards,
+    #[serde(rename = "f", alias = "forwards", alias = "forward")]
+    Forwards,
+}
+#[taurpc::ipc_type]
+pub struct TDatabaseStats {
+    /// The number number of bytes the database is using on disk.
+    pub size: u64,
+    /// The number of events that the database knows about.
+    pub event_count: u64,
+    /// The number of rooms that the database knows about.
+    pub room_count: u64,
+}
+
+#[derive(Debug, PartialEq, Default, Clone, Serialize, Deserialize, specta::Type)]
+/// A search result
+pub struct TSearchResult {
+    /// The score that the full text search assigned to this event.
+    pub score: f32,
+    /// The serialized source of the event that matched a search.
+    pub event_source: SerializedEvent,
+    /// Events that happened before our matched event.
+    pub events_before: Vec<SerializedEvent>,
+    /// Events that happened after our matched event.
+    pub events_after: Vec<SerializedEvent>,
+    /// The profile of the sender of the matched event.
+    pub profile_info: HashMap<MxId, Profile>,
+}
+
+#[derive(Debug, PartialEq, Default, Clone, Serialize, Deserialize, specta::Type)]
+/// A batch of search results that were returned during a search.
+pub struct TSearchBatch {
+    /// The total number of events that were found.
+    pub count: usize,
+    /// The list of search results that were returned. The number of results is
+    /// always smaller of equal to the count and depends on the limit that was
+    /// given in the `SearchConfig`.
+    pub results: Vec<TSearchResult>,
+    /// A token that can be set in the `SearchConfig` to continue fetching the
+    /// next batch of `SearchResult`s.
+    pub next_batch: Option<Uuid>,
+}
 
 
-#[derive(Type)]
-struct MyEvent(Event);
-#[taurpc::ipc_type]
-struct MyProfile(Profile);
-#[taurpc::ipc_type]
-struct MyCrawlerCheckpoint(CrawlerCheckpoint);
-#[taurpc::ipc_type]
-struct MyLoadConfig(LoadConfig);
-#[taurpc::ipc_type]
-struct MyDatabaseStats(DatabaseStats);
 
 #[taurpc::ipc_type]
-struct MySearchBatch(SearchBatch);
+struct MyEvent {
+    #[specta(type = TEvent)]
+    event: Event,
+}
+
+#[taurpc::ipc_type]
+struct MyProfile {
+    #[specta(type = TProfile)]
+    profile: Profile
+}
+#[taurpc::ipc_type]
+struct MyCrawlerCheckpoint {
+    #[specta(type = TCrawlerCheckpoint)]
+    crawler_checkpoint: CrawlerCheckpoint
+}
+#[taurpc::ipc_type]
+struct MyLoadConfig {
+    #[specta(type = TLoadConfig)]
+    load_config: LoadConfig
+}
+#[taurpc::ipc_type]
+struct MyDatabaseStats {
+    #[specta(type = TDatabaseStats)]
+    database_stats: DatabaseStats
+}
+
+#[taurpc::ipc_type]
+struct MySearchBatch {
+    #[specta(type = TSearchBatch)]
+    search_batch: SearchBatch
+}
 
 
 // making the exported binding outside of src-tauri, otherwise tauri dev will make infinite loop
@@ -118,7 +265,7 @@ impl TchapSeshat for TchapSeshatImpl {
     async fn add_event_to_index(self, event: MyEvent, profile: MyProfile) {
         if let Some(ref db) = self.database {
             let db_lock = db.lock().unwrap();
-            db_lock.add_event(event, profile);
+            db_lock.add_event(event.event, profile.profile);
         }
     }
 

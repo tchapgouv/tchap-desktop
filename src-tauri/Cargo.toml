@@ -34,6 +34,7 @@ tauri-plugin-stronghold = "2"
 seshat = { git = "https://github.com/tchapgouv/seshat.git", branch = "main_tchap" }
 lazy_static = "1.4.0"
 thiserror = "2.0.11"
+uuid = "1.15.0"
 
 [features]
 # by default Tauri runs in production mode

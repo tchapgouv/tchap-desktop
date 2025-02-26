@@ -1,15 +1,16 @@
 use std::sync::mpsc::RecvError;
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, specta::Type)]
+#[serde(tag = "type", content = "data")]
 pub enum CommonError {
     #[error("Failed to read file: {0}")]
-    Io(#[from] std::io::Error),
+    Io(#[from] #[serde(skip)] std::io::Error),
     #[error("File is not valid utf8: {0}")]
-    Utf8(#[from] std::string::FromUtf8Error),
+    Utf8(#[from]  #[serde(skip)] std::string::FromUtf8Error),
     #[error("Seshat error: {0}")]
-    Seshat(#[from] seshat::Error),
+    Seshat(#[from]  #[serde(skip)]seshat::Error),
     #[error("RecvError seshat error: {0}")]
-    RecvError(#[from] RecvError),
+    RecvError(#[from]  #[serde(skip)] RecvError),
     #[error("Error: {:?}", 0)]
     CommonString(String),
     #[error("unknown error")]
