@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "identifier": "fr.gouv.beta.tchap.tchap-desktop",
   "build": {
-    "frontendDist": "../src"
+    "frontendDist": "../src",
+    "devUrl": "http://localhost:8080"
   },
   "app": {
     "withGlobalTauri": true,
@@ -15,7 +16,13 @@
         "height": 600
       }
     ],
-    "security": {}
+    "security": {
+      "csp": {
+        "default-src": "'self' customprotocol: asset:",
+        "connect-src": "ipc: http://ipc.localhost"
+      },
+      "devCsp":null
+    }
   },
   "bundle": {
     "active": true,

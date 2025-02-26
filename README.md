@@ -9,21 +9,23 @@ Client Desktop Tchap avec Tauri ( https://tauri.app )
 
 - Live testing with tchap-web (symbolic link doesnt work)
 
-- Go to the frontend folder and find  the webapp folder
+- Go to the frontend folder
 
-- If it doesnt exist you need to run first 
 ```
-CONFIG=dev ./scripts/tchap/package-tchap.sh
+yarn install
+yarn start
 ```
 
-- copy the generated content into `./src`
-
-- Then come back to tchap-desktop
+- Go back to your tauri app and run 
 
 ```
 cargo tauri dev
 
 ```
+
+- It will automatically use your frontend configure on the url in the `tauri.conf.json` file. So modify the `build: devUrl` to match your dev frontend
+
+
 ## Dev using a specific web archive version
 
 - you can change in `package.json` the version of tchap-web that you want to use in `tchapConfig.tchap-web_version` and `tchapConfig.tchap-web_version`. 

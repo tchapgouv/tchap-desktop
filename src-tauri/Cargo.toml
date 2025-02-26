@@ -27,12 +27,8 @@ tauri-plugin-fs = "2"
 tauri-plugin-notification = "2"
 tauri-plugin-persisted-scope = "2"
 tauri-plugin-dialog = "2"
-taurpc = "0.4.1"
-specta = { version = "=2.0.0-rc.22", features = ["derive"] }
-tokio = { version = "1", features = ["full"] }
 tauri-plugin-stronghold = "2"
 seshat = { git = "https://github.com/tchapgouv/seshat.git", branch = "main_tchap" }
-lazy_static = "1.4.0"
 thiserror = "2.0.11"
 uuid = "1.15.0"
 
