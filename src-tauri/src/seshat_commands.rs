@@ -6,12 +6,8 @@ use std::fs;
 use std::sync::mpsc;
 
 use crate::common_error::CommonError as Error;
+use crate::MyState;
 
-
-#[derive(Clone)]
-pub struct MyState {
-    pub database: Option<Arc<Mutex<Database>>>,
-}
 
 #[tauri::command]
 pub async fn supports_event_indexing() -> bool{

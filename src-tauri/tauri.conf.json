@@ -2,10 +2,10 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "tchap-desktop",
   "version": "0.0.0",
-  "identifier": "fr.gouv.beta.tchap.tchap-desktop",
+  "identifier": "fr.gouv.beta.tchap-desktop",
   "build": {
-    "frontendDist": "../src",
-    "devUrl": "http://localhost:8080"
+    "devUrl": "http://localhost:8080",
+    "frontendDist": "../dist"
   },
   "app": {
     "withGlobalTauri": true,
@@ -17,11 +17,7 @@
       }
     ],
     "security": {
-      "csp": {
-        "default-src": "'self' customprotocol: asset:",
-        "connect-src": "ipc: http://ipc.localhost"
-      },
-      "devCsp":null
+      "csp": null
     }
   },
   "bundle": {

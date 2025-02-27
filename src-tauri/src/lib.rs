@@ -1,27 +1,43 @@
-// mod common_commands;
 mod seshat_commands;
 mod common_error;
 
-use seshat_commands::MyState;
+use std::sync::{Arc, Mutex};
+
+
+use seshat::Database;
 use tauri::Manager;
 
+
+
+#[derive(Clone)]
+pub struct MyState {
+    pub database: Option<Arc<Mutex<Database>>>,
+}
+
+// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
-async fn test() {
-    print!("TEST succeed");
+fn greet(name: &str) -> String {
+    format!("Hello, {}! You've been greeted from Rust!", name)
+}
+
+#[tauri::command]
+fn test() -> String {
+    format!("Hello, just test! You've been greeted from Rust!")
 }
 
 #[tauri::command]
 fn test_not_async() {
-    print!("TEST not async succeed");
+    println!("Hello You've been greeted from Rust!")
 }
 
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_upload::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_persisted_scope::init())
-        .plugin(tauri_plugin_upload::init())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             // configure stronghold
@@ -37,7 +53,6 @@ pub fn run() {
         .manage(MyState {
             database: None,
         })
-        // we dont use the merge in the router like common commands because we have a state to initialize, the db
         .invoke_handler(tauri::generate_handler![
             seshat_commands::supports_event_indexing,
             seshat_commands::init_event_index,
@@ -57,9 +72,9 @@ pub fn run() {
             seshat_commands::get_stats,
             seshat_commands::set_user_version,
             seshat_commands::get_user_version,
+            greet,
             test,
-            test_not_async
-        ])
+            test_not_async])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
