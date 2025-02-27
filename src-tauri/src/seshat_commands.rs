@@ -11,12 +11,13 @@ use crate::MyState;
 
 #[tauri::command]
 pub async fn supports_event_indexing() -> bool{
-    println!("Supports event indexing");
+    println!("[Command] Supports event indexing");
     true
 }
 
 #[tauri::command]
 pub async fn init_event_index<R: Runtime>(app_handle: AppHandle<R>, state: State<'_, Mutex<MyState>>, passphrase: String) -> Result<(), Error> {
+    println!("[Command] init_event_index");
 
     let config = Config::new().set_passphrase(passphrase);
 
@@ -38,7 +39,7 @@ pub async fn init_event_index<R: Runtime>(app_handle: AppHandle<R>, state: State
 #[tauri::command]
 // Closing the database
 pub async fn close_event_index(state: State<'_, Mutex<MyState>>)-> Result<(), Error> {
-    
+    println!("[Command] close_event_index");
     let mut state = state.lock().unwrap();
     if let Some(db) = state.database.take() {
         match Arc::try_unwrap(db) {
@@ -64,6 +65,7 @@ pub async fn close_event_index(state: State<'_, Mutex<MyState>>)-> Result<(), Er
 #[tauri::command]
 // Deleting the database contents and files
 pub async fn delete_event_index(state: State<'_, Mutex<MyState>>) -> Result<(), Error> {
+    println!("[Command] delete_event_index");
     let mut state = state.lock().unwrap();
     if let Some(db) = state.database.take() {
         match Arc::try_unwrap(db) {
@@ -87,8 +89,11 @@ pub async fn delete_event_index(state: State<'_, Mutex<MyState>>) -> Result<(), 
 }
 
 #[tauri::command]
-pub async fn add_event_to_index(state: State<'_, MyState>, event: Event, profile: Profile) -> Result<(), Error> {
-    if let Some(ref db) = state.database {
+pub async fn add_event_to_index(state: State<'_, Mutex<MyState>>, event: Event, profile: Profile) -> Result<(), Error> {
+    println!("[Command] add_event_to_index");
+    let state_guard = state.lock().unwrap();
+
+    if let Some(ref db) = state_guard.database {
         let db_lock = db.lock().unwrap();
         db_lock.add_event(event, profile);
     }
@@ -96,8 +101,11 @@ pub async fn add_event_to_index(state: State<'_, MyState>, event: Event, profile
 }
 
 #[tauri::command]
-pub async fn delete_event(state: State<'_, MyState>, event_id: String) -> Result<(), Error>{
-    if let Some(ref db) = state.database {
+pub async fn delete_event(state: State<'_, Mutex<MyState>>, event_id: String) -> Result<(), Error>{
+    println!("[Command] delete_event");
+    let state_guard = state.lock().unwrap();
+
+    if let Some(ref db) = state_guard.database {
         let db_lock = db.lock().unwrap();
         db_lock.delete_event(&event_id);
     }
@@ -105,8 +113,11 @@ pub async fn delete_event(state: State<'_, MyState>, event_id: String) -> Result
 }
 
 #[tauri::command]
-pub async fn commit_live_events(state: State<'_, MyState>) -> Result<(), Error> {
-    if let Some(ref db) = state.database {
+pub async fn commit_live_events(state: State<'_, Mutex<MyState>>) -> Result<(), Error> {
+    println!("[Command] commit_live_events");
+    let state_guard = state.lock().unwrap();
+
+    if let Some(ref db) = state_guard.database {
         let mut db_lock = db.lock().unwrap();
         db_lock.commit();
     }
@@ -114,8 +125,11 @@ pub async fn commit_live_events(state: State<'_, MyState>) -> Result<(), Error> 
 }
 
 #[tauri::command]
-pub async fn search_event_index(state: State<'_, MyState>, term: String) -> Result<SearchBatch, Error> {
-    if let Some(ref db) = state.database {
+pub async fn search_event_index(state: State<'_, Mutex<MyState>>, term: String) -> Result<SearchBatch, Error> {
+    println!("[Command] search_event_index");
+    let state_guard = state.lock().unwrap();
+
+    if let Some(ref db) = state_guard.database {
         let search_config = SearchConfig::new();
         let db_lock = db.lock().unwrap();
         db_lock
@@ -127,8 +141,11 @@ pub async fn search_event_index(state: State<'_, MyState>, term: String) -> Resu
 }
 
 #[tauri::command]
-pub async fn is_room_indexed(state: State<'_, MyState>, room_id: String) -> Result<bool, Error> {
-    if let Some(ref db) = state.database {
+pub async fn is_room_indexed(state: State<'_, Mutex<MyState>>, room_id: String) -> Result<bool, Error> {
+    println!("[Command] is_room_indexed");
+    let state_guard = state.lock().unwrap();
+
+    if let Some(ref db) = state_guard.database {
         let db_lock = db.lock().unwrap();
         let connection = db_lock.get_connection().unwrap();
         connection
@@ -140,8 +157,11 @@ pub async fn is_room_indexed(state: State<'_, MyState>, room_id: String) -> Resu
 }
 
 #[tauri::command]
-pub async fn is_event_index_empty(state: State<'_, MyState>) -> Result<bool, Error>{
-    if let Some(ref db) = state.database {
+pub async fn is_event_index_empty(state: State<'_, Mutex<MyState>>) -> Result<bool, Error>{
+    println!("[Command] is_event_index_empty");
+    let state_guard = state.lock().unwrap();
+
+    if let Some(ref db) = state_guard.database {
         let db_lock = db.lock().unwrap();
         let connection = db_lock.get_connection().unwrap();
         connection
@@ -153,8 +173,11 @@ pub async fn is_event_index_empty(state: State<'_, MyState>) -> Result<bool, Err
 }
 
 #[tauri::command]
-pub async fn add_historic_events(state: State<'_, MyState>, events: Vec<(Event, Profile)>, new_checkpoint: Option<CrawlerCheckpoint>, old_checkpoint: Option<CrawlerCheckpoint>) -> Result<bool, Error> {
-    if let Some(ref db) = state.database {
+pub async fn add_historic_events(state: State<'_, Mutex<MyState>>, events: Vec<(Event, Profile)>, new_checkpoint: Option<CrawlerCheckpoint>, old_checkpoint: Option<CrawlerCheckpoint>) -> Result<bool, Error> {
+    println!("[Command] add_historic_events");
+    let state_guard = state.lock().unwrap();
+
+    if let Some(ref db) = state_guard.database {
         let db_lock: std::sync::MutexGuard<'_, Database> = db.lock().unwrap();
         let receiver = db_lock.add_historic_events(events, new_checkpoint, old_checkpoint);
 
@@ -176,8 +199,11 @@ pub async fn add_historic_events(state: State<'_, MyState>, events: Vec<(Event, 
 }
 
 #[tauri::command]
-pub async fn get_stats(state: State<'_, MyState>) -> Result<DatabaseStats, Error> {
-    if let Some(ref db) = state.database {
+pub async fn get_stats(state: State<'_, Mutex<MyState>>) -> Result<DatabaseStats, Error> {
+    println!("[Command] remove_crawler_checkpoint");
+    let state_guard = state.lock().unwrap();
+
+    if let Some(ref db) = state_guard.database {
         let db_lock = db.lock().unwrap();
         let connection = db_lock.get_connection().unwrap();
         connection.get_stats().map_err(|e| Error::from(e))
@@ -188,8 +214,11 @@ pub async fn get_stats(state: State<'_, MyState>) -> Result<DatabaseStats, Error
 
 #[tauri::command]
 // There is no remove_crawler_checkpoint in the api, but we are only useing add_historic_events with the correct parameters
-pub async fn remove_crawler_checkpoint(state: State<'_, MyState>, checkpoint: CrawlerCheckpoint)-> Result<bool, Error> {
-    if let Some(ref db) = state.database {
+pub async fn remove_crawler_checkpoint(state: State<'_, Mutex<MyState>>, checkpoint: CrawlerCheckpoint)-> Result<bool, Error> {
+    println!("[Command] remove_crawler_checkpoint");
+    let state_guard = state.lock().unwrap();
+
+    if let Some(ref db) = state_guard.database {
         let db_lock = db.lock().unwrap();
         let receiver = db_lock.add_historic_events(Vec::new(), None, Some(checkpoint));
 
@@ -212,8 +241,11 @@ pub async fn remove_crawler_checkpoint(state: State<'_, MyState>, checkpoint: Cr
 
 #[tauri::command]
 // There is no add_crawler_checkpoint in the api, but we are only useing add_historic_events with the correct parameters
-pub async fn add_crawler_checkpoint(state: State<'_, MyState>, checkpoint: CrawlerCheckpoint)-> Result<bool, Error> {
-    if let Some(ref db) = state.database {
+pub async fn add_crawler_checkpoint(state: State<'_, Mutex<MyState>>, checkpoint: CrawlerCheckpoint)-> Result<bool, Error> {
+    println!("[Command] add_crawler_checkpoint");
+    let state_guard = state.lock().unwrap();
+
+    if let Some(ref db) = state_guard.database {
         let db_lock = db.lock().unwrap();
         let receiver = db_lock.add_historic_events(Vec::new(), Some(checkpoint), None);
 
@@ -235,8 +267,11 @@ pub async fn add_crawler_checkpoint(state: State<'_, MyState>, checkpoint: Crawl
 }
 
 #[tauri::command]
-pub async fn load_file_events(state: State<'_, MyState>, load_config: LoadConfig) -> Result<Vec<(String, Profile)>, Error> {
-    if let Some(ref db) = state.database {
+pub async fn load_file_events(state: State<'_, Mutex<MyState>>, load_config: LoadConfig) -> Result<Vec<(String, Profile)>, Error> {
+    println!("[Command] load_file_events");
+    let state_guard = state.lock().unwrap();
+
+    if let Some(ref db) = state_guard.database {
         let db_lock = db.lock().unwrap();
         let connection = db_lock.get_connection().unwrap();
         connection
@@ -248,8 +283,11 @@ pub async fn load_file_events(state: State<'_, MyState>, load_config: LoadConfig
 }
 
 #[tauri::command]
-pub async fn load_checkpoints(state: State<'_, MyState>) -> Result<Vec<CrawlerCheckpoint>, Error>{
-    if let Some(ref db) = state.database {
+pub async fn load_checkpoints(state: State<'_, Mutex<MyState>>) -> Result<Vec<CrawlerCheckpoint>, Error>{
+    println!("[Command] load_checkpoints");
+    let state_guard = state.lock().unwrap();
+
+    if let Some(ref db) = state_guard.database {
         let db_lock = db.lock().unwrap();
         let connection = db_lock.get_connection().unwrap();
         connection.load_checkpoints().map_err(|e| Error::from(e))
@@ -259,8 +297,11 @@ pub async fn load_checkpoints(state: State<'_, MyState>) -> Result<Vec<CrawlerCh
 }
 
 #[tauri::command]
-pub async fn set_user_version(state: State<'_, MyState>, version: i64) -> Result<(), Error>{
-    if let Some(ref db) = state.database {
+pub async fn set_user_version(state: State<'_, Mutex<MyState>>, version: i64) -> Result<(), Error>{
+    println!("[Command] set_user_version");
+    let state_guard = state.lock().unwrap();
+
+    if let Some(ref db) = state_guard.database {
         let db_lock = db.lock().unwrap();
         let connection = db_lock.get_connection().unwrap();
         connection
@@ -272,8 +313,11 @@ pub async fn set_user_version(state: State<'_, MyState>, version: i64) -> Result
 }
 
 #[tauri::command]
-pub async fn get_user_version(state: State<'_, MyState>) -> Result<i64, Error>{
-    if let Some(ref db) = state.database {
+pub async fn get_user_version(state: State<'_, Mutex<MyState>>) -> Result<i64, Error>{
+    println!("[Command] get_user_version");
+    let state_guard = state.lock().unwrap();
+    
+    if let Some(ref db) = state_guard.database {
         let db_lock = db.lock().unwrap();
         let connection = db_lock.get_connection().unwrap();
         connection

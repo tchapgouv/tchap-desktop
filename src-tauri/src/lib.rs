@@ -48,10 +48,15 @@ pub fn run() {
                 .join("salt.txt");
             app.handle().plugin(tauri_plugin_stronghold::Builder::with_argon2(&salt_path).build())?;
 
+            // Create the initial state
+            let initial_state = MyState {
+                database: None,
+            };
+            
+            // Register it with Tauri's state management
+            app.manage(Mutex::new(initial_state));
+
             Ok(())
-        })
-        .manage(MyState {
-            database: None,
         })
         .invoke_handler(tauri::generate_handler![
             seshat_commands::supports_event_indexing,
