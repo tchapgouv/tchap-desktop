@@ -5,11 +5,6 @@
   "windows": [
     "main"
   ],
-  "platforms": [
-    "linux",
-    "macOS",
-    "windows"
-  ],
   "permissions": [
     "core:default",
     "opener:default",
@@ -25,6 +20,7 @@
     "core:webview:default",
     "fs:default",
     "notification:default",
-    "dialog:default"
+    "dialog:default",
+    "stronghold:default"
   ]
 }

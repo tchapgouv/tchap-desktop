@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    tchap_desktop_lib::run()
+    tchap_desktop_test_lib::run()
 }
