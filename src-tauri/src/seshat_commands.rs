@@ -18,8 +18,17 @@ pub async fn supports_event_indexing() -> bool{
 #[tauri::command]
 pub async fn init_event_index<R: Runtime>(app_handle: AppHandle<R>, state: State<'_, Mutex<MyState>>, passphrase: String) -> Result<(), Error> {
     println!("[Command] init_event_index");
-
+    println!("[Command] init_event_index passphrase ${:?}", passphrase);
     let config = Config::new().set_passphrase(passphrase);
+
+    let mut state_lock = state.lock().unwrap();
+    
+    // Check if the database is already initialized
+    if state_lock.database.is_some() {
+        println!("[Command] Database is already initialized.");
+        return Ok(()); // No need to reinitialize
+    }
+
 
     // The app_handle is a method introduce by tauri
     let db_path = app_handle.path()
@@ -31,8 +40,7 @@ pub async fn init_event_index<R: Runtime>(app_handle: AppHandle<R>, state: State
     let database = Arc::new(Mutex::new(Database::new_with_config(&db_path, &config).unwrap()));
 
     // Store the new database
-    let mut state = state.lock().unwrap();
-    state.database = Some(Arc::clone(&database));
+    state_lock.database = Some(Arc::clone(&database));
     Ok(())
 }
 
@@ -46,7 +54,7 @@ pub async fn close_event_index(state: State<'_, Mutex<MyState>>)-> Result<(), Er
             Ok(mutex) => {
                 let db_inner = mutex.into_inner().unwrap(); // Extract the database
                 // The shutdown meethod needs to take ownership 
-                db_inner.shutdown(); 
+                db_inner.shutdown();
                 // set the database to none
                 state.database = None;
                 Ok(())
@@ -58,39 +66,39 @@ pub async fn close_event_index(state: State<'_, Mutex<MyState>>)-> Result<(), Er
             }
         }
     } else {
+        println!("[Command] close_event_index no db found, already closed");
         Ok(())
     }
 }
 
+
 #[tauri::command]
 // Deleting the database contents and files
-pub async fn delete_event_index(state: State<'_, Mutex<MyState>>) -> Result<(), Error> {
+pub async fn delete_event_index<R: Runtime>(app_handle: AppHandle<R>) -> Result<(), Error> {
     println!("[Command] delete_event_index");
-    let mut state = state.lock().unwrap();
-    if let Some(db) = state.database.take() {
-        match Arc::try_unwrap(db) {
-            Ok(mutex) => {
-                let db_inner = mutex.into_inner().unwrap(); // Extract the database
-                // The delete meethod needs to take ownership 
-                db_inner.delete(); 
-                // set the database to none
-                state.database = None;
-                Ok(())
-            }
-            Err(_arc) => {
-                println!("Failed to take ownership: Database is still shared.");
-                state.database = Some(_arc); // Restore the database if shutdown failed
-                Ok(())
-            }
+        // The app_handle is a method introduce by tauri
+    let db_path = app_handle.path()
+        .app_local_data_dir()
+        .expect("could not resolve app local data path")
+        .join("seshat_db");
+
+        // Handle the case where the directory doesn't exist
+        match fs::remove_dir_all(&db_path) {
+            Ok(_) => println!("Successfully deleted index at: {:?}", db_path),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                println!("Index directory not found at: {:?}, continuing anyway", db_path);
+            },
+            Err(e) => return Err(e.into()), // For other errors, convert and return
         }
-    } else {
+        
         Ok(())
-    }
 }
 
 #[tauri::command]
 pub async fn add_event_to_index(state: State<'_, Mutex<MyState>>, event: Event, profile: Profile) -> Result<(), Error> {
     println!("[Command] add_event_to_index");
+    println!("[Command] add_event_to_index event {:?}", event);
+    println!("[Command] add_event_to_index profile {:?}", profile);
     let state_guard = state.lock().unwrap();
 
     if let Some(ref db) = state_guard.database {
@@ -102,7 +110,7 @@ pub async fn add_event_to_index(state: State<'_, Mutex<MyState>>, event: Event, 
 
 #[tauri::command]
 pub async fn delete_event(state: State<'_, Mutex<MyState>>, event_id: String) -> Result<(), Error>{
-    println!("[Command] delete_event");
+    println!("[Command] delete_event {:?}", event_id);
     let state_guard = state.lock().unwrap();
 
     if let Some(ref db) = state_guard.database {
@@ -125,17 +133,21 @@ pub async fn commit_live_events(state: State<'_, Mutex<MyState>>) -> Result<(), 
 }
 
 #[tauri::command]
-pub async fn search_event_index(state: State<'_, Mutex<MyState>>, term: String) -> Result<SearchBatch, Error> {
-    println!("[Command] search_event_index");
+pub async fn search_event_index(state: State<'_, Mutex<MyState>>, term: String, search_config: SearchConfig) -> Result<SearchBatch, Error> {
+    println!("[Command] search_event_index {:?}", term);
     let state_guard = state.lock().unwrap();
-
+    
     if let Some(ref db) = state_guard.database {
-        let search_config = SearchConfig::new();
+        let config = search_config.clone();
         let db_lock = db.lock().unwrap();
-        db_lock
-            .search(&term, &search_config)
-            .map_err(|e| Error::from(e))
+        let result = db_lock
+            .search(&term, &config)
+            .map_err(|e| Error::from(e));
+    
+        println!("[Command] search_event_index result {:?}", result);  
+        result
     } else {
+        println!("[Command] search_event_index result no database found");  
         Ok(SearchBatch::default())
     }
 }
@@ -164,10 +176,14 @@ pub async fn is_event_index_empty(state: State<'_, Mutex<MyState>>) -> Result<bo
     if let Some(ref db) = state_guard.database {
         let db_lock = db.lock().unwrap();
         let connection = db_lock.get_connection().unwrap();
-        connection
+        let result = connection
             .is_empty()
-            .map_err(|e| Error::from(e))
+            .map_err(|e| Error::from(e));
+        
+        println!("[Command] is_event_index_empty {:?}", result);
+        result
     } else {
+        println!("[Command] is_event_index_empty true");
         Ok(true)
     }
 }
@@ -175,6 +191,9 @@ pub async fn is_event_index_empty(state: State<'_, Mutex<MyState>>) -> Result<bo
 #[tauri::command]
 pub async fn add_historic_events(state: State<'_, Mutex<MyState>>, events: Vec<(Event, Profile)>, new_checkpoint: Option<CrawlerCheckpoint>, old_checkpoint: Option<CrawlerCheckpoint>) -> Result<bool, Error> {
     println!("[Command] add_historic_events");
+    println!("[Command] add_historic_events args events ${:?}", events);
+    println!("[Command] add_historic_events args newcheckpoint ${:?}", new_checkpoint);
+    println!("[Command] add_historic_events args oldcheckpoint ${:?}", old_checkpoint);
     let state_guard = state.lock().unwrap();
 
     if let Some(ref db) = state_guard.database {
@@ -242,7 +261,7 @@ pub async fn remove_crawler_checkpoint(state: State<'_, Mutex<MyState>>, checkpo
 #[tauri::command]
 // There is no add_crawler_checkpoint in the api, but we are only useing add_historic_events with the correct parameters
 pub async fn add_crawler_checkpoint(state: State<'_, Mutex<MyState>>, checkpoint: CrawlerCheckpoint)-> Result<bool, Error> {
-    println!("[Command] add_crawler_checkpoint");
+    println!("[Command] add_crawler_checkpoint ${:?}", checkpoint);
     let state_guard = state.lock().unwrap();
 
     if let Some(ref db) = state_guard.database {
