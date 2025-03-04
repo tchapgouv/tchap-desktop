@@ -1,5 +1,6 @@
 mod seshat_commands;
 mod common_error;
+mod seshat_utils;
 
 use std::sync::{Arc, Mutex};
 
@@ -14,20 +15,9 @@ pub struct MyState {
     pub database: Option<Arc<Mutex<Database>>>,
 }
 
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
-#[tauri::command]
-fn test() -> String {
-    format!("Hello, just test! You've been greeted from Rust!")
-}
-
-#[tauri::command]
-fn test_not_async() {
-    println!("Hello You've been greeted from Rust!")
+fn welcome() {
+    println!("Welcome on Tchap deskptop app!")
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -77,9 +67,8 @@ pub fn run() {
             seshat_commands::get_stats,
             seshat_commands::set_user_version,
             seshat_commands::get_user_version,
-            greet,
-            test,
-            test_not_async])
+            welcome
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

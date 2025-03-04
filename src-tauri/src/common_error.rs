@@ -10,8 +10,12 @@ pub enum CommonError {
     Seshat(#[from] seshat::Error),
     #[error("RecvError seshat error: {0}")]
     RecvError(#[from] RecvError),
-    #[error("unknown error")]
-    Unknown,
+    #[error(transparent)]
+    Anyhow(#[from] anyhow::Error),
+    #[error("{0}")]
+    String(String),
+    #[error("Unknown error")]
+    Unknown
 }
 
 // we must also implement serde::Serialize

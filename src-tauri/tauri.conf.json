@@ -5,7 +5,7 @@
   "identifier": "fr.gouv.beta.tchap-desktop",
   "build": {
     "devUrl": "http://localhost:8080",
-    "frontendDist": "../dist"
+    "frontendDist": "../src"
   },
   "app": {
     "withGlobalTauri": true,
