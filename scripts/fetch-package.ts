@@ -6,6 +6,7 @@ import { promises as stream } from "node:stream";
 import * as tar from "tar";
 
 import { tchapConfig } from "../package.json";
+import { exec } from "node:child_process";
 
 const PACKAGE_URL_PREFIX = "https://github.com/tchapgouv/tchap-web-v4/releases/download/"
 
@@ -26,6 +27,27 @@ async function downloadToFile(url: string, filename: string): Promise<void> {
         } catch {}
         throw e;
     }
+}
+
+// Function to clone GitHub repository
+async function cloneGitHubRepo(repoUrl: string, branch: string, targetDir: string): Promise<void> {
+    console.log(`Cloning repository ${repoUrl} branch ${branch} to ${targetDir}...`);
+    
+    // Remove target directory if it exists
+    try {
+        await fs.rm(targetDir, { recursive: true, force: true });
+    } catch (e) {
+        // Directory might not exist, that's fine
+    }
+    
+    // Clone the specific branch
+    await exec(`git clone --depth 1 --branch ${branch} ${repoUrl} ${targetDir}`);
+    console.log(`Repository cloned successfully to ${targetDir}`);
+}
+
+
+async buildFromGithubRepo() {
+
 }
 
 async function main(): Promise<number | undefined> {

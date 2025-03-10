@@ -28,6 +28,31 @@ jobs:
           # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
+      - name: Install SQLCipher for Windows
+        if: matrix.platform == 'windows-latest'
+        run: |
+          # Install SQLCipher using vcpkg (will automatically install OpenSSL as a dependency)
+          git clone https://github.com/microsoft/vcpkg
+          cd vcpkg
+          .\bootstrap-vcpkg.bat
+          
+          # Install SQLCipher with its dependencies (including OpenSSL)
+          .\vcpkg.exe install sqlcipher:x64-windows
+          
+          # Integrate vcpkg with the build system
+          .\vcpkg.exe integrate install
+          
+          # Set environment variables for the build
+          echo "VCPKG_ROOT=$PWD" >> $env:GITHUB_ENV
+          echo "SQLCIPHER_USE_VCPKG=1" >> $env:GITHUB_ENV
+          echo "VCPKGRS_DYNAMIC=1" >> $env:GITHUB_ENV
+          
+          # List installed packages to verify
+          .\vcpkg.exe list
+          
+          # Return to the original directory
+          cd ..
+
       - name: install frontend dependencies
         run: |
           npm install
