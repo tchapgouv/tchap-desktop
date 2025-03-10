@@ -41,6 +41,12 @@ cargo tauri dev
 
 ```
 
+## Dev using a github branch reoo
+
+- In `package.json` you need to put  `tchapConfig.tchap-web_github.use_github : true` and complete `tchapConfig.tchap-web_github.branch` and `tchapConfig.tchap-web_github.repo` 
+
+- Then you can run the same step as the dev using a specific web archive version
+
 
 ## Build
 ```

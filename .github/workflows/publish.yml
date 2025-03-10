@@ -59,11 +59,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -94,6 +89,29 @@ jobs:
           
           # Return to the original directory
           cd ..
+
+
+      # Add step to determine Node.js version
+      - name: Determine Node.js version
+        id: nodever
+        run: |
+          $rootConfig = Get-Content package.json | ConvertFrom-Json
+          $nodeVersion = 'lts/*'
+          
+          if ($rootConfig.'tchap-web_github'.use_github) {
+            $branchName = $rootConfig.'tchap-web_github'.branch
+
+            $archiveConfig = Get-Content "archives/$branchName/package.json" | ConvertFrom-Json
+            $nodeVersion = $archiveConfig.engines.node
+          }
+          
+          echo "NODE_VERSION=$nodeVersion" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.nodever.outputs.NODE_VERSION }}
 
       - name: install frontend dependencies
         run: |
