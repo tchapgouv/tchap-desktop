@@ -53,9 +53,9 @@ async function cloneGitHubRepo(repoUrl: string, branch: string, targetDir: strin
 async function buildFromLocalRepo(targetDir: string) {
     console.log(`Building from local repo ${targetDir}`);
     console.log(`Install dependencies`);
-    await exec(`yarn install`, { cwd: targetDir });
-    console.log(`Building tchap web`);
-    await exec(`yarn build`, { cwd: targetDir });
+    await exec(`yarn install --frozen-lockfile`, { cwd: targetDir });
+    console.log(`Building tchap web`, targetDir);
+    await exec(`yarn build --verbose`, { cwd: targetDir });
     console.log(`Build completed successfully`);
 
     console.log(`Copying webapp dist folder to src folder`);
