@@ -55,28 +55,16 @@ jobs:
           echo Current directory contents:
           dir
 
-      - name: Verify DLLs before build
-        if: matrix.platform == 'windows-latest'
-        shell: cmd
-        run: |
-          echo "Checking DLLs in src-tauri directory:"
-          dir src-tauri\*.dll
-          if not exist src-tauri\sqlcipher.dll exit 1
-          if not exist src-tauri\libcrypto-3-x64.dll exit 1
-          if not exist src-tauri\libssl-3-x64.dll exit 1
       # Add step to determine Node.js version
       - name: Determine Node.js version
         id: nodever
         run: |
           NODE_VERSION="lts/*"
-          
           if [ -f "package.json" ]; then
             if [ "$(jq -r '.tchapConfig["tchap-web_github"].use_github // false' package.json)" = "true" ]; then
               NODE_VERSION="20.9.0"
             fi
           fi
-
-          
           echo "NODE_VERSION=$NODE_VERSION" >> $GITHUB_OUTPUT
         shell: bash
 
@@ -85,10 +73,57 @@ jobs:
         with:
           node-version: ${{ steps.nodever.outputs.NODE_VERSION }}
 
-      - name: install frontend dependencies
+      # Add step to check package.json configuration
+      - name: Check build type
+        id: build-type
+        shell: bash
+        run: |
+          if [ "$(jq -r '.tchapConfig["tchap-web_github"].use_github // false' package.json)" = "true" ]; then
+            echo "BUILD_TYPE=github" >> $GITHUB_OUTPUT
+          else
+            echo "BUILD_TYPE=package" >> $GITHUB_OUTPUT
+          fi
+
+
+      # Install dependencies based on build type
+      # the fetch package when using github is not done correctly, so doing it manually in the CI
+      - name: Install dependencies (Package)
+        if: steps.build-type.outputs.BUILD_TYPE == 'package'
         run: |
           npm install
           npm run fetch-package
+
+
+      - name: Install dependencies (GitHub)
+        if: steps.build-type.outputs.BUILD_TYPE == 'github'
+        shell: bash
+        run: |
+          REPO=$(jq -r '.tchapConfig["tchap-web_github"].repo' package.json)
+          BRANCH=$(jq -r '.tchapConfig["tchap-web_github"].branch' package.json)
+          ENV=$(jq -r '.tchapConfig["tchap-web_github"].env' package.json)
+          
+          echo "Cloning $REPO branch $BRANCH..."
+          git clone --depth 1 --branch $BRANCH $REPO archives/$BRANCH
+          
+          cd archives/$BRANCH
+          echo "Installing dependencies..."
+          yarn install --frozen-lockfile
+          ./scripts/tchap/apply_patches.sh
+
+          echo "Copying config..."
+          if [ "$ENV" = "prod" ]; then
+            cp config.prod.json config.json || cp config.sample.json config.json
+          else
+            cp config.dev.json config.json || cp config.sample.json config.json
+          fi
+          
+          echo "Building..."
+          yarn build
+          
+          cd ../..
+          echo "Copying build output..."
+          mkdir -p src
+          cp -r archives/$BRANCH/webapp/* src/
 
       # If tagName and releaseId are omitted tauri-action will only build the app and won't try to upload any assets.
       - uses: tauri-apps/tauri-action@v0

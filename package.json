@@ -12,7 +12,8 @@
     "tchap-web_github":  {
       "use_github": true,
       "branch": "desktop-search-ipc",
-      "repo": "https://github.com/tchapgouv/tchap-web-v4"
+      "repo": "https://github.com/tchapgouv/tchap-web-v4",
+      "env": "prod"
     }
   },
   "author": "",

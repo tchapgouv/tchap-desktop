@@ -45,6 +45,8 @@ cargo tauri dev
 
 - In `package.json` you need to put  `tchapConfig.tchap-web_github.use_github : true` and complete `tchapConfig.tchap-web_github.branch` and `tchapConfig.tchap-web_github.repo` 
 
+- You can also select the environment in `tchapConfig.tchap-web_github.env` that you want to use. This will determine which config.json to select for the build. If no value is set (prod, preprod or dev), it will use prod as default.
+
 - Then you can run the same step as the dev using a specific web archive version
 
 
