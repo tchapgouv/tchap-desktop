@@ -55,7 +55,7 @@ async function buildFromLocalRepo(targetDir: string) {
     console.log(`Install dependencies`);
     await exec(`yarn install --frozen-lockfile`, { cwd: targetDir });
     console.log(`Building tchap web`, targetDir);
-    await exec(`yarn build --verbose`, { cwd: targetDir });
+    await exec(`yarn build`, { cwd: targetDir });
     console.log(`Build completed successfully`);
 
     console.log(`Copying webapp dist folder to src folder`);

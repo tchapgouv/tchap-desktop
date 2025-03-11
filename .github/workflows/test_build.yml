@@ -35,13 +35,35 @@ jobs:
           call .\vcpkg.exe install sqlcipher:x64-windows --clean-after-build
           call .\vcpkg.exe integrate install
           echo VCPKG_ROOT=%CD%>>%GITHUB_ENV%
-          echo SQLCIPHER_USE_VCPKG=1>>%GITHUB_ENV%
-          echo VCPKGRS_DYNAMIC=1>>%GITHUB_ENV%
+          echo "SQLCIPHER_USE_VCPKG=1">>%GITHUB_ENV%
+          echo "VCPKGRS_DYNAMIC=1">>%GITHUB_ENV%
           echo VCPKG_DEFAULT_TRIPLET=x64-windows>>%GITHUB_ENV%
+          echo "VCPKG_INSTALLED_DIR=%CD%\installed">>%GITHUB_ENV%
+          echo "LIBCLANG_PATH=%CD%\installed\x64-windows\tools\libclang">>%GITHUB_ENV%
+          echo "SQLCIPHER_LIB_DIR=%CD%\installed\x64-windows\lib">>%GITHUB_ENV%
+          echo "SQLCIPHER_INCLUDE_DIR=%CD%\installed\x64-windows\include">>%GITHUB_ENV%
           dir installed\x64-windows\lib
           dir installed\x64-windows-static\lib
           .\vcpkg.exe list
           cd ..
+          xcopy /y vcpkg\installed\x64-windows\bin\sqlcipher.dll .\src-tauri\
+          xcopy /y vcpkg\installed\x64-windows\bin\libcrypto-3-x64.dll .\src-tauri\
+          xcopy /y vcpkg\installed\x64-windows\bin\libssl-3-x64.dll .\src-tauri\
+          xcopy /y vcpkg\installed\x64-windows\lib\sqlcipher.lib .\src-tauri\
+          echo Listing copied files in src-tauri:
+          dir .\src-tauri\
+          echo Current directory contents:
+          dir
+
+      - name: Verify DLLs before build
+        if: matrix.platform == 'windows-latest'
+        shell: cmd
+        run: |
+          echo "Checking DLLs in src-tauri directory:"
+          dir src-tauri\*.dll
+          if not exist src-tauri\sqlcipher.dll exit 1
+          if not exist src-tauri\libcrypto-3-x64.dll exit 1
+          if not exist src-tauri\libssl-3-x64.dll exit 1
       # Add step to determine Node.js version
       - name: Determine Node.js version
         id: nodever
