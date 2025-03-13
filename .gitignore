@@ -24,7 +24,7 @@ deploys
 *.sw?
 
 # tchap
-archives/*
+archives/**/*
 !archives/.gitkeep
 src/*
 !src/.gitkeep

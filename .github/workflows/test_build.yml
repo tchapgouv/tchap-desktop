@@ -5,72 +5,14 @@ on: [pull_request]
 # This workflow will build your tauri app without uploading it anywhere.
 
 jobs:
-  test-tauri:
+  build-tauri:
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         include:
           - platform: "windows-latest"
             args: ""
-
-    runs-on: ${{ matrix.platform }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
-
-      - name: Install SQLCipher for Windows
-        if: matrix.platform == 'windows-latest'
-        shell: cmd
-        run: |
-          if exist vcpkg rmdir /s /q vcpkg
-          git clone https://github.com/microsoft/vcpkg
-          cd vcpkg
-          call .\bootstrap-vcpkg.bat -disableMetrics
-          call .\vcpkg.exe install sqlcipher:x64-windows-static --clean-after-build
-          call .\vcpkg.exe install sqlcipher:x64-windows --clean-after-build
-          call .\vcpkg.exe integrate install
-          echo VCPKG_ROOT=%CD%>>%GITHUB_ENV%
-          echo SQLCIPHER_USE_VCPKG=1>>%GITHUB_ENV%
-          echo VCPKGRS_DYNAMIC=1>>%GITHUB_ENV%
-          echo VCPKG_DEFAULT_TRIPLET=x64-windows>>%GITHUB_ENV%
-          dir installed\x64-windows\lib
-          dir installed\x64-windows-static\lib
-          .\vcpkg.exe list
-          cd ..
-      # Add step to determine Node.js version
-      - name: Determine Node.js version
-        id: nodever
-        run: |
-          NODE_VERSION="lts/*"
-          
-          if [ -f "package.json" ]; then
-            if [ "$(jq -r '.tchapConfig["tchap-web_github"].use_github // false' package.json)" = "true" ]; then
-              NODE_VERSION="20.9.0"
-            fi
-          fi
-
-          
-          echo "NODE_VERSION=$NODE_VERSION" >> $GITHUB_OUTPUT
-        shell: bash
-
-      - name: setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ steps.nodever.outputs.NODE_VERSION }}
-
-      - name: install frontend dependencies
-        run: |
-          npm install
-          npm run fetch-package
-
-      # If tagName and releaseId are omitted tauri-action will only build the app and won't try to upload any assets.
-      - uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          args: ${{ matrix.args }}
+    uses: ./.github/workflows/build-tauri.yml
+    with:
+      platform: ${{ matrix.platform }}
+      args : ${{ matrix.args }}

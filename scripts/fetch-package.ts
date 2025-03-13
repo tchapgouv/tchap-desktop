@@ -6,7 +6,7 @@ import { promises as stream } from "node:stream";
 import * as tar from "tar";
 
 import { tchapConfig } from "../package.json";
-import { exec as execCallback } from "node:child_process";
+import { exec as execCallback, spawn } from "node:child_process";
 import { promisify } from "node:util";
 
 const exec = promisify(execCallback);
@@ -41,6 +41,7 @@ async function cloneGitHubRepo(repoUrl: string, branch: string, targetDir: strin
     // Remove target directory if it exists
     try {
         await fs.rm(targetDir, { recursive: true, force: true });
+        console.log("existing directory removed");
     } catch (e) {
         // Directory might not exist, that's fine
     }
@@ -51,26 +52,56 @@ async function cloneGitHubRepo(repoUrl: string, branch: string, targetDir: strin
 }
 
 async function buildFromLocalRepo(targetDir: string) {
-    console.log(`Building from local repo ${targetDir}`);
-    console.log(`Install dependencies`);
-    await exec(`yarn install --frozen-lockfile`, { cwd: targetDir });
-    console.log(`Building tchap web`, targetDir);
-    await exec(`yarn build --verbose`, { cwd: targetDir });
-    console.log(`Build completed successfully`);
+  console.log(`----------------  Building from local repo ${targetDir}`);
+  console.log("---------------- Install dependencies");
+  const { stdout: installOut, stderr: installErr } = await exec(
+    `yarn install --frozen-lockfile --no-cache`,
+    { cwd: targetDir }
+  );
+  console.log(installOut);
+  console.log(installErr);
+  // Install dependencies without cache
+  console.log(`---------------- Building tchap web`, targetDir);
+  await exec(`yarn build`, { cwd: targetDir });
 
-    console.log(`Copying webapp dist folder to src folder`);
-    // copy the dist folder to the src folder
-    await fs.cp(path.join(targetDir, "webapp/"), SRC_DIR, { recursive: true });
+  console.log("----------------  Build completed successfully");
 
-
+  console.log("----------------  Copying webapp dist folder to src folder");
+  // copy the dist folder to the src folder
+  await fs.cp(path.join(targetDir, "webapp/"), SRC_DIR, { recursive: true });
 }
 
+//  copy config.json depending on the environment
+async function renameConfig(targetDir: string) {
+    // env taken from package.json
+    const env = tchapConfig!["tchap-web_github"]?.env
+    console.log(`Renaming config files by environment`, env );
+
+    const prodConfigPath = path.join(targetDir, "config.prod.json");
+    const preprodConfigPath = path.join(targetDir, "config.preprod.json");
+    const devConfigPath = path.join(targetDir, "config.dev.json");
+    const destConfigPath = path.join(targetDir, "config.json");
+
+    const configObj: Record<string, string> = {
+        "prod": prodConfigPath,
+        "preprod": preprodConfigPath,
+        "dev": devConfigPath
+    }
+    const defaultEnv = env || "prod";
+    if (configObj[defaultEnv]) {
+        await fs.rename(configObj[defaultEnv], destConfigPath);
+    } else {
+        console.log("No env var found or incorrect. Should be prod, preprod or dev. Using prod as default.");
+        await fs.rename(prodConfigPath, destConfigPath);
+    }
+}
 
 async function buildFromGithubRepo(repoUrl: string, branch: string) {
     try {
         console.log("Building from github repo", branch);
         const targetDir = ARCHIVE_DIR + "/" + branch;
         await cloneGitHubRepo(repoUrl, branch, targetDir);
+        await renameConfig(targetDir);
         await buildFromLocalRepo(targetDir);
     } catch(e) {
         console.log("Failed to build from github repo", e);
@@ -97,8 +128,8 @@ async function buildFromArchive(targetVersion: string, filename: string) {
 
     try {
         if (!haveArchive) {
-        console.log("downling archive ");
-        await downloadToFile(url, selectedArchivePath);
+            console.log("downling archive ");
+            await downloadToFile(url, selectedArchivePath);
         }
     } catch (e) {
         console.log("Failed to download " + url, e);
@@ -110,18 +141,19 @@ async function buildFromArchive(targetVersion: string, filename: string) {
         // tar will overwrite the existing files and folder
         console.log(`Extracting the archives to ${SRC_DIR}`);
         await tar.x(
-        {
-            file: selectedArchivePath,
-            cwd: SRC_DIR,
-            strip: 1, // remove dist parent folder
-        },
-        ["dist"]
+            {
+                file: selectedArchivePath,
+                cwd: SRC_DIR,
+                strip: 1, // remove dist parent folder
+            },
+            ["dist"]
         );
     } catch (e) {
         console.log("Failed to clean and extract", e);
         return 1;
     }
 }
+
 async function main(): Promise<number | undefined> {
 
     if (tchapConfig!["tchap-web_github"]?.use_github) {
