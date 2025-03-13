@@ -1,7 +1,7 @@
 mod seshat_commands;
 mod common_error;
 mod seshat_utils;
-
+mod media_auth;
 use std::sync::{Arc, Mutex};
 
 
@@ -46,6 +46,8 @@ pub fn run() {
             // Register it with Tauri's state management
             app.manage(Mutex::new(initial_state));
 
+            media_auth::setup_media_auth(app.handle());
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -67,6 +69,9 @@ pub fn run() {
             seshat_commands::get_stats,
             seshat_commands::set_user_version,
             seshat_commands::get_user_version,
+            media_auth::get_supported_versions,
+            media_auth::get_access_token,
+            media_auth::get_homeserver_url,
             welcome
         ])
         .run(tauri::generate_context!())
