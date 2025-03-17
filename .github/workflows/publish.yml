@@ -15,7 +15,7 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     outputs:
-      release_id: ${{ steps.create-release.outputs.result }}
+      release_id: ${{ steps.prepare-release.outputs.id }}
 
     steps:
       - uses: actions/checkout@v4
@@ -45,6 +45,7 @@ jobs:
       #       })
       #       return data.id
       - name: Prepare release
+        id: prepare-release
         uses: ncipollo/release-action@v1
         with:
             tag: "tchap-${{ steps.version.outputs.PACKAGE_VERSION }}"
@@ -67,7 +68,7 @@ jobs:
     with:
       platform: ${{ matrix.platform }}
       args : ${{ matrix.args }}
-      releaseId: ${{ needs.create-release.outputs.id }}
+      releaseId: ${{ needs.create-release.outputs.release_id }}
 
   # publish-release:
   #   permissions:
