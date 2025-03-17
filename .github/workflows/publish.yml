@@ -26,6 +26,7 @@ jobs:
           node-version: lts/*
 
       - name: get version
+        id: version
         run: echo "PACKAGE_VERSION=$(node -p "require('./src-tauri/tauri.conf.json').version")" >> $GITHUB_OUTPUT
 
       # - name: create release
