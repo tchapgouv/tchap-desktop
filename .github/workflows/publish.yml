@@ -26,23 +26,31 @@ jobs:
           node-version: lts/*
 
       - name: get version
-        run: echo "PACKAGE_VERSION=$(node -p "require('./src-tauri/tauri.conf.json').version")" >> $GITHUB_ENV
+        run: echo "PACKAGE_VERSION=$(node -p "require('./src-tauri/tauri.conf.json').version")" >> $GITHUB_OUTPUT
 
-      - name: create release
-        id: create-release
-        uses: actions/github-script@v6
+      # - name: create release
+      #   id: create-release
+      #   uses: actions/github-script@v6
+      #   with:
+      #     script: |
+      #       const { data } = await github.rest.repos.createRelease({
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         tag_name: `app-v${process.env.PACKAGE_VERSION}`,
+      #         name: `Tchap Desktop App v${process.env.PACKAGE_VERSION}`,
+      #         body: 'Take a look at the assets to download and install tchap as a desktop app.',
+      #         draft: true,
+      #         prerelease: false
+      #       })
+      #       return data.id
+      - name: Prepare release
+        uses: ncipollo/release-action@v1
         with:
-          script: |
-            const { data } = await github.rest.repos.createRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: `app-v${process.env.PACKAGE_VERSION}`,
-              name: `Tchap Desktop App v${process.env.PACKAGE_VERSION}`,
-              body: 'Take a look at the assets to download and install tchap as a desktop app.',
-              draft: true,
-              prerelease: false
-            })
-            return data.id
+            tag: "tchap-${{ steps.version.outputs.PACKAGE_VERSION }}"
+            generateReleaseNotes: true
+            token: ${{ secrets.GITHUB_TOKEN }}
+            allowUpdates: true
+
 
   build-tauri:
     needs: create-release
@@ -58,26 +66,26 @@ jobs:
     with:
       platform: ${{ matrix.platform }}
       args : ${{ matrix.args }}
-      releaseId: ${{ needs.create-release.outputs.release_id }}
+      releaseId: ${{ needs.create-release.outputs.id }}
 
-  publish-release:
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
-    needs: [create-release, build-tauri]
+  # publish-release:
+  #   permissions:
+  #     contents: write
+  #   runs-on: ubuntu-latest
+  #   needs: [create-release, build-tauri]
 
-    steps:
-      - name: publish release
-        id: publish-release
-        uses: actions/github-script@v6
-        env:
-          release_id: ${{ needs.create-release.outputs.release_id }}
-        with:
-          script: |
-            github.rest.repos.updateRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: process.env.release_id,
-              draft: false,
-              prerelease: false
-            })
+  #   steps:
+      # - name: publish release
+      #   id: publish-release
+      #   uses: actions/github-script@v6
+      #   env:
+      #     release_id: ${{ needs.create-release.outputs.release_id }}
+      #   with:
+      #     script: |
+      #       github.rest.repos.updateRelease({
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         release_id: process.env.release_id,
+      #         draft: false,
+      #         prerelease: false
+      #       })
