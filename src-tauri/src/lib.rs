@@ -1,14 +1,11 @@
-mod seshat_commands;
 mod common_error;
+mod seshat_commands;
 mod seshat_utils;
 
 use std::sync::{Arc, Mutex};
 
-
 use seshat::Database;
 use tauri::Manager;
-
-
 
 #[derive(Clone)]
 pub struct MyState {
@@ -23,6 +20,7 @@ fn welcome() {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_upload::init())
         .plugin(tauri_plugin_fs::init())
@@ -36,13 +34,12 @@ pub fn run() {
                 .app_local_data_dir()
                 .expect("could not resolve app local data path")
                 .join("salt.txt");
-            app.handle().plugin(tauri_plugin_stronghold::Builder::with_argon2(&salt_path).build())?;
+            app.handle()
+                .plugin(tauri_plugin_stronghold::Builder::with_argon2(&salt_path).build())?;
 
             // Create the initial state
-            let initial_state = MyState {
-                database: None,
-            };
-            
+            let initial_state = MyState { database: None };
+
             // Register it with Tauri's state management
             app.manage(Mutex::new(initial_state));
 
