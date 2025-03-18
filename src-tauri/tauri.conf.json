@@ -34,7 +34,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDY2N0MyMkY4Q0VBNDI5RTEKUldUaEthVE8rQ0o4Wm93dElLL3dFT2lqT1lka2V6am1Ca0UyY3V6MUJHVnBaaURIS1JLeFVCSXgK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQ2QTA4NzMxQzFENEZBRDIKUldUUyt0VEJNWWVnUmhqOXFZcXd6U3grTnd0emU1d0EySklYN3ZBOEhpMEtZZXdmNEVJVWMvZloK",
       "endpoints": [
         "https://github.com/tchapgouv/tchap-desktop/releases/download/tchap-0.0.2/tchap-desktop_0.0.2_x64-setup-debug.exe"
       ]
