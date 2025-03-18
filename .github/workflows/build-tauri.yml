@@ -12,6 +12,11 @@ on:
       args:
         required: false
         type: string
+    secrets:
+      TAURI_SIGNING_PRIVATE_KEY:
+        required: true
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD:
+        required: true
 
 jobs:
   build:
