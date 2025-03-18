@@ -30,11 +30,6 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": [
-      "./sqlcipher.dll",
-      "./libcrypto-3-x64.dll",
-      "./libssl-3-x64.dll"
-    ],
     "createUpdaterArtifacts": true
   },
   "plugins": {
