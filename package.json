@@ -4,7 +4,8 @@
   "description": "",
   "main": "./scripts/index.ts",
   "scripts": {
-    "fetch-package": "tsx ./scripts/fetch-package.ts"
+    "fetch-package": "tsx ./scripts/fetch-package.ts",
+    "update-version": "./scripts/update-version.sh"
   },
   "tchapConfig": {
     "tchap-web_version": "4.12.1",
@@ -23,8 +24,5 @@
     "tar": "^7.4.3",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"
-  },
-  "dependencies": {
-    "@tauri-apps/plugin-stronghold": "^2.2.0"
   }
 }
