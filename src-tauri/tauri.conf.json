@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "identifier": "fr.gouv.beta.tchap-desktop",
   "build": {
-    "devUrl": "http://localhost:8080",
+    "devUrl": "http://localhost:8081",
     "frontendDist": "../src"
   },
   "app": {
@@ -34,10 +34,15 @@
   },
   "plugins": {
     "updater": {
+      "enabled": true,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQ2QTA4NzMxQzFENEZBRDIKUldUUyt0VEJNWWVnUmhqOXFZcXd6U3grTnd0emU1d0EySklYN3ZBOEhpMEtZZXdmNEVJVWMvZloK",
       "endpoints": [
         "https://github.com/tchapgouv/tchap-desktop/releases/download/tchap-0.0.2/tchap-desktop_0.0.2_x64-setup-debug.exe"
-      ]
+      ],
+      "installMode": "passive",
+      "autoDownload": true,
+      "autoInstall": true,
+      "dialog": false
     }
   }
 }
