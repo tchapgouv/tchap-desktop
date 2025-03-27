@@ -3,9 +3,13 @@ mod seshat_commands;
 mod seshat_utils;
 
 use std::sync::{Arc, Mutex};
+use std::fs;
+use std::path::Path;
 
+use rand::TryRngCore;
 use seshat::Database;
 use tauri::Manager;
+use blake2::{Blake2b512, Digest};
 
 #[derive(Clone)]
 pub struct MyState {
@@ -15,6 +19,39 @@ pub struct MyState {
 #[tauri::command]
 fn welcome() {
     println!("Welcome on Tchap deskptop app!")
+}
+
+
+fn get_or_create_salt(salt_path: &Path) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    if !salt_path.exists() {
+        // Generate new salt
+        let mut salt = vec![0u8; 32];
+        let mut rng = rand::rngs::OsRng;
+        rng.try_fill_bytes(&mut salt)?;
+        // Ensure directory exists
+        fs::create_dir_all(salt_path.parent().unwrap())?;
+        // Write salt to file
+        fs::write(&salt_path, &salt)?;
+        Ok(salt)
+    } else {
+        // Read existing salt
+        Ok(fs::read(salt_path)?)
+    }
+}
+
+fn create_stronghold_key(app: &tauri::AppHandle, password: &[u8]) -> Vec<u8> {
+    let salt_path = app
+        .path()
+        .app_local_data_dir()
+        .expect("could not resolve app local data path")
+        .join("salt.txt");
+
+    let salt = get_or_create_salt(&salt_path).unwrap();
+    
+    let mut hasher = Blake2b512::new();
+    hasher.update(salt);
+    hasher.update(password);
+    hasher.finalize().to_vec()[..32].to_vec()
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -28,14 +65,13 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
-            // configure stronghold
-            let salt_path = app
-                .path()
-                .app_local_data_dir()
-                .expect("could not resolve app local data path")
-                .join("salt.txt");
+            let app_handle = app.app_handle().clone();
+            // Convert to Vec<u8> for Stronghold
             app.handle()
-                .plugin(tauri_plugin_stronghold::Builder::with_argon2(&salt_path).build())?;
+                .plugin(tauri_plugin_stronghold::Builder::new(move |password| {
+                    create_stronghold_key(&app_handle, password.as_ref())
+                })
+                .build())?;
 
             // Create the initial state
             let initial_state = MyState { database: None };

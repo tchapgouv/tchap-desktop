@@ -32,6 +32,8 @@ seshat = { git = "https://github.com/tchapgouv/seshat.git", branch = "main_tchap
 thiserror = "2.0.11"
 anyhow = "1.0.97"
 uuid = "1.15.1"
+blake2 = "0.10"
+rand = "0.9.0"
 
 [features]
 # by default Tauri runs in production mode

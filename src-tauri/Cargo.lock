@@ -6034,6 +6034,8 @@ name = "tchap-desktop"
 version = "0.0.1"
 dependencies = [
  "anyhow",
+ "blake2",
+ "rand 0.9.0",
  "serde",
  "serde_json",
  "seshat",
