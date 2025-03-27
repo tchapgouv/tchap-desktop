@@ -4,7 +4,6 @@
   "version": "0.0.2",
   "identifier": "fr.gouv.beta.tchap-desktop",
   "build": {
-    "devUrl": "http://localhost:8080",
     "frontendDist": "../src"
   },
   "app": {
@@ -30,7 +29,12 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "createUpdaterArtifacts": true
+    "createUpdaterArtifacts": true,
+    "resources": [
+      "sqlcipher.dll",
+      "libcrypto-3-x64.dll",
+      "libssl-3-x64.dll"
+    ]
   },
   "plugins": {
     "updater": {

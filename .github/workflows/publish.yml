@@ -48,7 +48,7 @@ jobs:
       matrix:
         include:
           - platform: "windows-latest"
-            args: ""
+            args: "--config src-tauri/tauri.conf.prod.json"
     uses: ./.github/workflows/build-tauri.yml
     with:
       platform: ${{ matrix.platform }}
