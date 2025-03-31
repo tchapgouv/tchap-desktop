@@ -10,7 +10,7 @@ use tauri::{AppHandle, Manager, Runtime, State};
 use crate::common_error::CommonError;
 use crate::seshat_utils::{
     add_historic_events_helper, deserialize_event, parse_event, parse_profile, parse_search_object,
-    profile_to_js, search_result_to_json,
+    profile_to_json, search_result_to_json
 };
 use crate::MyState;
 
@@ -157,7 +157,7 @@ pub async fn commit_live_events(state: State<'_, Mutex<MyState>>) -> Result<(), 
 
     if let Some(ref db) = state_guard.database {
         let mut db_lock = db.lock().unwrap();
-        db_lock.commit();
+        let _ = db_lock.commit();
     }
     Ok(())
 }
@@ -175,6 +175,7 @@ pub async fn search_event_index(
         let db_lock = db.lock().unwrap();
         let result = db_lock.search(&term, &config)?;
 
+        println!("---- search_event_index results before parse {:?}", result);
         let results: Vec<serde_json::Value> = result
             .results
             .into_iter()
@@ -368,7 +369,7 @@ pub async fn add_crawler_checkpoint(
 pub async fn load_file_events(
     state: State<'_, Mutex<MyState>>,
     load_config: Value,
-) -> Result<Vec<(Value, Value)>, CommonError> {
+) -> Result<Vec<Value>, CommonError> {
     println!("[Command] load_file_events");
     let state_guard = state.lock().unwrap();
 
@@ -408,12 +409,15 @@ pub async fn load_file_events(
                 Err(e) => return Err(CommonError::String(e.to_string())), // Convert error if needed
             };
 
-            let profile = match profile_to_js(profile) {
+            let profile = match profile_to_json(profile) {
                 Ok(event) => event,
                 Err(e) => return Err(CommonError::String(e.to_string())), // Convert error if needed
             };
 
-            formatted_result.push((event, profile));
+            formatted_result.push(serde_json::json!({
+                "event": event,
+                "profile": profile
+            }));
         }
 
         Ok(formatted_result)
@@ -435,6 +439,15 @@ pub async fn load_checkpoints(
         connection
             .load_checkpoints()
             .map_err(|e| CommonError::from(e))
+        // println!("---- load_checkpoints results {:?}", checkpoints);
+        // let mut parsed_checkpoints = Vec::new();
+        // for checkpoint in checkpoints {
+        //     println!("---- load_checkpoints checkpoint {:?}", checkpoint);
+        //     let parsed_checkpoint = parse_checkpoint(&checkpoint);
+        //     println!("---- load_checkpoints parsed_checkpoint {:?}", parsed_checkpoint);
+        //     parsed_checkpoints.push(parsed_checkpoint);
+        // }   
+        // Ok(parsed_checkpoints)
     } else {
         Err(CommonError::String(format!("No database found")))
     }
