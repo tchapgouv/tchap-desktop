@@ -114,6 +114,7 @@ pub(crate) fn parse_checkpoint(checkpoint: Option<&Value>) -> Result<Option<Craw
 }
 
 pub(crate) fn parse_event(event: &Value) -> Result<Event> {
+    println!("---- parse_event event {:?}", event);
     let event_obj = event.as_object().context("Event must be an object")?;
 
     let sender = event_obj
@@ -225,7 +226,20 @@ pub(crate) fn add_historic_events_helper(
     for event_obj in events {
         let event_obj = event_obj.as_object().context("Event must be an object")?;
 
-        let event = parse_event(&Value::Object(event_obj.clone()))?;
+        let event = event_obj
+            .get("event")
+            .map(|e| parse_event(e))
+            .transpose()?
+            .unwrap_or(Event {
+                event_type: EventType::Message,
+                content_value: "".to_string(),
+                msgtype: None,
+                event_id: "".to_string(),
+                sender: "".to_string(),
+                server_ts: 0,
+                room_id: "".to_string(),
+                source: "".to_string(),
+            });
 
         let profile = event_obj
             .get("profile")
@@ -247,7 +261,7 @@ pub(crate) fn add_historic_events_helper(
 
 pub(crate) fn search_result_to_json(
     mut result: SearchResult,
-) -> Result<serde_json::Value, serde_json::Error> {
+) -> Result<serde_json::Value> {
     let rank = f64::from(result.score);
     let event = serde_json::from_str(&result.event_source)?;
 
@@ -271,8 +285,7 @@ pub(crate) fn search_result_to_json(
     }
 
     for (sender, profile) in result.profile_info.drain() {
-        let js_sender = serde_json::to_value(sender)?;
-        let js_profile = serde_json::to_value(profile)?;
+        let (js_sender, js_profile) = sender_and_profile_to_json(sender, profile)?;
         profile_info.insert(js_sender.to_string(), js_profile);
     }
 
@@ -294,7 +307,7 @@ pub(crate) fn search_result_to_json(
     Ok(serde_json::Value::Object(object))
 }
 
-pub fn profile_to_js(profile: Profile) -> Result<serde_json::Value> {
+pub fn profile_to_json(profile: Profile) -> Result<serde_json::Value> {
     let mut js_profile = serde_json::Map::new();
 
     match profile.displayname {
@@ -321,14 +334,8 @@ pub(crate) fn sender_and_profile_to_json(
     sender: String,
     profile: Profile,
 ) -> Result<(String, serde_json::Value)> {
-    let profile_json = profile_to_js(profile)?;
+    let profile_json = profile_to_json(profile)?;
     Ok((sender, profile_json))
-}
-
-// If you need to convert to a specific serialization format (e.g., for a specific JS runtime)
-pub(crate) fn search_result_to_serialized(result: SearchResult) -> Result<String> {
-    let json_result = search_result_to_json(result)?;
-    serde_json::to_string(&json_result).context("Failed to serialize search result")
 }
 
 pub(crate) fn deserialize_event(source: &str) -> Result<serde_json::Value, String> {
