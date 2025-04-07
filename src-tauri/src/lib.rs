@@ -1,6 +1,7 @@
 mod common_error;
 mod seshat_commands;
 mod seshat_utils;
+mod common_commands;
 
 use std::sync::{Arc, Mutex};
 use std::fs;
@@ -100,6 +101,7 @@ pub fn run() {
             seshat_commands::get_stats,
             seshat_commands::set_user_version,
             seshat_commands::get_user_version,
+            common_commands::clear_storage,
             welcome
         ])
         .run(tauri::generate_context!())
