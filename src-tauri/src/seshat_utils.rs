@@ -1,13 +1,74 @@
 use seshat::{
-    CheckpointDirection, CrawlerCheckpoint, Event, EventType, Profile, SearchConfig, SearchResult,
+    CheckpointDirection, CrawlerCheckpoint, Error as SeshatError, Event, EventType, Profile,
+    RecoveryDatabase, SearchConfig, SearchResult,
 };
 
 use anyhow::{Context, Result};
 use serde_json::Value;
 use uuid::Uuid;
 
+// Helper function for the manual reindex logic (can be kept separate or inlined)
+// This function now takes ownership of RecoveryDatabase and closes it.
+pub fn perform_manual_reindex(mut recovery_db: RecoveryDatabase) -> Result<(), SeshatError> {
+    println!("[Util] Starting manual reindex process using RecoveryDatabase...");
+
+    // 1. Delete the existing index files
+    println!("[Util] Deleting existing index...");
+    recovery_db.delete_the_index()?;
+
+    // 2. Re-open the index (now empty)
+    println!("[Util] Opening new empty index...");
+    recovery_db.open_index()?; // This prepares the internal index writer
+
+    let batch_size = 500;
+    println!(
+        "[Util] Loading and indexing source events in batches of {}...",
+        batch_size
+    );
+
+    // 3. Load the first batch of source events
+    let mut current_batch = recovery_db.load_events_deserialized(batch_size, None)?;
+    if !current_batch.is_empty() {
+        println!(
+            "[Util] Indexing first batch ({} events)...",
+            current_batch.len()
+        );
+        recovery_db.index_events(&current_batch)?;
+    } else {
+        println!("[Util] No source events found to index.");
+    }
+
+    // 4. Loop through subsequent batches
+    while !current_batch.is_empty() {
+        let last_event_cursor = current_batch.last();
+        current_batch = recovery_db.load_events_deserialized(batch_size, last_event_cursor)?;
+
+        if current_batch.is_empty() {
+            println!("[Util] No more events in subsequent batches.");
+            break;
+        }
+
+        println!(
+            "[Util] Indexing next batch ({} events)...",
+            current_batch.len()
+        );
+        recovery_db.index_events(&current_batch)?;
+
+        // Commit periodically
+        println!("[Util] Committing batch...");
+        recovery_db.commit()?;
+    }
+
+    // 5. Final commit and close
+    println!("[Util] Final commit and close...");
+    recovery_db.commit_and_close()?; // Consumes the recovery_db instance
+
+    println!("[Util] Manual reindex process completed successfully.");
+    Ok(())
+}
+
 pub(crate) fn parse_search_object(
-    search_object: &serde_json::Value,
+    search_object: &Value,
 ) -> Result<(String, SearchConfig), anyhow::Error> {
     let term = search_object
         .get("search_term")
@@ -259,9 +320,7 @@ pub(crate) fn add_historic_events_helper(
     Ok((parsed_events, new_checkpoint, old_checkpoint))
 }
 
-pub(crate) fn search_result_to_json(
-    mut result: SearchResult,
-) -> Result<serde_json::Value> {
+pub(crate) fn search_result_to_json(mut result: SearchResult) -> Result<Value> {
     let rank = f64::from(result.score);
     let event = serde_json::from_str(&result.event_source)?;
 
@@ -289,58 +348,78 @@ pub(crate) fn search_result_to_json(
         profile_info.insert(js_sender.to_string(), js_profile);
     }
 
-    context.insert(
-        "events_before".to_string(),
-        serde_json::Value::Array(before),
-    );
-    context.insert("events_after".to_string(), serde_json::Value::Array(after));
-    context.insert(
-        "profile_info".to_string(),
-        serde_json::Value::Object(profile_info),
-    );
+    context.insert("events_before".to_string(), Value::Array(before));
+    context.insert("events_after".to_string(), Value::Array(after));
+    context.insert("profile_info".to_string(), Value::Object(profile_info));
 
     let mut object = serde_json::Map::new();
-    object.insert("rank".to_string(), serde_json::Value::from(rank));
+    object.insert("rank".to_string(), Value::from(rank));
     object.insert("result".to_string(), event);
-    object.insert("context".to_string(), serde_json::Value::Object(context));
+    object.insert("context".to_string(), Value::Object(context));
 
-    Ok(serde_json::Value::Object(object))
+    Ok(Value::Object(object))
 }
 
-pub fn profile_to_json(profile: Profile) -> Result<serde_json::Value> {
+pub fn profile_to_json(profile: Profile) -> Result<Value> {
     let mut js_profile = serde_json::Map::new();
 
     match profile.displayname {
         Some(name) => {
-            js_profile.insert("displayname".to_string(), serde_json::Value::String(name));
+            js_profile.insert("displayname".to_string(), Value::String(name));
         }
         None => {
-            js_profile.insert("displayname".to_string(), serde_json::Value::Null);
+            js_profile.insert("displayname".to_string(), Value::Null);
         }
     }
 
     match profile.avatar_url {
         Some(avatar) => {
-            js_profile.insert("avatar_url".to_string(), serde_json::Value::String(avatar));
+            js_profile.insert("avatar_url".to_string(), Value::String(avatar));
         }
         None => {
-            js_profile.insert("avatar_url".to_string(), serde_json::Value::Null);
+            js_profile.insert("avatar_url".to_string(), Value::Null);
         }
     }
 
-    Ok(serde_json::Value::Object(js_profile))
+    Ok(Value::Object(js_profile))
 }
 pub(crate) fn sender_and_profile_to_json(
     sender: String,
     profile: Profile,
-) -> Result<(String, serde_json::Value)> {
+) -> Result<(String, Value)> {
     let profile_json = profile_to_json(profile)?;
     Ok((sender, profile_json))
 }
 
-pub(crate) fn deserialize_event(source: &str) -> Result<serde_json::Value, String> {
+pub(crate) fn deserialize_event(source: &str) -> Result<Value, String> {
     let source = serde_json::from_str(source)
         .map_err(|e| format!("Couldn't load the event from the store: {}", e))?;
 
     Ok(source)
+}
+
+/// Converts a vector of Seshat CrawlerCheckpoints into a serde_json Value (Array).
+pub fn checkpoints_to_json(checkpoints: Vec<CrawlerCheckpoint>) -> Result<Vec<Value>> {
+    let mut json_checkpoints = Vec::new();
+
+    // Iterate through the checkpoints provided by Seshat
+    for checkpoint in checkpoints {
+        // Convert the direction enum to a simple string ("b" or "f")
+        let direction_str = match checkpoint.direction {
+            CheckpointDirection::Backwards => "b",
+            CheckpointDirection::Forwards => "f",
+        };
+
+        // Create a JSON object for the current checkpoint
+        let json_checkpoint = serde_json::json!({
+            "roomId": checkpoint.room_id,
+            "token": checkpoint.token,
+            "fullCrawl": checkpoint.full_crawl,
+            "direction": direction_str,
+        });
+        json_checkpoints.push(json_checkpoint);
+    }
+
+    // Return the collected JSON objects as a JSON Array Value
+    Ok(json_checkpoints)
 }

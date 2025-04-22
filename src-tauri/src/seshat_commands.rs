@@ -1,6 +1,7 @@
 use serde_json::Value;
 use seshat::{
-    Config, CrawlerCheckpoint, Database, DatabaseStats, LoadConfig, LoadDirection, Profile,
+    Config, Database, DatabaseStats, Error as SeshatError, LoadConfig, LoadDirection, Profile,
+    RecoveryDatabase,
 };
 use std::fs;
 use std::sync::mpsc;
@@ -9,8 +10,8 @@ use tauri::{AppHandle, Manager, Runtime, State};
 
 use crate::common_error::CommonError;
 use crate::seshat_utils::{
-    add_historic_events_helper, deserialize_event, parse_event, parse_profile, parse_search_object,
-    profile_to_json, search_result_to_json
+    add_historic_events_helper, checkpoints_to_json, deserialize_event, parse_event, parse_profile,
+    parse_search_object, perform_manual_reindex, profile_to_json, search_result_to_json,
 };
 use crate::MyState;
 
@@ -47,12 +48,81 @@ pub async fn init_event_index<R: Runtime>(
         .join("seshat_db");
 
     let _ = fs::create_dir_all(&db_path);
-    let database = Arc::new(Mutex::new(
-        Database::new_with_config(&db_path, &config).unwrap(),
-    ));
 
-    // Store the new database
-    state_lock.database = Some(Arc::clone(&database));
+    let db_result = Database::new_with_config(&db_path, &config);
+
+    let database = match db_result {
+        Ok(db) => {
+            println!("[Command] Database opened successfully on first attempt.");
+            db // Use the successfully opened database
+        }
+        Err(SeshatError::ReindexError) => {
+            println!("[Command] Database requires reindexing. Attempting recovery...");
+
+            // --- Recovery Logic ---
+            let recovery_config = config.clone(); // Clone config for recovery DB
+            let recovery_db = RecoveryDatabase::new_with_config(&db_path, &recovery_config)
+                .map_err(|e| {
+                    CommonError::String(format!("Failed to open recovery database: {}", e))
+                })?;
+
+            let user_version = {
+                // Scope the connection
+                let connection = recovery_db.get_connection().map_err(|e| {
+                    CommonError::String(format!("Failed to get recovery DB connection: {}", e))
+                })?;
+                connection.get_user_version().map_err(|e| {
+                    CommonError::String(format!(
+                        "Failed to get user version from recovery DB: {}",
+                        e
+                    ))
+                })?
+            };
+
+            println!("[Command] Recovery DB user version: {}", user_version);
+
+            if user_version == 0 {
+                println!("[Command] User version is 0. Deleting database contents instead of reindexing.");
+                // Drop recovery_db explicitly *before* deleting files to release file handles
+                drop(recovery_db);
+                fs::remove_dir_all(&db_path).map_err(|e| {
+                    CommonError::String(format!("Failed to delete database for re-creation: {}", e))
+                })?;
+                // Re-create the directory after deletion
+                fs::create_dir_all(&db_path).map_err(|e| {
+                    CommonError::String(format!("Failed to re-create DB directory: {}", e))
+                })?;
+            } else {
+                println!("[Command] Reindexing database...");
+                // reindex() consumes the recovery_db
+                perform_manual_reindex(recovery_db)
+                    .map_err(|e| CommonError::String(format!("Manual reindexing failed: {}", e)))?;
+                println!("[Command] Reindexing complete.");
+            }
+
+            // --- Retry opening the main database after recovery/deletion ---
+            println!("[Command] Retrying to open main database after recovery/deletion...");
+            Database::new_with_config(&db_path, &config).map_err(|e| {
+                CommonError::String(format!(
+                    "Failed to open database even after recovery attempt: {}",
+                    e
+                ))
+            })?
+        }
+        Err(e) => {
+            // Handle other database opening errors
+            return Err(CommonError::String(format!(
+                "Error opening the database: {:?}",
+                e
+            )));
+        }
+    };
+
+    // --- Store the successfully opened database (either first try or after recovery) ---
+    let database_arc = Arc::new(Mutex::new(database));
+    state_lock.database = Some(Arc::clone(&database_arc));
+    println!("[Command] init_event_index completed successfully.");
+
     Ok(())
 }
 
@@ -273,11 +343,13 @@ pub async fn add_historic_events(
         )?;
         let receiver = db_lock.add_historic_events(events, new_cp, old_cp);
 
-        receiver
+        let result = receiver
             .recv()
             .map(|r| r.map_err(|e| CommonError::from(e)))
             .map_err(|recv_err| CommonError::from(recv_err))
-            .unwrap()
+            .unwrap();
+        println!("[Command] add_historic_events result: {:?}", result);
+        result
     } else {
         // Create a dummy channel to return the expected type
         let (tx, rx) = mpsc::channel();
@@ -347,13 +419,17 @@ pub async fn add_crawler_checkpoint(
         let db_lock = db.lock().unwrap();
         let (_, cp, _) =
             add_historic_events_helper(Vec::new().as_ref(), checkpoint.as_ref(), None)?;
+
+        println!("[Debug] Processed checkpoint for adding: {:?}", cp);
         let receiver = db_lock.add_historic_events(Vec::new(), cp, None);
 
-        receiver
+        let result = receiver
             .recv()
             .map(|r| r.map_err(|e| CommonError::from(e)))
             .map_err(|recv_err| CommonError::from(recv_err))
-            .unwrap()
+            .unwrap();
+        println!("[Debug] Result of adding checkpoint: {:?}", result);
+        result
     } else {
         // Create a dummy channel to return the expected type
         let (tx, rx) = mpsc::channel();
@@ -427,27 +503,21 @@ pub async fn load_file_events(
 }
 
 #[tauri::command]
-pub async fn load_checkpoints(
-    state: State<'_, Mutex<MyState>>,
-) -> Result<Vec<CrawlerCheckpoint>, CommonError> {
+pub async fn load_checkpoints(state: State<'_, Mutex<MyState>>) -> Result<Vec<Value>, CommonError> {
     println!("[Command] load_checkpoints");
     let state_guard = state.lock().unwrap();
 
     if let Some(ref db) = state_guard.database {
         let db_lock = db.lock().unwrap();
         let connection = db_lock.get_connection().unwrap();
-        connection
-            .load_checkpoints()
-            .map_err(|e| CommonError::from(e))
-        // println!("---- load_checkpoints results {:?}", checkpoints);
-        // let mut parsed_checkpoints = Vec::new();
-        // for checkpoint in checkpoints {
-        //     println!("---- load_checkpoints checkpoint {:?}", checkpoint);
-        //     let parsed_checkpoint = parse_checkpoint(&checkpoint);
-        //     println!("---- load_checkpoints parsed_checkpoint {:?}", parsed_checkpoint);
-        //     parsed_checkpoints.push(parsed_checkpoint);
-        // }   
-        // Ok(parsed_checkpoints)
+        let checkpoints = connection.load_checkpoints().unwrap();
+
+        println!("---- load_checkpoints raw results count: {:?}", checkpoints);
+
+        // Use the helper function to convert the Vec<CrawlerCheckpoint> to JSON Value
+        let json_result = checkpoints_to_json(checkpoints)?;
+
+        Ok(json_result)
     } else {
         Err(CommonError::String(format!("No database found")))
     }
