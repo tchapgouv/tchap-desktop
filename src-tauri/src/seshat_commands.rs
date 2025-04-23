@@ -321,17 +321,6 @@ pub async fn add_historic_events(
     new_checkpoint: Option<Value>,
     old_checkpoint: Option<Value>,
 ) -> Result<bool, CommonError> {
-    println!("[Command] add_historic_events");
-    println!("[Command] add_historic_events args events ${:?}", events);
-    println!(
-        "[Command] add_historic_events args newcheckpoint ${:?}",
-        new_checkpoint
-    );
-    println!(
-        "[Command] add_historic_events args oldcheckpoint ${:?}",
-        old_checkpoint
-    );
-
     let state_guard = state.lock().unwrap();
 
     if let Some(ref db) = state_guard.database {
@@ -341,15 +330,27 @@ pub async fn add_historic_events(
             new_checkpoint.as_ref(),
             old_checkpoint.as_ref(),
         )?;
+
         let receiver = db_lock.add_historic_events(events, new_cp, old_cp);
 
-        let result = receiver
-            .recv()
-            .map(|r| r.map_err(|e| CommonError::from(e)))
-            .map_err(|recv_err| CommonError::from(recv_err))
-            .unwrap();
-        println!("[Command] add_historic_events result: {:?}", result);
-        result
+        match receiver.recv() {
+            Ok(result) => {
+                let final_result = result.map_err(|e| CommonError::from(e))?;
+                // Get stats after adding events
+                let connection = db_lock.get_connection().map_err(|e| CommonError::from(e))?;
+                let stats_after = connection.get_stats().map_err(|e| CommonError::from(e))?;
+                println!(
+                    "[Command] Stats after: event_count={}, room_count={}",
+                    stats_after.event_count, stats_after.room_count
+                );
+
+                Ok(final_result)
+            }
+            Err(recv_err) => {
+                println!("[Error] Failed to receive result: {:?}", recv_err);
+                Err(CommonError::from(recv_err))
+            }
+        }
     } else {
         // Create a dummy channel to return the expected type
         let (tx, rx) = mpsc::channel();
@@ -423,13 +424,24 @@ pub async fn add_crawler_checkpoint(
         println!("[Debug] Processed checkpoint for adding: {:?}", cp);
         let receiver = db_lock.add_historic_events(Vec::new(), cp, None);
 
-        let result = receiver
-            .recv()
-            .map(|r| r.map_err(|e| CommonError::from(e)))
-            .map_err(|recv_err| CommonError::from(recv_err))
-            .unwrap();
-        println!("[Debug] Result of adding checkpoint: {:?}", result);
-        result
+        // let result = receiver
+        //     .recv()
+        //     .map(|r| r.map_err(|e| CommonError::from(e)))
+        //     .map_err(|recv_err| CommonError::from(recv_err))
+        //     .unwrap();
+        match receiver.recv() {
+            Ok(result) => {
+                let final_result = result.map_err(|e| CommonError::from(e))?;
+                println!("[Debug] Result of adding checkpoint: {:?}", final_result);
+                Ok(final_result)
+            }
+            Err(recv_err) => {
+                println!("[Error] Failed to receive result: {:?}", recv_err);
+                Err(CommonError::from(recv_err))
+            }
+        }
+        // println!("[Debug] Result of adding checkpoint: {:?}", result);
+        // result
     } else {
         // Create a dummy channel to return the expected type
         let (tx, rx) = mpsc::channel();

@@ -287,31 +287,24 @@ pub(crate) fn add_historic_events_helper(
     for event_obj in events {
         let event_obj = event_obj.as_object().context("Event must be an object")?;
 
-        let event = event_obj
-            .get("event")
-            .map(|e| parse_event(e))
-            .transpose()?
-            .unwrap_or(Event {
-                event_type: EventType::Message,
-                content_value: "".to_string(),
-                msgtype: None,
-                event_id: "".to_string(),
-                sender: "".to_string(),
-                server_ts: 0,
-                room_id: "".to_string(),
-                source: "".to_string(),
-            });
+        // Only process the event if it has the required "event" field
+        if let Some(event_value) = event_obj.get("event") {
+            // Parse the event, skipping invalid ones instead of using empty defaults
+            if let Ok(event) = parse_event(event_value) {
+                let profile = event_obj
+                    .get("profile")
+                    .map(|p| parse_profile(p))
+                    .transpose()?
+                    .unwrap_or(Profile {
+                        displayname: None,
+                        avatar_url: None,
+                    });
 
-        let profile = event_obj
-            .get("profile")
-            .map(|p| parse_profile(p))
-            .transpose()?
-            .unwrap_or(Profile {
-                displayname: None,
-                avatar_url: None,
-            });
-
-        parsed_events.push((event, profile));
+                parsed_events.push((event, profile));
+            } else {
+                println!("[Warning] Skipping invalid event: {:?}", event_value);
+            }
+        }
     }
 
     let new_checkpoint = parse_checkpoint(new_checkpoint)?;
