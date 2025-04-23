@@ -1,7 +1,7 @@
 
 <p align="center">
   <a href="https://github.com/tchapgouv">
-    <img alt="tchap-logo" src="./res/themes/tchap/img/logos/tchap-logo.svg" width="300" />
+    <img alt="tchap-logo" src="./src-tauri/icons/128x128@2x.png" width="300" />
   </a>
 </p>
 

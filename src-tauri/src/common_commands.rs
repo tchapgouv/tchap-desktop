@@ -3,6 +3,7 @@ use tauri::{AppHandle, Manager, Runtime};
 
 #[tauri::command]
 pub async fn clear_storage<R: Runtime>(app_handle: AppHandle<R>) -> Result<(), String> {
+    println!("Clearing storage!");
     // Get app data dir
     let app_data_dir = app_handle
         .path()
