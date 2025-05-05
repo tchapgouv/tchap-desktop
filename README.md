@@ -22,18 +22,30 @@ Tchap is a web app that allows you to chat through the matrix protocol for the F
 
 # Tchap Desktop
 
-Client Desktop Tchap avec Tauri ( https://tauri.app )
+Desktop client for Tchap using Tauri ( https://tauri.app )
 
-## Dev local
+## Prerequisites
 
 - Install prerequisites https://v2.tauri.app/start/prerequisites/)
 
+- Install sqlcipher for your platform
+
+- Install Node and npm using a version manager like nvm. The frontend required a node version = 20.
+
+- If you want to build the project locally, on windows platform you may  need to manually put the sqlcipher dll in the `src-tauri/` folder. See more about the install workflow in the github workflow section. (`.github/workflows`)
+
+## Dev local using local frontend
+
 - Live testing with tchap-web (symbolic link doesnt work)
 
-- Go to the frontend folder
+- Go to your frontend folder
 
 ```
+# On tchap only this branch is compatible with tauri otherwise the tauri platform wont be detected
+git checkout desktop-search-ipc
+
 yarn install
+
 yarn start
 ```
 
@@ -85,10 +97,14 @@ cargo tauri build
 
 ```
 
+
+
 ### Github workflow
 - Publish : This workflow will be trigger when a new tag is created.
 
 - Test on build: This will only test the build of the app. From the build of the webapp to the build of the tauri app.
+
+- To build tauri we use the `build-tauri.yml` workflow. This workflow will build the app for windows platform. It will use the `tauri.conf.prod.json` file that we pass as an argument to the workflow in order to use the correct sqlcipher dll.
 
 - TODO : Run tests
 
