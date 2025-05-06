@@ -43,6 +43,9 @@
       "autoDownload": true,
       "autoInstall": true,
       "dialog": false
+    },
+    "protocol": {
+      "schemas": ["tchap"]
     }
   }
 }
