@@ -1,16 +1,17 @@
+mod common_commands;
 mod common_error;
 mod seshat_commands;
 mod seshat_utils;
-mod common_commands;
 
-use std::sync::{Arc, Mutex};
 use std::fs;
 use std::path::Path;
+use std::sync::{Arc, Mutex};
 
+use blake2::{Blake2b512, Digest};
 use rand::TryRngCore;
 use seshat::Database;
 use tauri::Manager;
-use blake2::{Blake2b512, Digest};
+use tauri_plugin_deep_link::DeepLinkExt;
 
 #[derive(Clone)]
 pub struct MyState {
@@ -21,7 +22,6 @@ pub struct MyState {
 fn welcome() {
     println!("Welcome on Tchap deskptop app!")
 }
-
 
 fn get_or_create_salt(salt_path: &Path) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     if !salt_path.exists() {
@@ -48,16 +48,18 @@ fn create_stronghold_key(app: &tauri::AppHandle, password: &[u8]) -> Vec<u8> {
         .join("salt.txt");
 
     let salt = get_or_create_salt(&salt_path).unwrap();
-    
+
     let mut hasher = Blake2b512::new();
     hasher.update(salt);
     hasher.update(password);
     hasher.finalize().to_vec()[..32].to_vec()
 }
 
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_upload::init())
@@ -66,13 +68,17 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
+            #[cfg(desktop)]
+            app.deep_link().register("tchap")?;
+
             let app_handle = app.app_handle().clone();
             // Convert to Vec<u8> for Stronghold
-            app.handle()
-                .plugin(tauri_plugin_stronghold::Builder::new(move |password| {
+            app.handle().plugin(
+                tauri_plugin_stronghold::Builder::new(move |password| {
                     create_stronghold_key(&app_handle, password.as_ref())
                 })
-                .build())?;
+                .build(),
+            )?;
 
             // Create the initial state
             let initial_state = MyState { database: None };
