@@ -39,7 +39,7 @@ jobs:
             allowUpdates: true
 
 
-  build-tauri:
+  build-tchap-desktop:
     needs: create-release
     permissions:
       contents: write
@@ -48,7 +48,16 @@ jobs:
       matrix:
         include:
           - platform: "windows-latest"
-            args: "--config src-tauri\\tauri.conf.prod.json"
+          # this config will be merge with tauri.conf.json,
+          # it is neceessary for windows to automatically add the dll in the final build
+            args: "--config src-tauri\\tauri.conf.windows.prod.json"
+          - platform: "macos-latest" # for Arm based macs (M1 and above).
+            args: "--target aarch64-apple-darwin"
+          # TODO : debug because cc linking error for x86_64 mac 
+          # - platform: "macos-latest" # for Intel based macs.
+          #   args: "--target x86_64-apple-darwin"
+          - platform: "ubuntu-22.04"
+            args: ""
     uses: ./.github/workflows/build-tauri.yml
     with:
       platform: ${{ matrix.platform }}

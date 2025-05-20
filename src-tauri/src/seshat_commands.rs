@@ -242,7 +242,9 @@ pub async fn search_event_index(
 
     if let Some(ref db) = state_guard.database {
         let (term, config) = parse_search_object(&search_config)?;
-        let db_lock = db.lock().unwrap();
+        println!("---- search_event_index config {:?}", config);
+        println!("---- search_event_index term {:?}", term);
+        let db_lock: std::sync::MutexGuard<'_, Database> = db.lock().unwrap();
         let result = db_lock.search(&term, &config)?;
 
         println!("---- search_event_index results before parse {:?}", result);
@@ -254,7 +256,6 @@ pub async fn search_event_index(
             })
             .collect();
 
-        println!("search_event_index results {:?}", results);
         let mut search_result = serde_json::json!({
             "count": result.count,
             "results": results,
