@@ -68,6 +68,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
+            // TODO: disable deep link on macos
             #[cfg(desktop)]
             app.deep_link().register("tchap")?;
 
