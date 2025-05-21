@@ -1,4 +1,4 @@
-## NOT USED ANYMORE
+## Normally the script fetch-package should install the deps etc but it is not working on the CI :/
 name: Build Webapp
 
 on:
@@ -9,7 +9,7 @@ on:
         type: string
 
 jobs:
-  build:
+  build-webapp:
     runs-on: ${{ inputs.platform }}
 
     outputs:
@@ -25,7 +25,7 @@ jobs:
           NODE_VERSION="lts/*"
           if [ -f "package.json" ]; then
             if [ "$(jq -r '.tchapConfig["tchap-web_github"].use_github // false' package.json)" = "true" ]; then
-              NODE_VERSION="20.9.0"
+              NODE_VERSION="20.10.0"
             fi
           fi
           echo "NODE_VERSION=$NODE_VERSION" >> $GITHUB_OUTPUT
@@ -88,3 +88,11 @@ jobs:
           echo "Copying build output..."
           mkdir -p src
           cp -r archives/$BRANCH/webapp/* src/
+
+      # To share the result of the build with another workflow, we need to upload the webapp as an artifact
+      - name: Upload webapp as artifact
+        uses: actions/upload-artifact@v4
+        continue-on-error: true # Means that another platform already uploaded the artifact, so we don't need to fail the build
+        with:
+          name: webapp_${{ github.run_id }}
+          path: src/

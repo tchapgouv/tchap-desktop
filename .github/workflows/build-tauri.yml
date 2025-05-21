@@ -1,4 +1,4 @@
-name: "Build Rust"
+name: "Build Tchap Tauri App"
 
 on:
   workflow_call:
@@ -19,93 +19,48 @@ on:
         required: true
 
 jobs:
-  build:
-    runs-on: ${{ inputs.platform }}
+  build-webapp:
+    uses: ./.github/workflows/build-webapp.yml
+    with:
+      platform: ${{ inputs.platform }}
 
+  build-rust:
+    runs-on: ${{ inputs.platform }}
+    needs: build-webapp
     steps:
       - uses: actions/checkout@v4
 
-      # Add step to determine Node.js version
-      - name: Determine Node.js version
-        id: nodever
-        run: |
-          NODE_VERSION="lts/*"
-          if [ -f "package.json" ]; then
-            if [ "$(jq -r '.tchapConfig["tchap-web_github"].use_github // false' package.json)" = "true" ]; then
-              NODE_VERSION="20.9.0"
-            fi
-          fi
-          echo "NODE_VERSION=$NODE_VERSION" >> $GITHUB_OUTPUT
+      # We need to empty the src directory because the build-webapp workflow will copy the webapp in it
+      - name: Empty src directory
         shell: bash
+        run: |
+          rm -rf src
+        if: inputs.platform != 'windows-latest'
 
-      - name: setup node
-        uses: actions/setup-node@v4
+      - name: Empty src directory (Windows)
+        shell: cmd
+        run: |
+          if exist src rmdir /s /q src
+        if: inputs.platform == 'windows-latest'
+
+      # The result of the build-webapp workflow is an artifact that we need to download
+      - name: Download webapp artifact
+        uses: actions/download-artifact@v4
         with:
-          node-version: ${{ steps.nodever.outputs.NODE_VERSION }}
-
-      # Add step to check package.json configuration
-      - name: Check build type
-        id: build-type
-        shell: bash
-        run: |
-          if [ "$(jq -r '.tchapConfig["tchap-web_github"].use_github // false' package.json)" = "true" ]; then
-            echo "BUILD_TYPE=github" >> $GITHUB_OUTPUT
-          else
-            echo "BUILD_TYPE=package" >> $GITHUB_OUTPUT
-          fi
-
-      # Install dependencies based on build type
-      # the fetch package when using github is not done correctly, so doing it manually in the CI
-      - name: Install dependencies (Package)
-        if: steps.build-type.outputs.BUILD_TYPE == 'package'
-        run: |
-          npm install
-          npm run fetch-package
-
-
-      - name: Install dependencies (GitHub)
-        if: steps.build-type.outputs.BUILD_TYPE == 'github'
-        shell: bash
-        run: |
-          REPO=$(jq -r '.tchapConfig["tchap-web_github"].repo' package.json)
-          BRANCH=$(jq -r '.tchapConfig["tchap-web_github"].branch' package.json)
-          ENV=$(jq -r '.tchapConfig["tchap-web_github"].env' package.json)
-          
-          echo "Cloning $REPO branch $BRANCH..."
-          git clone --depth 1 --branch $BRANCH $REPO archives/$BRANCH
-          
-          cd archives/$BRANCH
-          echo "Installing dependencies..."
-          yarn install --frozen-lockfile
-
-          # apply patches to the tchap webapp manually because postinstall doesnt seems to work
-          ./scripts/tchap/apply_patches.sh
-          
-          echo "Copying config..."
-          if [ "$ENV" = "prod" ]; then
-            cp config.prod.json config.json || cp config.sample.json config.json
-          else
-            cp config.dev.json config.json || cp config.sample.json config.json
-          fi
-          
-          echo "Building..."
-          yarn build
-          
-          cd ../..
-          echo "Copying build output..."
-          mkdir -p src
-          cp -r archives/$BRANCH/webapp/* src/
+          name: webapp_${{ github.run_id }}
+          path: src/
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
           # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+          targets: ${{ inputs.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: Install SQLCipher for Windows
         if: inputs.platform == 'windows-latest'
         shell: cmd
         run: |
+          dir .\src-tauri\
           if exist vcpkg rmdir /s /q vcpkg
           git clone https://github.com/microsoft/vcpkg
           cd vcpkg
@@ -134,6 +89,41 @@ jobs:
           echo Current directory contents:
           dir
 
+      - name: Install SQLCipher for Linux
+        if: inputs.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          echo "--- Installing sqlcipher and dependencies"
+          sudo apt-get install -y libgtk-3-dev sqlcipher libwebkit2gtk-4.1-dev libsqlcipher-dev libsqlcipher0
+          echo "PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/share/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
+          echo "Finish installing deps"
+
+      - name: Install SQLCipher for MacOS
+        if: inputs.platform == 'macos-latest'
+        run: |
+          brew install sqlcipher
+          echo "--- Creating .cargo directory if not exists"
+          mkdir -p ~/.cargo
+
+          echo "--- Creating config file with dynamic linking settings"
+          cat > ~/.cargo/config << EOF
+          [target.x86_64-apple-darwin]
+          rustflags = [
+            "-C", "link-arg=-undefined",
+            "-C", "link-arg=dynamic_lookup",
+          ]
+
+          [target.aarch64-apple-darwin]
+          rustflags = [
+            "-C", "link-arg=-undefined",
+            "-C", "link-arg=dynamic_lookup",
+          ]
+          EOF
+
+          echo "--- Created ~/.cargo/config:"
+          cat ~/.cargo/config
+        shell: bash
+
       - name: install Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
@@ -143,4 +133,4 @@ jobs:
         with:
           releaseId: ${{ inputs.releaseId }}
           args: ${{ inputs.args }}
-          includeDebug: true
+          includeDebug: false

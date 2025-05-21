@@ -345,12 +345,12 @@ pub(crate) fn search_result_to_json(mut result: SearchResult) -> Result<Value> {
     context.insert("events_after".to_string(), Value::Array(after));
     context.insert("profile_info".to_string(), Value::Object(profile_info));
 
-    let mut object = serde_json::Map::new();
-    object.insert("rank".to_string(), Value::from(rank));
-    object.insert("result".to_string(), event);
-    object.insert("context".to_string(), Value::Object(context));
+    let mut parsed_result = serde_json::Map::new();
+    parsed_result.insert("rank".to_string(), Value::from(rank));
+    parsed_result.insert("result".to_string(), event);
+    parsed_result.insert("context".to_string(), Value::Object(context));
 
-    Ok(Value::Object(object))
+    Ok(Value::Object(parsed_result))
 }
 
 pub fn profile_to_json(profile: Profile) -> Result<Value> {

@@ -5,12 +5,19 @@ on: [pull_request]
 # This workflow will build your tauri app without uploading it anywhere.
 
 jobs:
-  build-tauri:
+  build-tchap-desktop:
     strategy:
       fail-fast: true
       matrix:
         include:
           - platform: "windows-latest"
+            args: ""
+          - platform: "macos-latest" # for Arm based macs (M1 and above).
+            args: "--target aarch64-apple-darwin"
+          # TODO : debug because cc linking error for x86_64 mac 
+          # - platform: "macos-latest" # for Intel based macs.
+          #   args: "--target x86_64-apple-darwin"
+          - platform: "ubuntu-22.04"
             args: ""
     uses: ./.github/workflows/build-tauri.yml
     with:
