@@ -68,7 +68,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
-            #[cfg(desktop)]
+            #[cfg(all(desktop, not(target_os = "macos")))]
             app.deep_link().register("tchap")?;
 
             let app_handle = app.app_handle().clone();
