@@ -5925,6 +5925,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-plugin-single-instance"
+version = "2.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "97d0e07b40fb2eb13778e30778f5979347a2bf30e1b9d47f78ff7fe92d2e4b3d"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tauri",
+ "thiserror 2.0.11",
+ "tracing",
+ "windows-sys 0.59.0",
+ "zbus",
+]
+
+[[package]]
 name = "tauri-plugin-stronghold"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6117,6 +6132,7 @@ dependencies = [
  "tauri-plugin-notification",
  "tauri-plugin-opener",
  "tauri-plugin-persisted-scope",
+ "tauri-plugin-single-instance",
  "tauri-plugin-stronghold",
  "tauri-plugin-updater",
  "tauri-plugin-upload",
