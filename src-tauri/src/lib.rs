@@ -49,16 +49,29 @@ fn create_stronghold_key(app: &tauri::AppHandle, password: &[u8]) -> Vec<u8> {
 
     let salt = get_or_create_salt(&salt_path).unwrap();
 
+    // Looks like hashing blake2b512 is faster than argo, so we use blake here
+    // TODO : will need to check if it was the real issue when loading stronghold took long time
     let mut hasher = Blake2b512::new();
     hasher.update(salt);
     hasher.update(password);
     hasher.finalize().to_vec()[..32].to_vec()
 }
 
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default();
+    
+    // Instanciate single instance plugin, with focus on the main window
+    #[cfg(desktop)]
+    {
+        builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            let _ = app.get_webview_window("main")
+                       .expect("no main window")
+                       .set_focus();
+        }));
+    }
+
+    builder
         .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_notification::init())
@@ -68,9 +81,12 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
+            // Removing deeplink registration on macos for now, since it's not working and throwing an error on build
+            // https://github.com/tchapgouv/tchap-desktop/issues/44
             #[cfg(all(desktop, not(target_os = "macos")))]
             app.deep_link().register("tchap")?;
 
+            // Registerering stronghold plugin
             let app_handle = app.app_handle().clone();
             // Convert to Vec<u8> for Stronghold
             app.handle().plugin(
