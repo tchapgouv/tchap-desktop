@@ -52,7 +52,7 @@ jobs:
           # it is neceessary for windows to automatically add the dll in the final build
             args: "--config src-tauri\\tauri.conf.windows.prod.json"
           - platform: "macos-latest" # for Arm based macs (M1 and above).
-            args: "--target aarch64-apple-darwin"
+            args: "--target aarch64-apple-darwin --config src-tauri/tauri.macos.conf.json"
           # TODO : debug because cc linking error for x86_64 mac 
           # - platform: "macos-latest" # for Intel based macs.
           #   args: "--target x86_64-apple-darwin"
