@@ -71,7 +71,7 @@ cargo tauri dev
 ```
 npm install
 
-npm run fetch-package
+npm run fetch-package -- dev
 
 cargo tauri dev
 
@@ -91,7 +91,7 @@ cargo tauri dev
 ```
 npm install
 
-npm run fetch-package
+npm run fetch-package -- prod
 
 cargo tauri build
 

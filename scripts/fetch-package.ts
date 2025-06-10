@@ -9,6 +9,34 @@ import { tchapConfig } from "../package.json";
 import { exec as execCallback, spawn } from "node:child_process";
 import { promisify } from "node:util";
 
+interface TchapConfig {
+  use_github: boolean;
+  prod: TchapConfigEnv;
+  dev: TchapConfigEnv;
+}
+
+interface TchapConfigEnv {
+  "tchap-web_version": string;
+  "tchap-web_archive_name": string;
+  "tchap-web_github": { branch: string; repo: string; };
+}
+
+const config: TchapConfig = tchapConfig as TchapConfig;
+
+if (!config) {
+  console.error("No config found");
+  process.exit(1);
+}
+
+// get argument env --env prod or dev
+const TCHAP_ENV = process.argv[2] as keyof TchapConfig; // dev or prod;
+console.log("TCHAP_ENV", TCHAP_ENV);
+if (TCHAP_ENV !== "prod" && TCHAP_ENV !== "dev") {
+  console.error("Invalid environment. Use either 'prod' or 'dev' as argument");
+  process.exit(1);
+}
+
+
 const exec = promisify(execCallback);
 
 const PACKAGE_URL_PREFIX = "https://github.com/tchapgouv/tchap-web-v4/releases/download/"
@@ -74,8 +102,7 @@ async function buildFromLocalRepo(targetDir: string) {
 //  copy config.json depending on the environment
 async function renameConfig(targetDir: string) {
     // env taken from package.json
-    const env = tchapConfig!["tchap-web_github"]?.env
-    console.log(`Renaming config files by environment`, env );
+    console.log(`Renaming config files by environment`, TCHAP_ENV );
 
     const prodConfigPath = path.join(targetDir, "config.prod.json");
     const preprodConfigPath = path.join(targetDir, "config.preprod.json");
@@ -87,12 +114,14 @@ async function renameConfig(targetDir: string) {
         "preprod": preprodConfigPath,
         "dev": devConfigPath
     }
-    const defaultEnv = env || "prod";
-    if (configObj[defaultEnv]) {
-        await fs.rename(configObj[defaultEnv], destConfigPath);
+
+    if (configObj[TCHAP_ENV]) {
+      await fs.rename(configObj[TCHAP_ENV], destConfigPath);
     } else {
-        console.log("No env var found or incorrect. Should be prod, preprod or dev. Using prod as default.");
-        await fs.rename(prodConfigPath, destConfigPath);
+      console.log(
+        "No env var found or incorrect. Should be prod, preprod or dev. Using prod as default."
+      );
+      await fs.rename(prodConfigPath, destConfigPath);
     }
 }
 
@@ -156,18 +185,22 @@ async function buildFromArchive(targetVersion: string, filename: string) {
 
 async function main(): Promise<number | undefined> {
 
-    if (tchapConfig!["tchap-web_github"]?.use_github) {
-      await buildFromGithubRepo(tchapConfig!["tchap-web_github"]?.repo, tchapConfig!["tchap-web_github"]?.branch);
+    if (config.use_github) {
+      await buildFromGithubRepo(
+        (config[TCHAP_ENV] as TchapConfigEnv)["tchap-web_github"].repo,
+        (config[TCHAP_ENV] as TchapConfigEnv)["tchap-web_github"].branch
+      );
     } else {
       const targetVersion: string | undefined =
-        tchapConfig!["tchap-web_version"];
+        (config[TCHAP_ENV] as TchapConfigEnv)["tchap-web_version"];
       const filename: string | undefined =
-        tchapConfig!["tchap-web_archive_name"];
+        (config[TCHAP_ENV] as TchapConfigEnv)["tchap-web_archive_name"];
       await buildFromArchive(targetVersion, filename);
     }
     console.log("Done!");
     return 0;
 }
+
 
 main()
     .then((ret) => {
