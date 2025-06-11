@@ -12,6 +12,10 @@ on:
       args:
         required: false
         type: string
+      env:
+        required: false
+        type: string
+        default: prod
     secrets:
       TAURI_SIGNING_PRIVATE_KEY:
         required: true
@@ -23,6 +27,7 @@ jobs:
     uses: ./.github/workflows/build-webapp.yml
     with:
       platform: ${{ inputs.platform }}
+      env: ${{ inputs.env }}
 
   build-rust:
     runs-on: ${{ inputs.platform }}
@@ -93,38 +98,33 @@ jobs:
         if: inputs.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
-          echo "--- Installing sqlcipher and dependencies"
-          sudo apt-get install -y libgtk-3-dev sqlcipher libwebkit2gtk-4.1-dev libsqlcipher-dev libsqlcipher0
+          echo "--- Installing linux dependencies"
+          sudo apt-get install -y \
+            libgtk-3-dev \
+            libwebkit2gtk-4.1-0 \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf
+          echo "--- Installing sqlcipher"
+          sudo apt install -y \
+            sqlcipher \
+            libsqlcipher-dev \
+            libsqlcipher0
           echo "PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/share/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
           echo "Finish installing deps"
 
       - name: Install SQLCipher for MacOS
         if: inputs.platform == 'macos-latest'
         run: |
+          echo "--- Updating brew"
+          brew upgrade
+          echo "--- Installing sqlcipher"
           brew install sqlcipher
-          echo "--- Creating .cargo directory if not exists"
-          mkdir -p ~/.cargo
-
-          echo "--- Creating config file with dynamic linking settings"
-          cat > ~/.cargo/config << EOF
-          [target.x86_64-apple-darwin]
-          rustflags = [
-            "-C", "link-arg=-undefined",
-            "-C", "link-arg=dynamic_lookup",
-          ]
-
-          [target.aarch64-apple-darwin]
-          rustflags = [
-            "-C", "link-arg=-undefined",
-            "-C", "link-arg=dynamic_lookup",
-          ]
-          EOF
-
-          echo "--- Created ~/.cargo/config:"
-          cat ~/.cargo/config
         shell: bash
 
       - name: install Tauri app
+        if: inputs.platform != 'ubuntu-22.04'
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -134,3 +134,18 @@ jobs:
           releaseId: ${{ inputs.releaseId }}
           args: ${{ inputs.args }}
           includeDebug: false
+          updaterJsonKeepUniversal: true
+ 
+      - name: install Tauri app for linux
+        if: inputs.platform == 'ubuntu-22.04'
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          NO_STRIP: true
+        with:
+          releaseId: ${{ inputs.releaseId }}
+          args: ${{ inputs.args }}
+          includeDebug: true
+          updaterJsonKeepUniversal: true

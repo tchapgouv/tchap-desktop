@@ -50,7 +50,7 @@ jobs:
           - platform: "windows-latest"
           # this config will be merge with tauri.conf.json,
           # it is neceessary for windows to automatically add the dll in the final build
-            args: "--config src-tauri\\tauri.conf.windows.prod.json"
+            args: "--config src-tauri\\tauri.windows.conf.json"
           - platform: "macos-latest" # for Arm based macs (M1 and above).
             args: "--target aarch64-apple-darwin --config src-tauri/tauri.macos.conf.json"
           # TODO : debug because cc linking error for x86_64 mac 
@@ -63,6 +63,38 @@ jobs:
       platform: ${{ matrix.platform }}
       args : ${{ matrix.args }}
       releaseId: ${{ needs.create-release.outputs.release_id }}
+      env: prod
+    secrets:
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+
+
+  build-tchap-desktop-dev:
+    needs: create-release
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - platform: "windows-latest"
+          # this config will be merge with tauri.conf.json,
+          # Needs to explicitly set tauri conf for dev build to overide name and identifier
+            args: "--config src-tauri\\tauri.conf.dev.json"
+          - platform: "macos-latest" # for Arm based macs (M1 and above).
+            args: "--target aarch64-apple-darwin --config src-tauri/tauri.conf.dev.json"
+          # TODO : debug because cc linking error for x86_64 mac 
+          # - platform: "macos-latest" # for Intel based macs.
+          #   args: "--target x86_64-apple-darwin"
+          - platform: "ubuntu-22.04"
+          # Needs to explicitly set tauri conf for dev build to overide name and identifier
+            args: "--config src-tauri/tauri.conf.dev.json"
+    uses: ./.github/workflows/build-tauri.yml
+    with:
+      platform: ${{ matrix.platform }}
+      args : ${{ matrix.args }}
+      releaseId: ${{ needs.create-release.outputs.release_id }}
+      env: dev
     secrets:
       TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
       TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}

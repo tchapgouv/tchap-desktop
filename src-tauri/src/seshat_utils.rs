@@ -175,7 +175,6 @@ pub(crate) fn parse_checkpoint(checkpoint: Option<&Value>) -> Result<Option<Craw
 }
 
 pub(crate) fn parse_event(event: &Value) -> Result<Event> {
-    println!("---- parse_event event {:?}", event);
     let event_obj = event.as_object().context("Event must be an object")?;
 
     let sender = event_obj
