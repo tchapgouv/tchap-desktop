@@ -186,8 +186,6 @@ pub async fn add_event_to_index(
     profile: Option<serde_json::Value>,
 ) -> Result<(), CommonError> {
     println!("[Command] add_event_to_index");
-    println!("[Command] add_event_to_index event {:?}", event);
-    println!("[Command] add_event_to_index profile {:?}", profile);
     let state_guard = state.lock().unwrap();
 
     if let Some(ref db) = state_guard.database {
@@ -200,6 +198,8 @@ pub async fn add_event_to_index(
                 avatar_url: None,
             },
         };
+        println!("[Command] add_event_to_index event {:?}", event);
+        println!("[Command] add_event_to_index profile {:?}", profile);
         db_lock.add_event(event, profile);
     }
     Ok(())
@@ -245,9 +245,11 @@ pub async fn search_event_index(
         println!("---- search_event_index config {:?}", config);
         println!("---- search_event_index term {:?}", term);
         let db_lock: std::sync::MutexGuard<'_, Database> = db.lock().unwrap();
-        let result = db_lock.search(&term, &config)?;
+        let result = db_lock.search(&term, &config).unwrap();
 
         println!("---- search_event_index results before parse {:?}", result);
+        println!("---- search_event_index results before count {:?}", result.count);
+        println!("---- search_event_index results before lenght {:?}", result.results.len());
         let results: Vec<serde_json::Value> = result
             .results
             .into_iter()

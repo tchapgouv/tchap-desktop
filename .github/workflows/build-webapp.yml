@@ -7,6 +7,10 @@ on:
       platform:
         required: true
         type: string
+      env:
+        required: true
+        type: string
+        default: prod
 
 jobs:
   build-webapp:
@@ -24,7 +28,7 @@ jobs:
         run: |
           NODE_VERSION="lts/*"
           if [ -f "package.json" ]; then
-            if [ "$(jq -r '.tchapConfig["tchap-web_github"].use_github // false' package.json)" = "true" ]; then
+            if [ "$(jq -r '.tchapConfig.use_github // false' package.json)" = "true" ]; then
               NODE_VERSION="20.10.0"
             fi
           fi
@@ -37,32 +41,30 @@ jobs:
           node-version: ${{ steps.nodever.outputs.NODE_VERSION }}
 
       # Add step to check package.json configuration
-      - name: Check build type
+      - name: Check build type (archive or github)
         id: build-type
         shell: bash
         run: |
-          if [ "$(jq -r '.tchapConfig["tchap-web_github"].use_github // false' package.json)" = "true" ]; then
+          if [ "$(jq -r '.tchapConfig.use_github // false' package.json)" = "true" ]; then
             echo "BUILD_TYPE=github" >> $GITHUB_OUTPUT
           else
             echo "BUILD_TYPE=package" >> $GITHUB_OUTPUT
           fi
 
       # Install dependencies based on build type
-      # the fetch package when using github is not done correctly, so doing it manually in the CI
       - name: Install dependencies (Package)
         if: steps.build-type.outputs.BUILD_TYPE == 'package'
         run: |
           npm install
-          npm run fetch-package
+          npm run fetch-package -- ${{ inputs.env }}
 
-
+      # the fetch package when using github is not done correctly, so doing it manually in the CI
       - name: Install dependencies (GitHub)
         if: steps.build-type.outputs.BUILD_TYPE == 'github'
         shell: bash
         run: |
-          REPO=$(jq -r '.tchapConfig["tchap-web_github"].repo' package.json)
-          BRANCH=$(jq -r '.tchapConfig["tchap-web_github"].branch' package.json)
-          ENV=$(jq -r '.tchapConfig["tchap-web_github"].env' package.json)
+          REPO=$(jq -r '.tchapConfig["${{ inputs.env }}"]["tchap-web_github"].repo' package.json)
+          BRANCH=$(jq -r '.tchapConfig["${{ inputs.env }}"]["tchap-web_github"].branch' package.json)
           
           echo "Cloning $REPO branch $BRANCH..."
           git clone --depth 1 --branch $BRANCH $REPO archives/$BRANCH
@@ -75,10 +77,10 @@ jobs:
           ./scripts/tchap/apply_patches.sh
           
           echo "Copying config..."
-          if [ "$ENV" = "prod" ]; then
-            cp config.prod.json config.json || cp config.sample.json config.json
+          if [ "${{ inputs.env }}" = "prod" ]; then
+            cp config.prod.json config.json
           else
-            cp config.dev.json config.json || cp config.sample.json config.json
+            cp config.dev.json config.json
           fi
           
           echo "Building..."
