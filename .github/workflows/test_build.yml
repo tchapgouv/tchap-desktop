@@ -11,7 +11,7 @@ jobs:
       matrix:
         include:
           - platform: "windows-latest"
-            args: "--config src-tauri\\tauri.conf.windows.prod.json"
+            args: "--config src-tauri\\tauri.windows.conf.json"
           - platform: "macos-latest" # for Arm based macs (M1 and above).
             args: "--target aarch64-apple-darwin --config src-tauri/tauri.macos.conf.json"
           # TODO : debug because cc linking error for x86_64 mac 
