@@ -12,7 +12,7 @@ use rand::TryRngCore;
 use seshat::Database;
 use tauri::Manager;
 use tauri_plugin_deep_link::DeepLinkExt;
-
+use tauri::tray::TrayIconBuilder;
 #[derive(Clone)]
 pub struct MyState {
     pub database: Option<Arc<Mutex<Database>>>,
@@ -101,6 +101,12 @@ pub fn run() {
 
             // Register it with Tauri's state management
             app.manage(Mutex::new(initial_state));
+
+
+            // Create the tray icon
+            TrayIconBuilder::new()
+                .icon(app.default_window_icon().unwrap().clone())
+                .build(app)?;
 
             Ok(())
         })
