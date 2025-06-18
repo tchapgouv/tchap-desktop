@@ -73,6 +73,10 @@ npm install
 
 npm run fetch-package -- dev
 
+cargo install tauri-cli --version "^2.0.0" --locked
+
+# You can remove "devUrl": "http://localhost:8080" in `tauri.conf.json` to use tchap-web in tchap-desktop/src
+
 cargo tauri dev
 
 ```
@@ -129,3 +133,20 @@ cargo tauri build
 
 ## Updater
 To update clients automatically, we use the updater plugin.
+
+
+## Troubleshoot
+
+### 'sqlcipher' not found on MacOs
+If you have the following error 
+```
+error: linking with `cc` failed: exit status: 1
+..
+ld: library 'sqlcipher' not found
+```
+
+You can export LIBRARY_PATH and C_INCLUDE_PATH to point to your sqlcipher installation
+```
+export LIBRARY_PATH=/opt/homebrew/Cellar/sqlcipher/4.6.1/lib
+export C_INCLUDE_PATH=/opt/homebrew/Cellar/sqlcipher/4.6.1/include
+```
