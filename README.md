@@ -28,7 +28,7 @@ Desktop client for Tchap using Tauri ( https://tauri.app )
 
 - Install prerequisites https://v2.tauri.app/start/prerequisites/)
 
-- Install sqlcipher for your platform
+- Install sqlcipher for your platform, on Macos : brew install sqlcipher
 
 - Install Node and npm using a version manager like nvm. The frontend required a node version = 20.
 
