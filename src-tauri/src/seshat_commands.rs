@@ -1,7 +1,6 @@
-use serde_json::Value;
+    use serde_json::Value;
 use seshat::{
-    Config, Database, DatabaseStats, Error as SeshatError, LoadConfig, LoadDirection, Profile,
-    RecoveryDatabase,
+    Config, Database, DatabaseStats, Error as SeshatError, EventType, LoadConfig, LoadDirection, Profile, RecoveryDatabase
 };
 use std::fs;
 use std::sync::mpsc;
@@ -187,10 +186,12 @@ pub async fn add_event_to_index(
 ) -> Result<(), CommonError> {
     println!("[Command] add_event_to_index");
     let state_guard = state.lock().unwrap();
-
+    
     if let Some(ref db) = state_guard.database {
+        println!("[Command]  add_event_to_index : event json : {}", serde_json::to_string_pretty(&event).unwrap());
         let db_lock = db.lock().unwrap();
         let event = parse_event(&event)?;
+        println!("[Command] add_event_to_index event {:?}", event);
         let profile = match profile {
             Some(p) => parse_profile(&p)?,
             None => Profile {
@@ -198,9 +199,10 @@ pub async fn add_event_to_index(
                 avatar_url: None,
             },
         };
-        println!("[Command] add_event_to_index event {:?}", event);
         println!("[Command] add_event_to_index profile {:?}", profile);
         db_lock.add_event(event, profile);
+    }else{
+        println!("[Command] add_event_to_index, database is not init");
     }
     Ok(())
 }
@@ -571,4 +573,218 @@ pub async fn get_user_version(state: State<'_, Mutex<MyState>>) -> Result<i64, C
     } else {
         Ok(0)
     }
+}
+
+/*
+#[tauri::command]
+fn something(state: tauri::State<String>) -> String {
+    state.inner().clone()
+}
+ */
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use tauri::test::{mock_builder};
+    use tauri::Manager;
+    use serde_json::json;
+    use seshat::Event;
+
+    fn create_app<R: tauri::Runtime>(builder: tauri::Builder<R>) -> tauri::App<R> {
+        builder
+            .invoke_handler(tauri::generate_handler![init_event_index, add_event_to_index,search_event_index])
+            // remove the string argument to use your app's config file
+            .build(tauri::generate_context!("tauri.conf.json"))
+            .expect("failed to build app")
+    }
+
+    /*
+    #[test]
+    fn test_main() {
+        // Use `tauri::Builder::default()` to use the default runtime rather than the `MockRuntime`;
+        // let app = create_app(tauri::Builder::default());
+        let app = create_app(mock_builder());
+        let webview = 
+            tauri::WebviewWindowBuilder::new(&app, "main", Default::default()).build().unwrap();
+
+        // run the `ping` command and assert it returns `pong`
+        let res = tauri::test::get_ipc_response(
+            &webview,
+            tauri::webview::InvokeRequest {
+                cmd: "ping".into(),
+                callback: tauri::ipc::CallbackFn(0),
+                error: tauri::ipc::CallbackFn(1),
+                // alternatively use "tauri://localhost"
+                url: "http://tauri.localhost".parse().unwrap(),
+                body: tauri::ipc::InvokeBody::default(),
+                headers: Default::default(),
+                invoke_key: tauri::test::INVOKE_KEY.to_string(),
+            },
+        ).map(|b| b.deserialize::<String>().unwrap());
+
+        let response = res.unwrap();
+
+        print!("response {:?}", response);
+    }
+ */
+/* 
+    #[tauri::command]
+    fn ping() -> &'static str {
+        "pong"
+    }
+
+
+    #[test]
+    pub fn test_something() {
+        let app = tauri::test::mock_app();
+        app.manage("something".to_string());
+        assert_eq!(&something(app.state::<String>()), "something");
+    }
+*/
+
+/* 
+    pub static EVENT_SOURCE: &str = r#"{
+        "event":{
+            "content": {
+                "body": "Test message, msgtype: m.text"
+            },
+            "event_id": "$15163622445EBvZJ:localhost",
+            "origin_server_ts": 1516362244026,
+            "sender": "@example2:localhost",
+            "type": "m.room.message",
+            "unsigned": {"age": 43289803095},
+            "user_id": "@example2:localhost",
+            "age": 43289803095
+        }   
+    }"#;
+    */
+
+    
+
+/* 
+    lazy_static! {
+        pub static ref EVENT: Event = Event::new(
+            EventType::Message,
+            "Test message",
+            Some("m.text"),
+            "$15163622445EBvZJ:localhost",
+            "@example2:localhost",
+            151636_2244026,
+            "!test_room:localhost",
+            EVENT_SOURCE,
+        );
+    } */
+
+
+    // run in src-tauri : 
+    // RUST_BACKTRACE=0  RUST_LOG=debug cargo test test_search_event_index  -- --show-output
+    #[test]
+    fn test_search_event_index() {
+
+        //let passphrase = "sdfsfsfds";
+        let body_passphrase = json!({ "passphrase": "London"});
+
+        //init db in state with command
+        let app = create_app(mock_builder());
+        let initial_state = MyState { database: None };
+
+        // Register it with Tauri's state management
+        app.manage(Mutex::new(initial_state));
+        
+        let webview = 
+            tauri::WebviewWindowBuilder::new(&app, "main", Default::default()).build().unwrap();
+
+        let res = tauri::test::get_ipc_response(
+            &webview,
+            tauri::webview::InvokeRequest {
+                cmd: "init_event_index".into(),
+                callback: tauri::ipc::CallbackFn(0),
+                error: tauri::ipc::CallbackFn(1),
+                // alternatively use "tauri://localhost"
+                url: "http://tauri.localhost".parse().unwrap(),
+                body: tauri::ipc::InvokeBody::Json(body_passphrase),
+                headers: Default::default(),
+                invoke_key: tauri::test::INVOKE_KEY.to_string()
+            },
+        );
+
+        match &res {
+                Ok(val) => { println!("got the T {:?}",val) }
+                Err(e) => { println!("got the Err : {:?}", e) }
+            }
+       assert!(&res.is_ok());  
+
+       let EVENT_SOURCE: &str = "{
+            content: {
+                body: Test message, msgtype: m.text
+            },
+            event_id: $15163622445EBvZJ:localhost,
+            origin_server_ts: 1516362244026,
+            sender: @example2:localhost,
+            type: m.room.message,
+            unsigned: {age: 43289803095},
+            user_id: @example2:localhost,
+            age: 43289803095
+        }";
+
+
+    let EVENT: Event = Event::new(
+        EventType::Message,
+        "Test message",
+        Some("m.text"),
+        "$15163622445EBvZJ:localhost",
+        "@example2:localhost",
+        1516362244026,
+        "!test_room:localhost",
+        EVENT_SOURCE,
+    );
+
+        let body_event = json!({"event": EVENT});
+
+         let res = tauri::test::get_ipc_response(
+            &webview,
+            tauri::webview::InvokeRequest {
+                cmd: "add_event_to_index".into(),
+                callback: tauri::ipc::CallbackFn(0),
+                error: tauri::ipc::CallbackFn(1),
+                // alternatively use "tauri://localhost"
+                url: "http://tauri.localhost".parse().unwrap(),
+                body: tauri::ipc::InvokeBody::Json(body_event),
+                headers: Default::default(),
+                invoke_key: tauri::test::INVOKE_KEY.to_string()
+            },
+        );
+        match &res {
+                Ok(val) => { println!("got the T {:?}",val) }
+                Err(e) => { println!("got the Err : {:?}", e) }
+            }
+       assert!(&res.is_ok());  
+
+        //search for literral "un" with command
+        let body_search = 
+            json!({"search_config": {"search_term":"un", "limit": 10, "before_limit": 1, "after_limit": 1, "order_by_recency": true, "keys": []}});
+
+        let res = tauri::test::get_ipc_response(
+            &webview,
+            tauri::webview::InvokeRequest {
+                cmd: "search_event_index".into(),
+                callback: tauri::ipc::CallbackFn(0),
+                error: tauri::ipc::CallbackFn(1),
+                // alternatively use "tauri://localhost"
+                url: "http://tauri.localhost".parse().unwrap(),
+                body: tauri::ipc::InvokeBody::Json(body_search),
+                headers: Default::default(),
+                invoke_key: tauri::test::INVOKE_KEY.to_string()
+            },
+        );
+
+        match &res {
+                Ok(val) => { println!("got the T {:?}",val) }
+                Err(e) => { println!("got the Err : {:?}", e) }
+            }
+       assert!(&res.is_ok());  
+    }
+
+ 
 }
