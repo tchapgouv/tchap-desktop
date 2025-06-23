@@ -685,6 +685,8 @@ mod tests {
         //let passphrase = "sdfsfsfds";
         let body_passphrase = json!({ "passphrase": "London"});
 
+        println!("body_passphrase : {}", serde_json::to_string_pretty(&body_passphrase).unwrap());
+
         //init db in state with command
         let app = create_app(mock_builder());
         let initial_state = MyState { database: None };
@@ -715,32 +717,26 @@ mod tests {
             }
        assert!(&res.is_ok());  
 
-       let EVENT_SOURCE: &str = "{
-            content: {
-                body: Test message, msgtype: m.text
-            },
-            event_id: $15163622445EBvZJ:localhost,
-            origin_server_ts: 1516362244026,
-            sender: @example2:localhost,
-            type: m.room.message,
-            unsigned: {age: 43289803095},
-            user_id: @example2:localhost,
-            age: 43289803095
-        }";
+        let event_json = json!({
+                    "content": {
+                        "body": "coucou un pain au chocolat", 
+                        "msgtype": "m.text"
+                    },
+                    "event_id": "$15163622445EBvZJ:localhost",
+                    "origin_server_ts": 100000,
+                    "sender": "@example2:localhost",
+                    "type": "m.room.message",
+                    "unsigned": {"age": 0},
+                    "user_id": "@example2:localhost",
+                    "room_id": "sdfsdfsdf",
+                    "age": 1000000});
+            
 
+        let body_event = json!({"event" : event_json}
+                );
 
-    let EVENT: Event = Event::new(
-        EventType::Message,
-        "Test message",
-        Some("m.text"),
-        "$15163622445EBvZJ:localhost",
-        "@example2:localhost",
-        1516362244026,
-        "!test_room:localhost",
-        EVENT_SOURCE,
-    );
+        println!("body event : {}", serde_json::to_string_pretty(&body_event).unwrap());
 
-        let body_event = json!({"event": EVENT});
 
          let res = tauri::test::get_ipc_response(
             &webview,
@@ -763,7 +759,10 @@ mod tests {
 
         //search for literral "un" with command
         let body_search = 
-            json!({"search_config": {"search_term":"un", "limit": 10, "before_limit": 1, "after_limit": 1, "order_by_recency": true, "keys": []}});
+            json!({"searchConfig": 
+                {"search_term":"", 
+                "limit": 10, "before_limit": 1, "after_limit": 1, 
+                "order_by_recency": true, "keys": []}});
 
         let res = tauri::test::get_ipc_response(
             &webview,
