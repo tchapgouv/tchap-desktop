@@ -46,6 +46,9 @@ pub async fn init_event_index<R: Runtime>(
         .expect("could not resolve app local data path")
         .join("seshat_db");
 
+    println!("[Command] db_path {:?}", &db_path);
+
+
     let _ = fs::create_dir_all(&db_path);
 
     let db_result = Database::new_with_config(&db_path, &config);
@@ -590,10 +593,11 @@ mod tests {
     use tauri::Manager;
     use serde_json::json;
     use seshat::Event;
+    use tempfile::env::temp_dir;
 
     fn create_app<R: tauri::Runtime>(builder: tauri::Builder<R>) -> tauri::App<R> {
         builder
-            .invoke_handler(tauri::generate_handler![init_event_index, add_event_to_index,search_event_index])
+            .invoke_handler(tauri::generate_handler![commit_live_events, init_event_index, add_event_to_index,search_event_index])
             // remove the string argument to use your app's config file
             .build(tauri::generate_context!("tauri.conf.json"))
             .expect("failed to build app")
@@ -687,8 +691,13 @@ mod tests {
 
         println!("body_passphrase : {}", serde_json::to_string_pretty(&body_passphrase).unwrap());
 
-        //init db in state with command
         let app = create_app(mock_builder());
+        
+        //init db in state with command
+        //let tmpdir = temp_dir();
+        //let mut db = Database::new(tmpdir.path()).unwrap();
+        //let initial_state = MyState { database:  Some(Arc::clone(&db))};
+
         let initial_state = MyState { database: None };
 
         // Register it with Tauri's state management
@@ -717,7 +726,7 @@ mod tests {
             }
        assert!(&res.is_ok());  
 
-        let event_json = json!({
+        let matrix_event = json!({
                     "content": {
                         "body": "coucou un pain au chocolat", 
                         "msgtype": "m.text"
@@ -728,11 +737,11 @@ mod tests {
                     "type": "m.room.message",
                     "unsigned": {"age": 0},
                     "user_id": "@example2:localhost",
-                    "room_id": "sdfsdfsdf",
+                    "room_id": "!TESTROOM",
                     "age": 1000000});
             
 
-        let body_event = json!({"event" : event_json}
+        let body_event = json!({"event" : matrix_event}
                 );
 
         println!("body event : {}", serde_json::to_string_pretty(&body_event).unwrap());
@@ -757,10 +766,33 @@ mod tests {
             }
        assert!(&res.is_ok());  
 
+
+        let res = tauri::test::get_ipc_response(
+            &webview,
+            tauri::webview::InvokeRequest {
+                cmd: "commit_live_events".into(),
+                callback: tauri::ipc::CallbackFn(0),
+                error: tauri::ipc::CallbackFn(1),
+                // alternatively use "tauri://localhost"
+                url: "http://tauri.localhost".parse().unwrap(),
+                body: tauri::ipc::InvokeBody::default(),
+                headers: Default::default(),
+                invoke_key: tauri::test::INVOKE_KEY.to_string()
+            },
+        );
+        match &res {
+                Ok(val) => { println!("got the T {:?}",val) }
+                Err(e) => { println!("got the Err : {:?}", e) }
+            }
+       assert!(&res.is_ok());  
+
+       
+
         //search for literral "un" with command
         let body_search = 
             json!({"searchConfig": 
-                {"search_term":"", 
+                {"search_term":"pain",
+                "room_id": "!TESTROOM", 
                 "limit": 10, "before_limit": 1, "after_limit": 1, 
                 "order_by_recency": true, "keys": []}});
 
