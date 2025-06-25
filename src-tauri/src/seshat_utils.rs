@@ -272,8 +272,9 @@ pub(crate) fn parse_profile(profile: &Value) -> Result<Profile> {
     })
 }
 
+#[allow(clippy::type_complexity)]
 pub(crate) fn add_historic_events_helper(
-    events: &Vec<Value>,
+    events: &[Value],
     new_checkpoint: Option<&Value>,
     old_checkpoint: Option<&Value>,
 ) -> Result<(
@@ -283,7 +284,7 @@ pub(crate) fn add_historic_events_helper(
 )> {
     let mut parsed_events: Vec<(Event, Profile)> = Vec::new();
 
-    for event_obj in events {
+    for event_obj in events.iter() {
         let event_obj = event_obj.as_object().context("Event must be an object")?;
 
         // Only process the event if it has the required "event" field
@@ -292,7 +293,7 @@ pub(crate) fn add_historic_events_helper(
             if let Ok(event) = parse_event(event_value) {
                 let profile = event_obj
                     .get("profile")
-                    .map(|p| parse_profile(p))
+                    .map(parse_profile)
                     .transpose()?
                     .unwrap_or(Profile {
                         displayname: None,
