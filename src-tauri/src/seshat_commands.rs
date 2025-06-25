@@ -254,7 +254,7 @@ pub async fn search_event_index(
             .results
             .into_iter()
             .map(|element| {
-                search_result_to_json(element).unwrap_or_else(|_| serde_json::json!(null))
+                search_result_to_json(element).unwrap_or(serde_json::Value::Null)
             })
             .collect();
 
@@ -293,7 +293,7 @@ pub async fn is_room_indexed(
         let connection = db_lock.get_connection().unwrap();
         connection
             .is_room_indexed(&room_id)
-            .map_err(|e| CommonError::from(e))
+            .map_err(CommonError::from)
     } else {
         Ok(false)
     }
@@ -338,10 +338,10 @@ pub async fn add_historic_events(
 
         match receiver.recv() {
             Ok(result) => {
-                let final_result = result.map_err(|e| CommonError::from(e))?;
+                let final_result = result.map_err(CommonError::from)?;
                 // Get stats after adding events
-                let connection = db_lock.get_connection().map_err(|e| CommonError::from(e))?;
-                let stats_after = connection.get_stats().map_err(|e| CommonError::from(e))?;
+                let connection = db_lock.get_connection().map_err(CommonError::from)?;
+                let stats_after = connection.get_stats().map_err(CommonError::from)?;
                 println!(
                     "[Command] Stats after: event_count={}, room_count={}",
                     stats_after.event_count, stats_after.room_count
@@ -360,7 +360,7 @@ pub async fn add_historic_events(
         let _ = tx.send(Ok(false));
 
         rx.recv()
-            .map_err(|recv_err| CommonError::from(recv_err))
+            .map_err(CommonError::from)
             .unwrap()
     }
 }
@@ -373,9 +373,9 @@ pub async fn get_stats(state: State<'_, Mutex<MyState>>) -> Result<DatabaseStats
     if let Some(ref db) = state_guard.database {
         let db_lock = db.lock().unwrap();
         let connection = db_lock.get_connection().unwrap();
-        connection.get_stats().map_err(|e| CommonError::from(e))
+        connection.get_stats().map_err(CommonError::from)
     } else {
-        Err(CommonError::String(format!("No stats found")))
+        Err(CommonError::String("No stats found".to_string()))
     }
 }
 
@@ -396,8 +396,8 @@ pub async fn remove_crawler_checkpoint(
 
         receiver
             .recv()
-            .map(|r| r.map_err(|e| CommonError::from(e)))
-            .map_err(|recv_err| CommonError::from(recv_err))
+            .map(|r| r.map_err(CommonError::from))
+            .map_err(CommonError::from)
             .unwrap()
     } else {
         // Create a dummy channel to return the expected type
@@ -405,7 +405,7 @@ pub async fn remove_crawler_checkpoint(
         let _ = tx.send(Ok(false));
 
         rx.recv()
-            .map_err(|recv_err| CommonError::from(recv_err))
+            .map_err(CommonError::from)
             .unwrap()
     }
 }
@@ -427,14 +427,9 @@ pub async fn add_crawler_checkpoint(
         println!("[Debug] Processed checkpoint for adding: {:?}", cp);
         let receiver = db_lock.add_historic_events(Vec::new(), cp, None);
 
-        // let result = receiver
-        //     .recv()
-        //     .map(|r| r.map_err(|e| CommonError::from(e)))
-        //     .map_err(|recv_err| CommonError::from(recv_err))
-        //     .unwrap();
         match receiver.recv() {
             Ok(result) => {
-                let final_result = result.map_err(|e| CommonError::from(e))?;
+                let final_result = result.map_err(CommonError::from)?;
                 println!("[Debug] Result of adding checkpoint: {:?}", final_result);
                 Ok(final_result)
             }
@@ -443,15 +438,13 @@ pub async fn add_crawler_checkpoint(
                 Err(CommonError::from(recv_err))
             }
         }
-        // println!("[Debug] Result of adding checkpoint: {:?}", result);
-        // result
     } else {
         // Create a dummy channel to return the expected type
         let (tx, rx) = mpsc::channel();
         let _ = tx.send(Ok(false));
 
         rx.recv()
-            .map_err(|recv_err| CommonError::from(recv_err))
+            .map_err(CommonError::from)
             .unwrap()
     }
 }
@@ -513,7 +506,7 @@ pub async fn load_file_events(
 
         Ok(formatted_result)
     } else {
-        Err(CommonError::String(format!("No database found")))
+        Err(CommonError::String("No database found".to_string()))
     }
 }
 
@@ -534,7 +527,7 @@ pub async fn load_checkpoints(state: State<'_, Mutex<MyState>>) -> Result<Vec<Va
 
         Ok(json_result)
     } else {
-        Err(CommonError::String(format!("No database found")))
+        Err(CommonError::String("No database found".to_string()))
     }
 }
 
@@ -551,7 +544,7 @@ pub async fn set_user_version(
         let connection = db_lock.get_connection().unwrap();
         connection
             .set_user_version(version)
-            .map_err(|e| CommonError::from(e))
+            .map_err(CommonError::from)
     } else {
         Ok(())
     }
@@ -567,7 +560,7 @@ pub async fn get_user_version(state: State<'_, Mutex<MyState>>) -> Result<i64, C
         let connection = db_lock.get_connection().unwrap();
         connection
             .get_user_version()
-            .map_err(|e| CommonError::from(e))
+            .map_err(CommonError::from)
     } else {
         Ok(0)
     }

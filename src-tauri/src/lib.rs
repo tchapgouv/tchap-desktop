@@ -32,7 +32,7 @@ fn get_or_create_salt(salt_path: &Path) -> Result<Vec<u8>, Box<dyn std::error::E
         // Ensure directory exists
         fs::create_dir_all(salt_path.parent().unwrap())?;
         // Write salt to file
-        fs::write(&salt_path, &salt)?;
+        fs::write(salt_path, &salt)?;
         Ok(salt)
     } else {
         // Read existing salt

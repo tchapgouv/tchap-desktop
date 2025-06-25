@@ -1,0 +1,29 @@
+name: clippy
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/clippy.yml
+      - src-tauri/**
+      - Cargo.lock
+      - Cargo.toml
+
+concurrency:
+   group: ${{ github.workflow }}-${{ github.ref }}
+   cancel-in-progress: true
+
+jobs:
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: install dependencies (ubuntu only)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-0 libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev
+
+      - run: cd src-tauri && cargo clippy --all-targets --all-features -- -D warnings
