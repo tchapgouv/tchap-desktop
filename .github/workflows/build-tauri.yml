@@ -107,10 +107,21 @@ jobs:
             librsvg2-dev \
             patchelf
           echo "--- Installing sqlcipher"
-          sudo apt install -y \
-            sqlcipher \
-            libsqlcipher-dev \
-            libsqlcipher0
+          sudo apt install -y sqlcipher
+          echo "--- checking which libsqlcipher package is installed"
+          if apt-cache search --names-only '^libsqlcipher0$' | grep -q libsqlcipher0; then
+            echo "Installing libsqlcipher0 (provides libsqlcipher.so.0)..."
+            sudo apt-get install -y libsqlcipher0
+          elif apt-cache search --names-only '^libsqlcipher1$' | grep -q libsqlcipher1; then
+            echo "Installing libsqlcipher1 (provides libsqlcipher.so.1)..."
+            sudo apt-get install -y libsqlcipher1
+          elif apt-cache search --names-only '^libsqlcipher-dev$' | grep -q libsqlcipher-dev; then
+            echo "Installing libsqlcipher-dev (may provide libsqlcipher.so)..."
+            sudo apt-get install -y libsqlcipher-dev
+          else
+            echo "No suitable libsqlcipher package found!"
+            exit 1
+          fi
           echo "PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/share/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
           echo "Finish installing deps"
 
