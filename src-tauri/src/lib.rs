@@ -1,6 +1,6 @@
 mod common_commands;
 mod common_error;
-mod seshat_commands;
+pub mod seshat_commands;//needed for integrationt tests
 mod seshat_utils;
 
 use std::fs;
