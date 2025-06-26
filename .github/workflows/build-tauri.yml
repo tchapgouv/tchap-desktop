@@ -116,11 +116,15 @@ jobs:
 
       - name: Install SQLCipher for MacOS
         if: inputs.platform == 'macos-latest'
+        # install a determined version of sql cipher to get the export PATH correct
+        # 4.6.1 version is not mandatory, can be another version
         run: |
           echo "--- Updating brew"
           brew upgrade
-          echo "--- Installing sqlcipher"
-          brew install sqlcipher
+          echo "--- Installing sqlcipher 4.6.1"
+          brew install sqlcipher@4.6.1
+          export LIBRARY_PATH=/opt/homebrew/Cellar/sqlcipher/4.6.1/lib
+#          export C_INCLUDE_PATH=/opt/homebrew/Cellar/sqlcipher/4.6.1/include
         shell: bash
 
       - name: install Tauri app
