@@ -13,7 +13,13 @@ if [[ ! $new_version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
 fi
 
 # Update the version in src-tauri/Cargo.toml
-sed -i 's/version = "'$current_version'"/version = "'$new_version'"/' src-tauri/Cargo.toml
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS
+    sed -i '' 's/version = "'$current_version'"/version = "'$new_version'"/' src-tauri/Cargo.toml
+else
+    # Linux
+    sed -i 's/version = "'$current_version'"/version = "'$new_version'"/' src-tauri/Cargo.toml
+fi
 
 # Update version in tauri.conf.json
 jq '.version = "'"$new_version"'"' src-tauri/tauri.conf.json > src-tauri/tauri.conf.json.tmp && mv src-tauri/tauri.conf.json.tmp src-tauri/tauri.conf.json
