@@ -123,8 +123,8 @@ jobs:
           brew upgrade
           echo "--- Installing sqlcipher 4.6.1"
           brew install sqlcipher
-          echo "LIBRARY_PATH=/opt/homebrew/Cellar/sqlcipher/4.6.1/lib" >> "$GITHUB_ENV"
-          echo "C_INCLUDE_PATH=/opt/homebrew/Cellar/sqlcipher/4.6.1/include" >> "$GITHUB_ENV"
+          echo "LIBRARY_PATH=$(brew --prefix sqlcipher)/lib" >> "$GITHUB_ENV"
+          echo "C_INCLUDE_PATH=$(brew --prefix sqlcipher)/include" >> "$GITHUB_ENV"
         shell: bash
 
       - name: install Tauri app
