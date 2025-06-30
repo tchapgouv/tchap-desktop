@@ -22,8 +22,7 @@ pub fn perform_manual_reindex(mut recovery_db: RecoveryDatabase) -> Result<(), S
 
     let batch_size = 500;
     println!(
-        "[Util] Loading and indexing source events in batches of {}...",
-        batch_size
+        "[Util] Loading and indexing source events in batches of {batch_size}..."
     );
 
     // 3. Load the first batch of source events
@@ -226,7 +225,7 @@ pub(crate) fn parse_event(event: &Value) -> Result<Event> {
 
     let content_value = content_value
         .and_then(|v| v.as_str())
-        .context(format!("Missing {} in content", key))?
+        .context(format!("Missing {key} in content"))?
         .to_string();
 
     let msgtype = match event_type {
@@ -302,7 +301,7 @@ pub(crate) fn add_historic_events_helper(
 
                 parsed_events.push((event, profile));
             } else {
-                println!("[Warning] Skipping invalid event: {:?}", event_value);
+                println!("[Warning] Skipping invalid event: {event_value:?}");
             }
         }
     }
@@ -386,7 +385,7 @@ pub(crate) fn sender_and_profile_to_json(
 
 pub(crate) fn deserialize_event(source: &str) -> Result<Value, String> {
     let source = serde_json::from_str(source)
-        .map_err(|e| format!("Couldn't load the event from the store: {}", e))?;
+        .map_err(|e| format!("Couldn't load the event from the store: {e}"))?;
 
     Ok(source)
 }

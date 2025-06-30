@@ -37,7 +37,7 @@ pub async fn init_event_index<R: Runtime>(
         return Ok(()); // No need to reinitialize
     }
 
-    println!("[Command] init_event_index - passphrase {:?}", passphrase);
+    println!("[Command] init_event_index - passphrase {passphrase:?}");
     let config = Config::new().set_passphrase(passphrase);
 
     // The app_handle is a method introduce by tauri
@@ -66,40 +66,39 @@ pub async fn init_event_index<R: Runtime>(
             let recovery_config = config.clone(); // Clone config for recovery DB
             let recovery_db = RecoveryDatabase::new_with_config(&db_path, &recovery_config)
                 .map_err(|e| {
-                    CommonError::String(format!("Failed to open recovery database: {}", e))
+                    CommonError::String(format!("Failed to open recovery database: {e}"))
                 })?;
 
             let user_version = {
                 // Scope the connection
                 let connection = recovery_db.get_connection().map_err(|e| {
-                    CommonError::String(format!("Failed to get recovery DB connection: {}", e))
+                    CommonError::String(format!("Failed to get recovery DB connection: {e}"))
                 })?;
                 connection.get_user_version().map_err(|e| {
                     CommonError::String(format!(
-                        "Failed to get user version from recovery DB: {}",
-                        e
+                        "Failed to get user version from recovery DB: {e}"
                     ))
                 })?
             };
 
-            println!("[Command] Recovery DB user version: {}", user_version);
+            println!("[Command] Recovery DB user version: {user_version}");
 
             if user_version == 0 {
                 println!("[Command] User version is 0. Deleting database contents instead of reindexing.");
                 // Drop recovery_db explicitly *before* deleting files to release file handles
                 drop(recovery_db);
                 fs::remove_dir_all(&db_path).map_err(|e| {
-                    CommonError::String(format!("Failed to delete database for re-creation: {}", e))
+                    CommonError::String(format!("Failed to delete database for re-creation: {e}"))
                 })?;
                 // Re-create the directory after deletion
                 fs::create_dir_all(&db_path).map_err(|e| {
-                    CommonError::String(format!("Failed to re-create DB directory: {}", e))
+                    CommonError::String(format!("Failed to re-create DB directory: {e}"))
                 })?;
             } else {
                 println!("[Command] Reindexing database...");
                 // reindex() consumes the recovery_db
                 perform_manual_reindex(recovery_db)
-                    .map_err(|e| CommonError::String(format!("Manual reindexing failed: {}", e)))?;
+                    .map_err(|e| CommonError::String(format!("Manual reindexing failed: {e}")))?;
                 println!("[Command] Reindexing complete.");
             }
 
@@ -107,16 +106,14 @@ pub async fn init_event_index<R: Runtime>(
             println!("[Command] Retrying to open main database after recovery/deletion...");
             Database::new_with_config(&db_path, &config).map_err(|e| {
                 CommonError::String(format!(
-                    "Failed to open database even after recovery attempt: {}",
-                    e
+                    "Failed to open database even after recovery attempt: {e}"
                 ))
             })?
         }
         Err(e) => {
             // Handle other database opening errors
             return Err(CommonError::String(format!(
-                "Error opening the database: {:?}",
-                e
+                "Error opening the database: {e:?}"
             )));
         }
     };
@@ -169,11 +166,10 @@ pub async fn delete_event_index<R: Runtime>(app_handle: AppHandle<R>) -> Result<
 
     // Handle the case where the directory doesn't exist
     match fs::remove_dir_all(&db_path) {
-        Ok(_) => println!("Successfully deleted index at: {:?}", db_path),
+        Ok(_) => println!("Successfully deleted index at: {db_path:?}"),
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
             println!(
-                "Index directory not found at: {:?}, continuing anyway",
-                db_path
+                "Index directory not found at: {db_path:?}, continuing anyway"
             );
         }
         Err(e) => return Err(e.into()), // For other InvokeErrors, convert and return
@@ -201,8 +197,8 @@ pub async fn add_event_to_index(
                 avatar_url: None,
             },
         };
-        println!("[Command] add_event_to_index event {:?}", event);
-        println!("[Command] add_event_to_index profile {:?}", profile);
+        println!("[Command] add_event_to_index event {event:?}");
+        println!("[Command] add_event_to_index profile {profile:?}");
         db_lock.add_event(event, profile);
     }
     Ok(())
@@ -213,7 +209,7 @@ pub async fn delete_event(
     state: State<'_, Mutex<MyState>>,
     event_id: String,
 ) -> Result<(), CommonError> {
-    println!("[Command] delete_event {:?}", event_id);
+    println!("[Command] delete_event {event_id:?}");
     let state_guard = state.lock().unwrap();
 
     if let Some(ref db) = state_guard.database {
@@ -245,14 +241,11 @@ pub async fn search_event_index(
 
     if let Some(ref db) = state_guard.database {
         let (term, config) = parse_search_object(&search_config)?;
-        println!("---- search_event_index config {:?}", config);
-        println!("---- search_event_index term {:?}", term);
+        println!("---- search_event_index config {config:?}");
+        println!("---- search_event_index term {term:?}");
         let db_lock: std::sync::MutexGuard<'_, Database> = db.lock().unwrap();
         let result = db_lock.search(&term, &config).unwrap();
 
-        println!("---- search_event_index results before parse {:?}", result);
-        println!("---- search_event_index results before count {:?}", result.count);
-        println!("---- search_event_index results before lenght {:?}", result.results.len());
         let results: Vec<serde_json::Value> = result
             .results
             .into_iter()
@@ -271,7 +264,7 @@ pub async fn search_event_index(
             search_result["next_batch"] = serde_json::json!(next_batch.hyphenated().to_string());
         }
 
-        println!("[Command] search_event_index result {:?}", search_result);
+        println!("[Command] search_event_index result {search_result:?}");
         Ok(search_result)
     } else {
         println!("[Command] search_event_index result no database found");
@@ -312,7 +305,7 @@ pub async fn is_event_index_empty(state: State<'_, Mutex<MyState>>) -> Result<bo
         let connection = db_lock.get_connection().unwrap();
         let result = connection.is_empty()?;
 
-        println!("[Command] is_event_index_empty {:?}", result);
+        println!("[Command] is_event_index_empty {result:?}");
         Ok(result)
     } else {
         println!("[Command] is_event_index_empty true");
@@ -353,7 +346,7 @@ pub async fn add_historic_events(
                 Ok(final_result)
             }
             Err(recv_err) => {
-                println!("[Error] Failed to receive result: {:?}", recv_err);
+                println!("[Error] Failed to receive result: {recv_err}");
                 Err(CommonError::from(recv_err))
             }
         }
@@ -419,7 +412,7 @@ pub async fn add_crawler_checkpoint(
     state: State<'_, Mutex<MyState>>,
     checkpoint: Option<Value>,
 ) -> Result<bool, CommonError> {
-    println!("[Command] add_crawler_checkpoint ${:?}", checkpoint);
+    println!("[Command] add_crawler_checkpoint ${checkpoint:?}");
     let state_guard = state.lock().unwrap();
 
     if let Some(ref db) = state_guard.database {
@@ -427,17 +420,17 @@ pub async fn add_crawler_checkpoint(
         let (_, cp, _) =
             add_historic_events_helper(Vec::new().as_ref(), checkpoint.as_ref(), None)?;
 
-        println!("[Debug] Processed checkpoint for adding: {:?}", cp);
+        println!("[Debug] Processed checkpoint for adding: {cp:?}");
         let receiver = db_lock.add_historic_events(Vec::new(), cp, None);
 
         match receiver.recv() {
             Ok(result) => {
                 let final_result = result.map_err(CommonError::from)?;
-                println!("[Debug] Result of adding checkpoint: {:?}", final_result);
+                println!("[Debug] Result of adding checkpoint: {final_result:?}");
                 Ok(final_result)
             }
             Err(recv_err) => {
-                println!("[Error] Failed to receive result: {:?}", recv_err);
+                println!("[Error] Failed to receive result: {recv_err}");
                 Err(CommonError::from(recv_err))
             }
         }
@@ -476,8 +469,7 @@ pub async fn load_file_events(
                 "" => LoadDirection::Backwards,
                 _ => {
                     return Err(CommonError::String(format!(
-                        "No direction found, could not load file event {:?}",
-                        d_string
+                        "No direction found, could not load file event {d_string}"
                     )))
                 }
             };
@@ -523,7 +515,7 @@ pub async fn load_checkpoints(state: State<'_, Mutex<MyState>>) -> Result<Vec<Va
         let connection = db_lock.get_connection().unwrap();
         let checkpoints = connection.load_checkpoints().unwrap();
 
-        println!("---- load_checkpoints raw results count: {:?}", checkpoints);
+        println!("---- load_checkpoints raw results count: {checkpoints:?}");
 
         // Use the helper function to convert the Vec<CrawlerCheckpoint> to JSON Value
         let json_result = checkpoints_to_json(checkpoints)?;
