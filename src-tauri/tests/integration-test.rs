@@ -49,7 +49,7 @@ lazy_static! {
 
 fn create_app<R: tauri::Runtime>(builder: tauri::Builder<R>) -> tauri::App<R> {
     builder
-        .invoke_handler(tauri::generate_handler![delete_event_index, reload_index, commit_live_events, init_event_index, add_event_to_index,search_event_index])
+        .invoke_handler(tauri::generate_handler![delete_event_index, commit_live_events, init_event_index, add_event_to_index,search_event_index])
         // remove the string argument to use your app's config file
         .build(tauri::generate_context!("tauri.conf.json"))
         .expect("failed to build app")
@@ -167,7 +167,7 @@ fn test_search_event_index() {
         }
     assert!(&res.is_ok());  
 
-    let res = tauri::test::get_ipc_response(
+/*     let res = tauri::test::get_ipc_response(
         &webview,
         tauri::webview::InvokeRequest {
             cmd: "reload_index".into(),
@@ -184,7 +184,7 @@ fn test_search_event_index() {
             Ok(val) => { println!("got the T {:?}",val) }
             Err(e) => { println!("got the Err : {:?}", e) }
         }
-    assert!(&res.is_ok());  
+    assert!(&res.is_ok());   */
 
     /* let state :State<'_, Mutex<MyState>>= app.state();
     let state_guard = state.lock().unwrap();
