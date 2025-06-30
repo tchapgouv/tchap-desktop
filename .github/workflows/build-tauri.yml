@@ -121,6 +121,7 @@ jobs:
           brew upgrade
           echo "--- Installing sqlcipher"
           brew install sqlcipher
+          echo "LIBRARY_PATH=$(brew --prefix sqlcipher)/lib" >> "$GITHUB_ENV"
         shell: bash
 
       - name: install Tauri app

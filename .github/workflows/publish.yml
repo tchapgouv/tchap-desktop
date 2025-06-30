@@ -53,9 +53,8 @@ jobs:
             args: "--config src-tauri\\tauri.windows.conf.json"
           - platform: "macos-latest" # for Arm based macs (M1 and above).
             args: "--target aarch64-apple-darwin --config src-tauri/tauri.macos.conf.json"
-          # TODO : debug because cc linking error for x86_64 mac 
-          # - platform: "macos-latest" # for Intel based macs.
-          #   args: "--target x86_64-apple-darwin"
+          - platform: "macos-latest" # for Intel based macs.
+            args: "--target x86_64-apple-darwin --config src-tauri/tauri.macos.conf.json"
           - platform: "ubuntu-22.04"
             args: ""
     uses: ./.github/workflows/build-tauri.yml
@@ -83,9 +82,8 @@ jobs:
             args: "--config src-tauri\\tauri.conf.dev.json"
           - platform: "macos-latest" # for Arm based macs (M1 and above).
             args: "--target aarch64-apple-darwin --config src-tauri/tauri.conf.dev.json"
-          # TODO : debug because cc linking error for x86_64 mac 
-          # - platform: "macos-latest" # for Intel based macs.
-          #   args: "--target x86_64-apple-darwin"
+          - platform: "macos-latest" # for Intel based macs.
+            args: "--target x86_64-apple-darwin --config src-tauri/tauri.conf.dev.json"
           - platform: "ubuntu-22.04"
           # Needs to explicitly set tauri conf for dev build to overide name and identifier
             args: "--config src-tauri/tauri.conf.dev.json"
