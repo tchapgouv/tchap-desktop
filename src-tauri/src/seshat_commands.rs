@@ -47,6 +47,9 @@ pub async fn init_event_index<R: Runtime>(
         .expect("could not resolve app local data path")
         .join("seshat_db");
 
+    println!("[Command] db_path {:?}", &db_path);
+
+
     let _ = fs::create_dir_all(&db_path);
 
     let db_result = Database::new_with_config(&db_path, &config);
@@ -164,6 +167,8 @@ pub async fn delete_event_index<R: Runtime>(app_handle: AppHandle<R>) -> Result<
         .expect("could not resolve app local data path")
         .join("seshat_db");
 
+    println!("[Command] delete_event_index at path : {}", db_path.display());
+
     // Handle the case where the directory doesn't exist
     match fs::remove_dir_all(&db_path) {
         Ok(_) => println!("Successfully deleted index at: {:?}", db_path),
@@ -187,10 +192,12 @@ pub async fn add_event_to_index(
 ) -> Result<(), CommonError> {
     println!("[Command] add_event_to_index");
     let state_guard = state.lock().unwrap();
-
+    
     if let Some(ref db) = state_guard.database {
+        println!("[Command]  add_event_to_index : event json : {}", serde_json::to_string_pretty(&event).unwrap());
         let db_lock = db.lock().unwrap();
         let event = parse_event(&event)?;
+        println!("[Command] add_event_to_index event {:?}", event);
         let profile = match profile {
             Some(p) => parse_profile(&p)?,
             None => Profile {
@@ -198,9 +205,10 @@ pub async fn add_event_to_index(
                 avatar_url: None,
             },
         };
-        println!("[Command] add_event_to_index event {:?}", event);
         println!("[Command] add_event_to_index profile {:?}", profile);
         db_lock.add_event(event, profile);
+    }else{
+        println!("[Command] add_event_to_index, database is not init");
     }
     Ok(())
 }
