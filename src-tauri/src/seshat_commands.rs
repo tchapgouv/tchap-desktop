@@ -37,7 +37,7 @@ pub async fn init_event_index<R: Runtime>(
         return Ok(()); // No need to reinitialize
     }
 
-    println!("[Command] init_event_index passphrase {:?}", passphrase);
+    println!("[Command] init_event_index - passphrase {:?}", passphrase);
     let config = Config::new().set_passphrase(passphrase);
 
     // The app_handle is a method introduce by tauri
@@ -46,6 +46,9 @@ pub async fn init_event_index<R: Runtime>(
         .app_local_data_dir()
         .expect("could not resolve app local data path")
         .join("seshat_db");
+
+    println!("[Command] init_event_index - db_path {:?}", &db_path);
+
 
     let _ = fs::create_dir_all(&db_path);
 
