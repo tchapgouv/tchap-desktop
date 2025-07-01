@@ -25,7 +25,7 @@ Tchap is a web app that allows you to chat through the matrix protocol for the F
 Desktop client for Tchap using Tauri ( https://tauri.app )
 
 ## Prerequisites
-
+w
 - Install prerequisites https://v2.tauri.app/start/prerequisites/)
 
 - Install sqlcipher for your platform
@@ -62,6 +62,8 @@ cargo tauri dev
 
 
 ## Dev using a specific web archive version
+- Tchap web is compatible with Tauri plaftorm from the version 4.15.2 and above.
+
 - You need to remove `build: devUrl` from the `tauri.conf.json` file. Otherwise it will wait for a local frontend to be running.
 
 - you can change in `package.json` the version of tchap-web that you want to use in `tchapConfig.tchap-web_version` and `tchapConfig.tchap-web_version`. 
