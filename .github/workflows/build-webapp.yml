@@ -54,10 +54,11 @@ jobs:
       # Install dependencies based on build type
       - name: Install dependencies (Package)
         if: steps.build-type.outputs.BUILD_TYPE == 'package'
+        shell: bash
         run: |
           npm install
           echo "ENV is: $ENV"
-          npm run fetch-package -- $ENV
+          npm run fetch-package -- "$ENV"
         env:
           ENV: ${{ inputs.env }}
 
