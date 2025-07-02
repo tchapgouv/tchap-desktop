@@ -8,20 +8,20 @@
     "update-version": "./scripts/update-version.sh"
   },
   "tchapConfig": {
-    "use_github": true,
+    "use_github": false,
     "prod": {
-      "tchap-web_version": "4.15.0",
-      "tchap-web_archive_name": "tchap-4.15.0-prod-20250528.tar.gz",
+      "tchap-web_version": "4.15.2",
+      "tchap-web_archive_name": "tchap-4.15.2-prod-20250701.tar.gz",
       "tchap-web_github": {
-        "branch": "desktop-search-ipc",
+        "branch": "develop_tchap",
         "repo": "https://github.com/tchapgouv/tchap-web-v4"
       }
     },
     "dev": {
-      "tchap-web_version": "4.15.0",
-      "tchap-web_archive_name": "tchap-4.15.0-dev-20250528.tar.gz",
+      "tchap-web_version": "4.15.2",
+      "tchap-web_archive_name": "tchap-4.15.2-dev-20250701.tar.gz",
       "tchap-web_github": {
-        "branch": "desktop-search-ipc",
+        "branch": "develop_tchap",
         "repo": "https://github.com/tchapgouv/tchap-web-v4"
       }
     }
