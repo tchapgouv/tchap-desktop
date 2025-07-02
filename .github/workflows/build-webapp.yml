@@ -56,16 +56,20 @@ jobs:
         if: steps.build-type.outputs.BUILD_TYPE == 'package'
         run: |
           npm install
-          npm run fetch-package -- ${{ inputs.env }}
+          echo "ENV is: $ENV"
+          npm run fetch-package -- $ENV
+        env:
+          ENV: ${{ inputs.env }}
 
       # the fetch package when using github is not done correctly, so doing it manually in the CI
       - name: Install dependencies (GitHub)
         if: steps.build-type.outputs.BUILD_TYPE == 'github'
         shell: bash
         run: |
-          REPO=$(jq -r '.tchapConfig["${{ inputs.env }}"]["tchap-web_github"].repo' package.json)
-          BRANCH=$(jq -r '.tchapConfig["${{ inputs.env }}"]["tchap-web_github"].branch' package.json)
-          
+          echo "ENV is: $ENV"
+          REPO=$(jq -r --arg env "$ENV" '.tchapConfig[$env]["tchap-web_github"].repo' package.json)
+          BRANCH=$(jq -r --arg env "$ENV" '.tchapConfig[$env]["tchap-web_github"].branch' package.json)
+
           echo "Cloning $REPO branch $BRANCH..."
           git clone --depth 1 --branch $BRANCH $REPO archives/$BRANCH
           
@@ -74,12 +78,15 @@ jobs:
           yarn install --frozen-lockfile
 
           # apply patches to the tchap webapp manually because postinstall doesnt seems to work
+          echo "Applying patches..."
           ./scripts/tchap/apply_patches.sh
           
           echo "Copying config..."
-          if [ "${{ inputs.env }}" = "prod" ]; then
+          if [ "$ENV" = "prod" ]; then
+            echo "for PROD config"
             cp config.prod.json config.json
           else
+          echo "for DEV config"
             cp config.dev.json config.json
           fi
           
@@ -90,6 +97,8 @@ jobs:
           echo "Copying build output..."
           mkdir -p src
           cp -r archives/$BRANCH/webapp/* src/
+        env:
+          ENV: ${{ inputs.env }}
 
       # To share the result of the build with another workflow, we need to upload the webapp as an artifact
       - name: Upload webapp as artifact
