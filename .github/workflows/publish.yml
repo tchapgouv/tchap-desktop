@@ -114,7 +114,7 @@ jobs:
           - platform: "macos-latest" # for Intel based macs.
             args: "--target x86_64-apple-darwin --config src-tauri/tauri.conf.preprod.json"
           - platform: "ubuntu-22.04"
-            args: "--config src-tauri/tauri.conf.dev.json"
+            args: "--config src-tauri/tauri.conf.preprod.json"
     uses: ./.github/workflows/build-tauri.yml
     with:
       platform: ${{ matrix.platform }}
