@@ -34,7 +34,7 @@
   },
   "plugins": {
     "updater": {
-      "enabled": true,
+      "enabled": false,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQ2QTA4NzMxQzFENEZBRDIKUldUUyt0VEJNWWVnUmhqOXFZcXd6U3grTnd0emU1d0EySklYN3ZBOEhpMEtZZXdmNEVJVWMvZloK",
       "endpoints": [
         "https://tchap.incubateur.net/client/config/agent/desktop",
