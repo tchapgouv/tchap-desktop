@@ -108,11 +108,11 @@ jobs:
           - platform: "windows-latest"
           # this config will be merge with tauri.conf.json,
           # Needs to explicitly set tauri conf for preprod build to overide name and identifier
-            args: "--config src-tauri\\tauri.conf.dev.json"
+            args: "--config src-tauri\\tauri.conf.preprod.json"
           - platform: "macos-latest" # for Arm based macs (M1 and above).
-            args: "--target aarch64-apple-darwin --config src-tauri/tauri.conf.dev.json"
+            args: "--target aarch64-apple-darwin --config src-tauri/tauri.conf.preprod.json"
           - platform: "macos-latest" # for Intel based macs.
-            args: "--target x86_64-apple-darwin --config src-tauri/tauri.conf.dev.json"
+            args: "--target x86_64-apple-darwin --config src-tauri/tauri.conf.preprod.json"
           - platform: "ubuntu-22.04"
           # Needs to explicitly set tauri conf for dev build to overide name and identifier
             args: "--config src-tauri/tauri.conf.dev.json"
