@@ -11,11 +11,14 @@ jobs:
       matrix:
         include:
           - platform: "windows-latest"
-            args: "--config src-tauri\\tauri.windows.conf.json"
+          # this config will be merge with tauri.conf.json,
+          # it is neceessary for windows to automatically add the dll in the final build
+          #  args: "--config src-tauri\\tauri.windows.conf.json" should not be necessary
+            args: ""
           - platform: "macos-latest" # for Arm based macs (M1 and above).
-            args: "--target aarch64-apple-darwin --config src-tauri/tauri.macos.conf.json"
+            args: "--target aarch64-apple-darwin"
           - platform: "macos-latest" # for Intel based macs.
-            args: "--target x86_64-apple-darwin --config src-tauri/tauri.macos.conf.json"
+            args: "--target x86_64-apple-darwin"
           - platform: "ubuntu-22.04"
             args: ""
     uses: ./.github/workflows/build-tauri.yml
@@ -36,7 +39,7 @@ jobs:
         include:
           - platform: "windows-latest"
           # this config will be merge with tauri.conf.json,
-          # it is neceessary for windows to automatically add the dll in the final build
+          # Needs to explicitly set tauri conf for dev build to overide name and identifier
             args: "--config src-tauri\\tauri.conf.dev.json"
           - platform: "macos-latest" # for Arm based macs (M1 and above).
             args: "--target aarch64-apple-darwin --config src-tauri/tauri.conf.dev.json"
@@ -61,6 +64,8 @@ jobs:
       matrix:
         include:
           - platform: "windows-latest"
+          # this config will be merge with tauri.conf.json,
+          # Needs to explicitly set tauri conf for preprod build to overide name and identifier
             args: "--config src-tauri\\tauri.conf.preprod.json"
           - platform: "macos-latest" # for Arm based macs (M1 and above).
             args: "--target aarch64-apple-darwin --config src-tauri/tauri.conf.preprod.json"
