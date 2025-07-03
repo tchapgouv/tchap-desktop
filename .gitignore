@@ -27,4 +27,7 @@ deploys
 archives/**/*
 !archives/.gitkeep
 src/*
-!src/.gitkeep
+!src/.
+
+# windows dev environment
+vcpkg/*
