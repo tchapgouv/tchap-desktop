@@ -31,8 +31,8 @@ if (!config) {
 // get argument env --env prod or dev
 const TCHAP_ENV = process.argv[2] as keyof TchapConfig; // dev or prod;
 console.log("TCHAP_ENV", TCHAP_ENV);
-if (TCHAP_ENV !== "prod" && TCHAP_ENV !== "dev") {
-  console.error("Invalid environment. Use either 'prod' or 'dev' as argument");
+if (TCHAP_ENV !== "prod" && TCHAP_ENV !== "dev" && TCHAP_ENV !== "preprod") {
+  console.error("Invalid environment. Use either 'prod' or 'dev' or 'preprod' as argument");
   process.exit(1);
 }
 

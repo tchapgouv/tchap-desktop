@@ -24,6 +24,14 @@
         "branch": "develop_tchap",
         "repo": "https://github.com/tchapgouv/tchap-web-v4"
       }
+    },
+    "preprod": {
+      "tchap-web_version": "4.15.2",
+      "tchap-web_archive_name": "tchap-4.15.2-preprod-20250701.tar.gz",
+      "tchap-web_github": {
+        "branch": "develop_tchap",
+        "repo": "https://github.com/tchapgouv/tchap-web-v4"
+      }
     }
   },
   "author": "",
