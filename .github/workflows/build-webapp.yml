@@ -86,6 +86,9 @@ jobs:
           if [ "$ENV" = "prod" ]; then
             echo "for PROD config"
             cp config.prod.json config.json
+          if [ "$ENV" = "preprod" ]; then
+          echo "for PREPROD config"
+            cp config.preprod.json config.json
           else
           echo "for DEV config"
             cp config.dev.json config.json
