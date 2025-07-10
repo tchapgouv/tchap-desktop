@@ -52,7 +52,7 @@ jobs:
       - name: Download webapp artifact
         uses: actions/download-artifact@v4
         with:
-          name: webapp_${{ github.run_id }}
+          name: webapp_${{ github.run_id }}_${{ inputs.env }}
           path: src/
 
       - name: install Rust stable
