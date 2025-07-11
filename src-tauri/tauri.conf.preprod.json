@@ -30,20 +30,18 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "createUpdaterArtifacts": true
+    "createUpdaterArtifacts": false
   },
   "plugins": {
     "updater": {
-      "enabled": false,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQ2QTA4NzMxQzFENEZBRDIKUldUUyt0VEJNWWVnUmhqOXFZcXd6U3grTnd0emU1d0EySklYN3ZBOEhpMEtZZXdmNEVJVWMvZloK",
       "endpoints": [
         "https://beta.tchap.gouv.fr/client/config/agent/desktop",
         "https://beta.tchap.gouv.fr/client/config/agent/desktop/desktop.json"
       ],
-      "installMode": "passive",
-      "autoDownload": true,
-      "autoInstall": true,
-      "dialog": false
+      "windows": {
+        "installMode": "passive"
+      }
     },
     "protocol": {
       "schemas": [
