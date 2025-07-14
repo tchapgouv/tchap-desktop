@@ -22,7 +22,7 @@ pub struct MyState {
 
 #[tauri::command]
 fn welcome() {
-    println!("Welcome on Tchap deskptop app!")
+    println!("Welcome on Tchap desktop app!")
 }
 
 fn get_or_create_salt(salt_path: &Path) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
