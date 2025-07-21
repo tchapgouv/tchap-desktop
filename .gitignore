@@ -28,3 +28,16 @@ archives/**/*
 !archives/.gitkeep
 src/*
 !src/.gitkeep
+!src/.
+
+# windows dev environment
+vcpkg/*
+
+
+#sqlcipher windows dlls
+src-tauri/libcrypto-3-x64.dll
+src-tauri/libssl-3-x64.dll
+src-tauri/sqlcipher.dll
+src-tauri/sqlcipher.lib
+
+
