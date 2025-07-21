@@ -152,3 +152,30 @@ You can export LIBRARY_PATH and C_INCLUDE_PATH to point to your sqlcipher instal
 export LIBRARY_PATH=/opt/homebrew/Cellar/sqlcipher/4.6.1/lib
 export C_INCLUDE_PATH=/opt/homebrew/Cellar/sqlcipher/4.6.1/include
 ```
+
+
+### compile sqlcipher on windows
+
+Be sure to install all Microsoft C++ Build Tools dependencies listed here : https://tauri.app/start/prerequisites/#microsoft-c-build-tools
+
+
+Sqlcipher is installed with vcpkg tools and copied to `src-tauri` folder
+
+```
+git clone https://github.com/microsoft/vcpkg.git
+cd vcpkg
+set "VCPKG_ROOT=%cd%"
+.\bootstrap-vcpkg.bat
+.\vcpkg integrate install
+.\vcpkg install openssl:x64-windows-static
+.\vcpkg.exe install sqlcipher:x64-windows-static #not sure if needed
+.\vcpkg.exe install sqlcipher:x64-windows
+
+echo %VCPKG_ROOT%
+
+cd ..\tchap-desktop
+xcopy /y %VCPKG_ROOT%\installed\x64-windows\bin\sqlcipher.dll .\src-tauri\
+xcopy /y %VCPKG_ROOT%\installed\x64-windows\bin\libcrypto-3-x64.dll .\src-tauri\
+xcopy /y %VCPKG_ROOT%\installed\x64-windows\bin\libssl-3-x64.dll .\src-tauri\
+xcopy /y %VCPKG_ROOT%\installed\x64-windows\lib\sqlcipher.lib .\src-tauri\
+```
