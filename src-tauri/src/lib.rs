@@ -12,8 +12,7 @@ use rand::TryRngCore;
 use seshat::Database;
 use tauri::Manager;
 use tauri_plugin_deep_link::DeepLinkExt;
-use tauri::tray::TrayIconBuilder;
-use tauri::menu::{MenuBuilder, MenuItemBuilder};
+use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 
 #[derive(Clone)]
 pub struct MyState {
@@ -105,40 +104,32 @@ pub fn run() {
             app.manage(Mutex::new(initial_state));
 
 
-            // Create the tray icon
-            let quit = MenuItemBuilder::new("Quit").id("quit").build(app).unwrap();
-            let hide = MenuItemBuilder::new("Hide").id("hide").build(app).unwrap();
-            let show = MenuItemBuilder::new("Show").id("show").build(app).unwrap();
 
-            let menu = MenuBuilder::new(app)
-              .items(&[&quit, &hide, &show])
-              .build()
-              .unwrap();
-           
             TrayIconBuilder::new()
                 .icon(app.default_window_icon().unwrap().clone())
-                .menu(&menu)
-                .on_menu_event(|app, event| match event.id().as_ref() {
-                    "quit" => app.exit(0),
-                    "hide" => {
-                      dbg!("menu item hide clicked");
-                      let window = app.get_webview_window("main").unwrap();
-                      window.hide().unwrap();
+                //focus on main window when clicking the tray icon
+                .on_tray_icon_event(|tray, event| {
+                    if let TrayIconEvent::Click {
+                            button: MouseButton::Left,
+                            button_state: MouseButtonState::Up,
+                            ..
+                    } = event
+                    {
+                        let app = tray.app_handle();
+                        if let Some(webview_window) = app.get_webview_window("main") {
+                            let _ = webview_window.unminimize();
+                            let _ = webview_window.show();
+                            let _ = webview_window.set_focus();
+                        }
                     }
-                    "show" => {
-                      dbg!("menu item show clicked");
-                      let window = app.get_webview_window("main").unwrap();
-                      window.show().unwrap();
-                    }
-                    _ => {}
-                  })
+            })
                 .build(app)?;
 
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             seshat_commands::supports_event_indexing,
-            seshat_commands::init_event_index,
+            seshat_commands::init_event_index,  
             seshat_commands::close_event_index,
             seshat_commands::delete_event_index,
             seshat_commands::add_event_to_index,
