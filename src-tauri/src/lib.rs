@@ -5,18 +5,19 @@ mod seshat_utils;
 
 use std::fs;
 use std::path::Path;
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 
 use blake2::{Blake2b512, Digest};
 use rand::TryRngCore;
 use seshat::Database;
-use tauri::Manager;
-use tauri_plugin_deep_link::DeepLinkExt;
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
+use tauri::Manager;
 
+/// A state shared on Tauri.
 #[derive(Clone)]
 pub struct MyState {
-    pub database: Option<Arc<Mutex<Database>>>,
+    /// Seshat database.
+    pub database: Option<Database>,
 }
 
 #[tauri::command]
@@ -61,14 +62,15 @@ fn create_stronghold_key(app: &tauri::AppHandle, password: &[u8]) -> Vec<u8> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let mut builder = tauri::Builder::default();
-    
+
     // Instanciate single instance plugin, with focus on the main window
     #[cfg(desktop)]
     {
         builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            let _ = app.get_webview_window("main")
-                       .expect("no main window")
-                       .set_focus();
+            let _ = app
+                .get_webview_window("main")
+                .expect("no main window")
+                .set_focus();
         }));
     }
 
@@ -103,16 +105,14 @@ pub fn run() {
             // Register it with Tauri's state management
             app.manage(Mutex::new(initial_state));
 
-
-
             TrayIconBuilder::new()
                 .icon(app.default_window_icon().unwrap().clone())
                 //focus on main window when clicking the tray icon
                 .on_tray_icon_event(|tray, event| {
                     if let TrayIconEvent::Click {
-                            button: MouseButton::Left,
-                            button_state: MouseButtonState::Up,
-                            ..
+                        button: MouseButton::Left,
+                        button_state: MouseButtonState::Up,
+                        ..
                     } = event
                     {
                         let app = tray.app_handle();
@@ -122,14 +122,14 @@ pub fn run() {
                             let _ = webview_window.set_focus();
                         }
                     }
-            })
+                })
                 .build(app)?;
 
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             seshat_commands::supports_event_indexing,
-            seshat_commands::init_event_index,  
+            seshat_commands::init_event_index,
             seshat_commands::close_event_index,
             seshat_commands::delete_event_index,
             seshat_commands::add_event_to_index,

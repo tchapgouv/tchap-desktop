@@ -5,7 +5,7 @@ use seshat::{
 };
 use std::fs;
 use std::sync::mpsc;
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 use tauri::{AppHandle, Manager, Runtime, State};
 
 use crate::common_error::CommonError;
@@ -49,7 +49,6 @@ pub async fn init_event_index<R: Runtime>(
 
     println!("[Command] init_event_index - db_path {:?}", &db_path);
 
-
     let _ = fs::create_dir_all(&db_path);
 
     let db_result = Database::new_with_config(&db_path, &config);
@@ -75,9 +74,7 @@ pub async fn init_event_index<R: Runtime>(
                     CommonError::String(format!("Failed to get recovery DB connection: {e}"))
                 })?;
                 connection.get_user_version().map_err(|e| {
-                    CommonError::String(format!(
-                        "Failed to get user version from recovery DB: {e}"
-                    ))
+                    CommonError::String(format!("Failed to get user version from recovery DB: {e}"))
                 })?
             };
 
@@ -119,8 +116,7 @@ pub async fn init_event_index<R: Runtime>(
     };
 
     // --- Store the successfully opened database (either first try or after recovery) ---
-    let database_arc = Arc::new(Mutex::new(database));
-    state_lock.database = Some(Arc::clone(&database_arc));
+    state_lock.database = Some(database.clone());
     println!("[Command] init_event_index completed successfully.");
 
     Ok(())
@@ -132,21 +128,11 @@ pub async fn close_event_index(state: State<'_, Mutex<MyState>>) -> Result<(), C
     println!("[Command] close_event_index");
     let mut state = state.lock().unwrap();
     if let Some(db) = state.database.take() {
-        match Arc::try_unwrap(db) {
-            Ok(mutex) => {
-                let db_inner = mutex.into_inner().unwrap(); // Extract the database
-                                                            // The shutdown meethod needs to take ownership
-                db_inner.shutdown();
-                // set the database to none
-                state.database = None;
-                Ok(())
-            }
-            Err(_arc) => {
-                println!("Failed to take ownership: Database is still shared.");
-                state.database = Some(_arc); // Restore the database if shutdown failed
-                Ok(())
-            }
-        }
+        // The shutdown method needs to take ownership
+        db.shutdown();
+        // set the database to none
+        state.database = None;
+        Ok(())
     } else {
         println!("[Command] close_event_index no db found, already closed");
         Ok(())
@@ -168,9 +154,7 @@ pub async fn delete_event_index<R: Runtime>(app_handle: AppHandle<R>) -> Result<
     match fs::remove_dir_all(&db_path) {
         Ok(_) => println!("Successfully deleted index at: {db_path:?}"),
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-            println!(
-                "Index directory not found at: {db_path:?}, continuing anyway"
-            );
+            println!("Index directory not found at: {db_path:?}, continuing anyway");
         }
         Err(e) => return Err(e.into()), // For other InvokeErrors, convert and return
     }
@@ -185,10 +169,9 @@ pub async fn add_event_to_index(
     profile: Option<serde_json::Value>,
 ) -> Result<(), CommonError> {
     println!("[Command] add_event_to_index");
-    let state_guard = state.lock().unwrap();
+    let mut state_guard = state.lock().unwrap();
 
-    if let Some(ref db) = state_guard.database {
-        let db_lock = db.lock().unwrap();
+    if let Some(ref mut db) = state_guard.database {
         let event = parse_event(&event)?;
         let profile = match profile {
             Some(p) => parse_profile(&p)?,
@@ -199,7 +182,7 @@ pub async fn add_event_to_index(
         };
         println!("[Command] add_event_to_index event {event:?}");
         println!("[Command] add_event_to_index profile {profile:?}");
-        db_lock.add_event(event, profile);
+        db.add_event(event, profile);
     }
     Ok(())
 }
@@ -210,11 +193,10 @@ pub async fn delete_event(
     event_id: String,
 ) -> Result<(), CommonError> {
     println!("[Command] delete_event {event_id:?}");
-    let state_guard = state.lock().unwrap();
+    let mut state_guard = state.lock().unwrap();
 
-    if let Some(ref db) = state_guard.database {
-        let db_lock = db.lock().unwrap();
-        db_lock.delete_event(&event_id);
+    if let Some(ref mut db) = state_guard.database {
+        db.delete_event(&event_id);
     }
     Ok(())
 }
@@ -222,11 +204,10 @@ pub async fn delete_event(
 #[tauri::command]
 pub async fn commit_live_events(state: State<'_, Mutex<MyState>>) -> Result<(), CommonError> {
     println!("[Command] commit_live_events");
-    let state_guard = state.lock().unwrap();
+    let mut state_guard = state.lock().unwrap();
 
-    if let Some(ref db) = state_guard.database {
-        let mut db_lock = db.lock().unwrap();
-        let _ = db_lock.commit();
+    if let Some(ref mut db) = state_guard.database {
+        let _ = db.commit();
     }
     Ok(())
 }
@@ -243,15 +224,13 @@ pub async fn search_event_index(
         let (term, config) = parse_search_object(&search_config)?;
         println!("---- search_event_index config {config:?}");
         println!("---- search_event_index term {term:?}");
-        let db_lock: std::sync::MutexGuard<'_, Database> = db.lock().unwrap();
+        let db_lock = db;
         let result = db_lock.search(&term, &config).unwrap();
 
         let results: Vec<serde_json::Value> = result
             .results
             .into_iter()
-            .map(|element| {
-                search_result_to_json(element).unwrap_or(serde_json::Value::Null)
-            })
+            .map(|element| search_result_to_json(element).unwrap_or(serde_json::Value::Null))
             .collect();
 
         let mut search_result = serde_json::json!({
@@ -282,11 +261,10 @@ pub async fn is_room_indexed(
     room_id: String,
 ) -> Result<bool, CommonError> {
     println!("[Command] is_room_indexed");
-    let state_guard = state.lock().unwrap();
+    let mut state_guard = state.lock().unwrap();
 
-    if let Some(ref db) = state_guard.database {
-        let db_lock = db.lock().unwrap();
-        let connection = db_lock.get_connection().unwrap();
+    if let Some(ref mut db) = state_guard.database {
+        let connection = db.get_connection().unwrap();
         connection
             .is_room_indexed(&room_id)
             .map_err(CommonError::from)
@@ -298,11 +276,10 @@ pub async fn is_room_indexed(
 #[tauri::command]
 pub async fn is_event_index_empty(state: State<'_, Mutex<MyState>>) -> Result<bool, CommonError> {
     println!("[Command] is_event_index_empty");
-    let state_guard = state.lock().unwrap();
+    let mut state_guard = state.lock().unwrap();
 
-    if let Some(ref db) = state_guard.database {
-        let db_lock = db.lock().unwrap();
-        let connection = db_lock.get_connection().unwrap();
+    if let Some(ref mut db) = state_guard.database {
+        let connection = db.get_connection().unwrap();
         let result = connection.is_empty()?;
 
         println!("[Command] is_event_index_empty {result:?}");
@@ -320,23 +297,22 @@ pub async fn add_historic_events(
     new_checkpoint: Option<Value>,
     old_checkpoint: Option<Value>,
 ) -> Result<bool, CommonError> {
-    let state_guard = state.lock().unwrap();
+    let mut state_guard = state.lock().unwrap();
 
-    if let Some(ref db) = state_guard.database {
-        let db_lock: std::sync::MutexGuard<'_, Database> = db.lock().unwrap();
+    if let Some(ref mut db) = state_guard.database {
         let (events, new_cp, old_cp) = add_historic_events_helper(
             events.as_ref(),
             new_checkpoint.as_ref(),
             old_checkpoint.as_ref(),
         )?;
 
-        let receiver = db_lock.add_historic_events(events, new_cp, old_cp);
+        let receiver = db.add_historic_events(events, new_cp, old_cp);
 
         match receiver.recv() {
             Ok(result) => {
                 let final_result = result.map_err(CommonError::from)?;
                 // Get stats after adding events
-                let connection = db_lock.get_connection().map_err(CommonError::from)?;
+                let connection = db.get_connection().map_err(CommonError::from)?;
                 let stats_after = connection.get_stats().map_err(CommonError::from)?;
                 println!(
                     "[Command] Stats after: event_count={}, room_count={}",
@@ -355,20 +331,17 @@ pub async fn add_historic_events(
         let (tx, rx) = mpsc::channel();
         let _ = tx.send(Ok(false));
 
-        rx.recv()
-            .map_err(CommonError::from)
-            .unwrap()
+        rx.recv().map_err(CommonError::from).unwrap()
     }
 }
 
 #[tauri::command]
 pub async fn get_stats(state: State<'_, Mutex<MyState>>) -> Result<DatabaseStats, CommonError> {
     println!("[Command] remove_crawler_checkpoint");
-    let state_guard = state.lock().unwrap();
+    let mut state_guard = state.lock().unwrap();
 
-    if let Some(ref db) = state_guard.database {
-        let db_lock = db.lock().unwrap();
-        let connection = db_lock.get_connection().unwrap();
+    if let Some(ref mut db) = state_guard.database {
+        let connection = db.get_connection().unwrap();
         connection.get_stats().map_err(CommonError::from)
     } else {
         Err(CommonError::String("No stats found".to_string()))
@@ -382,13 +355,12 @@ pub async fn remove_crawler_checkpoint(
     checkpoint: Option<Value>,
 ) -> Result<bool, CommonError> {
     println!("[Command] remove_crawler_checkpoint");
-    let state_guard = state.lock().unwrap();
+    let mut state_guard = state.lock().unwrap();
 
-    if let Some(ref db) = state_guard.database {
-        let db_lock = db.lock().unwrap();
+    if let Some(ref mut db) = state_guard.database {
         let (_, _, cp) =
             add_historic_events_helper(Vec::new().as_ref(), None, checkpoint.as_ref())?;
-        let receiver = db_lock.add_historic_events(Vec::new(), None, cp);
+        let receiver = db.add_historic_events(Vec::new(), None, cp);
 
         receiver
             .recv()
@@ -400,9 +372,7 @@ pub async fn remove_crawler_checkpoint(
         let (tx, rx) = mpsc::channel();
         let _ = tx.send(Ok(false));
 
-        rx.recv()
-            .map_err(CommonError::from)
-            .unwrap()
+        rx.recv().map_err(CommonError::from).unwrap()
     }
 }
 
@@ -413,15 +383,14 @@ pub async fn add_crawler_checkpoint(
     checkpoint: Option<Value>,
 ) -> Result<bool, CommonError> {
     println!("[Command] add_crawler_checkpoint ${checkpoint:?}");
-    let state_guard = state.lock().unwrap();
+    let mut state_guard = state.lock().unwrap();
 
-    if let Some(ref db) = state_guard.database {
-        let db_lock = db.lock().unwrap();
+    if let Some(ref mut db) = state_guard.database {
         let (_, cp, _) =
             add_historic_events_helper(Vec::new().as_ref(), checkpoint.as_ref(), None)?;
 
         println!("[Debug] Processed checkpoint for adding: {cp:?}");
-        let receiver = db_lock.add_historic_events(Vec::new(), cp, None);
+        let receiver = db.add_historic_events(Vec::new(), cp, None);
 
         match receiver.recv() {
             Ok(result) => {
@@ -439,9 +408,7 @@ pub async fn add_crawler_checkpoint(
         let (tx, rx) = mpsc::channel();
         let _ = tx.send(Ok(false));
 
-        rx.recv()
-            .map_err(CommonError::from)
-            .unwrap()
+        rx.recv().map_err(CommonError::from).unwrap()
     }
 }
 
@@ -451,9 +418,9 @@ pub async fn load_file_events(
     load_config: Value,
 ) -> Result<Vec<Value>, CommonError> {
     println!("[Command] load_file_events");
-    let state_guard = state.lock().unwrap();
+    let mut state_guard = state.lock().unwrap();
 
-    if let Some(ref db) = state_guard.database {
+    if let Some(ref mut db) = state_guard.database {
         let room_id = load_config.get("roomId").unwrap();
         let mut config = LoadConfig::new(room_id.to_string());
 
@@ -477,8 +444,7 @@ pub async fn load_file_events(
             config = config.direction(direction);
         }
 
-        let db_lock = db.lock().unwrap();
-        let connection = db_lock.get_connection().unwrap();
+        let connection = db.get_connection().unwrap();
         let result = connection.load_file_events(&config)?;
         let mut formatted_result = Vec::new();
 
@@ -508,11 +474,10 @@ pub async fn load_file_events(
 #[tauri::command]
 pub async fn load_checkpoints(state: State<'_, Mutex<MyState>>) -> Result<Vec<Value>, CommonError> {
     println!("[Command] load_checkpoints");
-    let state_guard = state.lock().unwrap();
+    let mut state_guard = state.lock().unwrap();
 
-    if let Some(ref db) = state_guard.database {
-        let db_lock = db.lock().unwrap();
-        let connection = db_lock.get_connection().unwrap();
+    if let Some(ref mut db) = state_guard.database {
+        let connection = db.get_connection().unwrap();
         let checkpoints = connection.load_checkpoints().unwrap();
 
         println!("---- load_checkpoints raw results count: {checkpoints:?}");
@@ -532,11 +497,10 @@ pub async fn set_user_version(
     version: i64,
 ) -> Result<(), CommonError> {
     println!("[Command] set_user_version");
-    let state_guard = state.lock().unwrap();
+    let mut state_guard = state.lock().unwrap();
 
-    if let Some(ref db) = state_guard.database {
-        let db_lock = db.lock().unwrap();
-        let connection = db_lock.get_connection().unwrap();
+    if let Some(ref mut db) = state_guard.database {
+        let connection = db.get_connection().unwrap();
         connection
             .set_user_version(version)
             .map_err(CommonError::from)
@@ -548,14 +512,11 @@ pub async fn set_user_version(
 #[tauri::command]
 pub async fn get_user_version(state: State<'_, Mutex<MyState>>) -> Result<i64, CommonError> {
     println!("[Command] get_user_version");
-    let state_guard = state.lock().unwrap();
+    let mut state_guard = state.lock().unwrap();
 
-    if let Some(ref db) = state_guard.database {
-        let db_lock = db.lock().unwrap();
-        let connection = db_lock.get_connection().unwrap();
-        connection
-            .get_user_version()
-            .map_err(CommonError::from)
+    if let Some(ref mut db) = state_guard.database {
+        let connection = db.get_connection().unwrap();
+        connection.get_user_version().map_err(CommonError::from)
     } else {
         Ok(0)
     }
