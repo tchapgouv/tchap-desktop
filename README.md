@@ -18,14 +18,17 @@
   </a>
 </p>
 
-Tchap is a web app that allows you to chat through the matrix protocol for the French public service. It is a soft fork of [Element web](https://github.com/vector-im/element-web), we diverge only for specific requirements.
+Tchap desktop is the desktop app of [tchap web](https://github.com/tchapgouv/tchap-web-v4) which allows you to chat through the matrix protocol for the French public service.
 
 # Tchap Desktop
 
-Desktop client for Tchap using Tauri ( https://tauri.app )
+Desktop client for Tchap web build on top of Tauri ( https://tauri.app ). Code is inspired by [element desktop ](https://github.com/element-hq/element-desktop) which used electron as his backend.
+
+Tchap-desktop is strongly dependant of tchap-web since it is only the desktop wrapper around tchap-web.
+A `TauriPlatform` has been created in tchap-web (which is a soft fork of [element-web](https://github.com/element-hq/element-web)) in order to support Tauri as his backend pltform.
 
 ## Prerequisites
-w
+
 - Install prerequisites https://v2.tauri.app/start/prerequisites/)
 
 - Install sqlcipher for your platform, on Macos : brew install sqlcipher
