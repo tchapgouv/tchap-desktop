@@ -49,7 +49,6 @@ pub async fn init_event_index<R: Runtime>(
 
     println!("[Command] init_event_index - db_path {:?}", &db_path);
 
-
     let _ = fs::create_dir_all(&db_path);
 
     let db_result = Database::new_with_config(&db_path, &config);
@@ -75,9 +74,7 @@ pub async fn init_event_index<R: Runtime>(
                     CommonError::String(format!("Failed to get recovery DB connection: {e}"))
                 })?;
                 connection.get_user_version().map_err(|e| {
-                    CommonError::String(format!(
-                        "Failed to get user version from recovery DB: {e}"
-                    ))
+                    CommonError::String(format!("Failed to get user version from recovery DB: {e}"))
                 })?
             };
 
@@ -168,9 +165,7 @@ pub async fn delete_event_index<R: Runtime>(app_handle: AppHandle<R>) -> Result<
     match fs::remove_dir_all(&db_path) {
         Ok(_) => println!("Successfully deleted index at: {db_path:?}"),
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-            println!(
-                "Index directory not found at: {db_path:?}, continuing anyway"
-            );
+            println!("Index directory not found at: {db_path:?}, continuing anyway");
         }
         Err(e) => return Err(e.into()), // For other InvokeErrors, convert and return
     }
@@ -249,9 +244,7 @@ pub async fn search_event_index(
         let results: Vec<serde_json::Value> = result
             .results
             .into_iter()
-            .map(|element| {
-                search_result_to_json(element).unwrap_or(serde_json::Value::Null)
-            })
+            .map(|element| search_result_to_json(element).unwrap_or(serde_json::Value::Null))
             .collect();
 
         let mut search_result = serde_json::json!({
@@ -355,9 +348,7 @@ pub async fn add_historic_events(
         let (tx, rx) = mpsc::channel();
         let _ = tx.send(Ok(false));
 
-        rx.recv()
-            .map_err(CommonError::from)
-            .unwrap()
+        rx.recv().map_err(CommonError::from).unwrap()
     }
 }
 
@@ -400,9 +391,7 @@ pub async fn remove_crawler_checkpoint(
         let (tx, rx) = mpsc::channel();
         let _ = tx.send(Ok(false));
 
-        rx.recv()
-            .map_err(CommonError::from)
-            .unwrap()
+        rx.recv().map_err(CommonError::from).unwrap()
     }
 }
 
@@ -439,9 +428,7 @@ pub async fn add_crawler_checkpoint(
         let (tx, rx) = mpsc::channel();
         let _ = tx.send(Ok(false));
 
-        rx.recv()
-            .map_err(CommonError::from)
-            .unwrap()
+        rx.recv().map_err(CommonError::from).unwrap()
     }
 }
 
@@ -553,9 +540,7 @@ pub async fn get_user_version(state: State<'_, Mutex<MyState>>) -> Result<i64, C
     if let Some(ref db) = state_guard.database {
         let db_lock = db.lock().unwrap();
         let connection = db_lock.get_connection().unwrap();
-        connection
-            .get_user_version()
-            .map_err(CommonError::from)
+        connection.get_user_version().map_err(CommonError::from)
     } else {
         Ok(0)
     }
