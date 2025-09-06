@@ -2,6 +2,8 @@ mod common_commands;
 mod common_error;
 mod seshat_commands;
 mod seshat_utils;
+#[cfg(desktop)]
+mod tray;
 
 use std::fs;
 use std::path::Path;
@@ -12,7 +14,8 @@ use rand::TryRngCore;
 use seshat::Database;
 use tauri::Manager;
 use tauri_plugin_deep_link::DeepLinkExt;
-use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
+#[cfg(desktop)]
+use crate::tray::tray;
 
 #[derive(Clone)]
 pub struct MyState {
@@ -103,33 +106,13 @@ pub fn run() {
             // Register it with Tauri's state management
             app.manage(Mutex::new(initial_state));
 
-
-
-            TrayIconBuilder::new()
-                .icon(app.default_window_icon().unwrap().clone())
-                //focus on main window when clicking the tray icon
-                .on_tray_icon_event(|tray, event| {
-                    if let TrayIconEvent::Click {
-                            button: MouseButton::Left,
-                            button_state: MouseButtonState::Up,
-                            ..
-                    } = event
-                    {
-                        let app = tray.app_handle();
-                        if let Some(webview_window) = app.get_webview_window("main") {
-                            let _ = webview_window.unminimize();
-                            let _ = webview_window.show();
-                            let _ = webview_window.set_focus();
-                        }
-                    }
-            })
-                .build(app)?;
+            tray(app);
 
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             seshat_commands::supports_event_indexing,
-            seshat_commands::init_event_index,  
+            seshat_commands::init_event_index,
             seshat_commands::close_event_index,
             seshat_commands::delete_event_index,
             seshat_commands::add_event_to_index,
