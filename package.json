@@ -41,5 +41,8 @@
     "tar": "^7.4.3",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@tauri-apps/plugin-shell": "^2.3.1"
   }
 }

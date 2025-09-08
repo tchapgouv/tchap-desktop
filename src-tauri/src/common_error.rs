@@ -13,7 +13,7 @@ pub enum CommonError {
     #[error(transparent)]
     Anyhow(#[from] anyhow::Error),
     #[error("{0}")]
-    String(String)
+    String(String),
 }
 
 // we must also implement serde::Serialize

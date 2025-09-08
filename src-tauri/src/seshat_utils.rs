@@ -21,9 +21,7 @@ pub fn perform_manual_reindex(mut recovery_db: RecoveryDatabase) -> Result<(), S
     recovery_db.open_index()?; // This prepares the internal index writer
 
     let batch_size = 500;
-    println!(
-        "[Util] Loading and indexing source events in batches of {batch_size}..."
-    );
+    println!("[Util] Loading and indexing source events in batches of {batch_size}...");
 
     // 3. Load the first batch of source events
     let mut current_batch = recovery_db.load_events_deserialized(batch_size, None)?;

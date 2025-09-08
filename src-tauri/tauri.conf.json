@@ -43,6 +43,11 @@
         "installMode": "passive"
       }
     },
+    "deep-link": {
+      "desktop": {
+        "schemes": ["tchap"]
+      }
+    },
     "protocol": {
       "schemas": [
         "tchap"

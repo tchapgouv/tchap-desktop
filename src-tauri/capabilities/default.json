@@ -23,6 +23,7 @@
     "fs:default",
     "notification:default",
     "dialog:default",
-    "stronghold:default"
+    "stronghold:default",
+    "shell:allow-open"
   ]
 }
