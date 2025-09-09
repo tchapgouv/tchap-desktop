@@ -61,7 +61,7 @@ fn create_stronghold_key(app: &tauri::AppHandle, password: &[u8]) -> Vec<u8> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let mut builder = tauri::Builder::default();
+    let mut builder = tauri::Builder::default().plugin(tauri_plugin_shell::init());
 
     // Instanciate single instance plugin, with focus on the main window
     #[cfg(desktop)]
