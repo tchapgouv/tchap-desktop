@@ -13,7 +13,7 @@
   <a href="https://tchap.numerique.gouv.fr">
     Site web de présentation
   </a> - 
-  <a href="contact@tchap.beta.gouv.fr">
+  <a href="mailto:contact@tchap.beta.gouv.fr">
     Contactez-nous
   </a>
 </p>
