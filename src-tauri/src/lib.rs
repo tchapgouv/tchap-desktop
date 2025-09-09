@@ -5,18 +5,19 @@ mod seshat_utils;
 
 use std::fs;
 use std::path::Path;
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 
 use blake2::{Blake2b512, Digest};
 use rand::TryRngCore;
 use seshat::Database;
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::Manager;
-use tauri_plugin_deep_link::DeepLinkExt;
 
+/// A state shared on Tauri.
 #[derive(Clone)]
 pub struct MyState {
-    pub database: Option<Arc<Mutex<Database>>>,
+    /// Seshat database.
+    pub database: Option<Database>,
 }
 
 #[tauri::command]
@@ -86,7 +87,10 @@ pub fn run() {
             // Removing deeplink registration on macos for now, since it's not working and throwing an error on build
             // https://github.com/tchapgouv/tchap-desktop/issues/44
             #[cfg(all(desktop, not(target_os = "macos")))]
-            app.deep_link().register("tchap")?;
+            {
+                use tauri_plugin_deep_link::DeepLinkExt;
+                app.deep_link().register("tchap")?;
+            }
 
             // Registerering stronghold plugin
             let app_handle = app.app_handle().clone();
