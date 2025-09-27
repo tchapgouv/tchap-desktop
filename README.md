@@ -29,7 +29,7 @@ A `TauriPlatform` has been created in tchap-web (which is a soft fork of [elemen
 
 ## Prerequisites
 
-- Install prerequisites https://v2.tauri.app/start/prerequisites/)
+- Install prerequisites (https://v2.tauri.app/start/prerequisites/)
 
 - Install sqlcipher for your platform, on Macos : brew install sqlcipher
 
