@@ -22,14 +22,14 @@ Tchap desktop is the desktop app of [tchap web](https://github.com/tchapgouv/tch
 
 # Tchap Desktop
 
-Desktop client for Tchap web build on top of Tauri ( https://tauri.app ). Code is inspired by [element desktop ](https://github.com/element-hq/element-desktop) which used electron as his backend.
+Desktop client for Tchap web build on top of Tauri (https://tauri.app). Code is inspired by [element desktop](https://github.com/element-hq/element-desktop) which used electron as his backend.
 
 Tchap-desktop is strongly dependant of tchap-web since it is only the desktop wrapper around tchap-web.
-A `TauriPlatform` has been created in tchap-web (which is a soft fork of [element-web](https://github.com/element-hq/element-web)) in order to support Tauri as his backend pltform.
+A `TauriPlatform` has been created in tchap-web (which is a soft fork of [element-web](https://github.com/element-hq/element-web)) in order to support Tauri as his backend platform.
 
 ## Prerequisites
 
-- Install prerequisites https://v2.tauri.app/start/prerequisites/)
+- Install prerequisites (https://v2.tauri.app/start/prerequisites/)
 
 - Install sqlcipher for your platform, on Macos : brew install sqlcipher
 
