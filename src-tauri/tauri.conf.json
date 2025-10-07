@@ -21,6 +21,12 @@
     }
   },
   "bundle": {
+    "windows": {
+      "allowDowngrades": true,
+      "wix": {
+        "language": "fr-FR"
+      }
+    },
     "active": true,
     "targets": "all",
     "icon": [
