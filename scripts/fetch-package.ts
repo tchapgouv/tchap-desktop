@@ -157,7 +157,7 @@ async function buildFromArchive(targetVersion: string, filename: string) {
 
     try {
         if (!haveArchive) {
-            console.log("downling archive ");
+            console.log("downloading archive ");
             await downloadToFile(url, selectedArchivePath);
         }
     } catch (e) {
