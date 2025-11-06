@@ -23,6 +23,9 @@
   "bundle": {
     "windows": {
       "allowDowngrades": true,
+      "nsis": {
+        "installMode": "both"
+      },
       "wix": {
         "language": "fr-FR"
       }
