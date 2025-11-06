@@ -1,7 +1,14 @@
 {
-	"bundle": {
-		"macOS": {
-			"entitlements": "entitlements.plist"
-		}
-	}
+  "app": {
+    "windows": [
+      {
+        "userAgent": "tchap-macos"
+      }
+    ]
+  },
+  "bundle": {
+    "macOS": {
+      "entitlements": "entitlements.plist"
+    }
+  }
 }
