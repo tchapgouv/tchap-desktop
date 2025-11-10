@@ -48,7 +48,7 @@
         "https://www.tchap.gouv.fr/client/config/agent/desktop/desktop.json"
       ],
       "windows": {
-        "installMode": "passive"
+        "installMode": "basicUi"
       }
     },
     "deep-link": {
