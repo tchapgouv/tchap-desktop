@@ -39,12 +39,12 @@ A `TauriPlatform` has been created in tchap-web (which is a soft fork of [elemen
 
 ## Dev local using local frontend
 
-- Live testing with tchap-web (symbolic link doesnt work)
+- Live testing with tchap-web (symbolic link doesn't work)
 
 - Go to your frontend folder
 
-```
-# On tchap only this branch is compatible with tauri otherwise the tauri platform wont be detected
+```shell
+# On tchap only this branch is compatible with tauri otherwise the tauri platform won't be detected
 git checkout desktop-search-ipc
 
 yarn install
@@ -58,14 +58,13 @@ yarn start
 
 ```
 cargo tauri dev
-
 ```
 
-- It will automatically use your frontend configure on the url in the `tauri.conf.json` file. So modify the `build: devUrl` to match your dev frontend
+- It will automatically use your frontend configured on the url in the `tauri.conf.json` file. So modify the `build: devUrl` to match your dev frontend
 
 
 ## Dev using a specific web archive version
-- Tchap web is compatible with Tauri plaftorm from the version 4.15.2 and above.
+- Tchap web is compatible with Tauri platform from the version 4.15.2 and above.
 
 - You need to remove `build: devUrl` from the `tauri.conf.json` file. Otherwise it will wait for a local frontend to be running.
 
@@ -73,7 +72,7 @@ cargo tauri dev
 
 - Then you can run
 
-```
+```shell
 npm install
 
 npm run fetch-package -- dev
@@ -83,7 +82,6 @@ cargo install tauri-cli --version "^2.0.0" --locked
 # You can remove "devUrl": "http://localhost:8080" in `tauri.conf.json` to use tchap-web in tchap-desktop/src
 
 cargo tauri dev
-
 ```
 
 ## Dev using a github branch from a remote repository
@@ -103,7 +101,6 @@ npm install
 npm run fetch-package -- prod
 
 cargo tauri build
-
 ```
 
 
@@ -151,7 +148,7 @@ ld: library 'sqlcipher' not found
 ```
 
 You can export LIBRARY_PATH and C_INCLUDE_PATH to point to your sqlcipher installation
-```
+```shell
 export LIBRARY_PATH=/opt/homebrew/Cellar/sqlcipher/4.6.1/lib
 export C_INCLUDE_PATH=/opt/homebrew/Cellar/sqlcipher/4.6.1/include
 ```
