@@ -16,6 +16,10 @@ on:
         required: false
         type: string
         default: prod
+      onPR:
+        required: false
+        type: boolean
+        default: false
     secrets:
       TAURI_SIGNING_PRIVATE_KEY:
         required: true
@@ -23,6 +27,7 @@ on:
         required: true
 
 jobs:
+# Building the webapp
   build-webapp:
     uses: ./.github/workflows/build-webapp.yml
     with:
@@ -124,6 +129,7 @@ jobs:
           echo "LIBRARY_PATH=$(brew --prefix sqlcipher)/lib" >> "$GITHUB_ENV"
         shell: bash
 
+# Uploading the tauri app to a release
       - name: install Tauri app
         if: inputs.platform != 'ubuntu-22.04'
         uses: tauri-apps/tauri-action@v0
@@ -150,3 +156,19 @@ jobs:
           args: ${{ inputs.args }}
           includeDebug: true
           updaterJsonKeepUniversal: true
+
+# Uploading the tauri app only as artifcats and not release 
+      - name: List build output
+        run: |
+          echo "Listing src-tauri/target/release structure:"
+          ls -R src-tauri/target/release/bundle || true
+        shell: bash
+
+      - name: Upload artifacts for windows
+        if: inputs.onPR == true && inputs.platform == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: tauri-app-${{ inputs.platform }}
+          path: src-tauri/target/release/bundle/msi
+          if-no-files-found: warn
+          retention-days: 7
