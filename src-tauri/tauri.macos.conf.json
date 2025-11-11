@@ -2,7 +2,12 @@
   "app": {
     "windows": [
       {
-        "userAgent": "tchap-macos"
+        "userAgent": "tchap-macos",
+        "title": "Tchap",
+        "width": 1000,
+        "height": 800,
+        "resizable": true,
+        "maximized": true
       }
     ]
   },
