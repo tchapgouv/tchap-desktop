@@ -19,7 +19,6 @@ jobs:
       matrix:
         include:
           - platform: "windows-latest"
-            args: "--config src-tauri\\tauri.conf.dev.json"
           # - platform: "macos-latest" # for Arm based macs (M1 and above).
           #   args: "--target aarch64-apple-darwin"
           # - platform: "macos-latest" # for Intel based macs.
@@ -29,7 +28,7 @@ jobs:
     with:
       platform: ${{ matrix.platform }}
       args: ${{ matrix.args }}
-      env: dev
+      env: prod
       onPR: true
     secrets:
       TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
