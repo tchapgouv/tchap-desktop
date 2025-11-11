@@ -1,6 +1,6 @@
 [package]
 name = "tchap-desktop"
-version = "4.17.2"
+version = "4.17.3"
 description = "Desktop app of tchap web."
 edition = "2024"
 
