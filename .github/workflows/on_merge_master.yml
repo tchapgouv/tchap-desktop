@@ -1,8 +1,14 @@
-name: "test-on-build"
+name: "on-merge-master"
 
-on: [pull_request]
+on:
+  push:
+    branches:
+      - master
 
-# This workflow will build your tauri app without uploading it anywhere.
+
+# This workflow will create artifcats that can be used for testing without creating a release 
+# The artifacts uri can be found in the job logs history
+# For now, only generating for windows
 
 jobs:
   build-tchap-desktop-dev:
@@ -13,15 +19,12 @@ jobs:
       matrix:
         include:
           - platform: "windows-latest"
-            # this config will be merge with tauri.conf.json,
-            # Needs to explicitly set tauri conf for dev build to overide name and identifier
             args: "--config src-tauri\\tauri.conf.dev.json"
           # - platform: "macos-latest" # for Arm based macs (M1 and above).
-          #   args: "--target aarch64-apple-darwin --config src-tauri/tauri.conf.dev.json"
+          #   args: "--target aarch64-apple-darwin"
           # - platform: "macos-latest" # for Intel based macs.
-          #   args: "--target x86_64-apple-darwin --config src-tauri/tauri.conf.dev.json"
+          #   args: "--target x86_64-apple-darwin"
           # - platform: "ubuntu-22.04"
-          #   args: "--config src-tauri/tauri.conf.dev.json"
     uses: ./.github/workflows/build-tauri.yml
     with:
       platform: ${{ matrix.platform }}

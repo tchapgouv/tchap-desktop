@@ -48,9 +48,8 @@ jobs:
       matrix:
         include:
           - platform: "windows-latest"
-          # this config will be merge with tauri.conf.json,
+          # this config will be merge with tauri.windows.conf.json automatically. Same system for other platform
           # it is neceessary for windows to automatically add the dll in the final build
-          #  args: "--config src-tauri\\tauri.windows.conf.json" should not be necessary
             args: ""
           - platform: "macos-latest" # for Arm based macs (M1 and above).
             args: "--target aarch64-apple-darwin"
@@ -79,7 +78,7 @@ jobs:
         include:
           - platform: "windows-latest"
           # this config will be merge with tauri.conf.json,
-          # Needs to explicitly set tauri conf for dev build to overide name and identifier
+          # Needs to explicitly set tauri conf for dev build to overide name and identifier,
             args: "--config src-tauri\\tauri.conf.dev.json"
           - platform: "macos-latest" # for Arm based macs (M1 and above).
             args: "--target aarch64-apple-darwin --config src-tauri/tauri.conf.dev.json"

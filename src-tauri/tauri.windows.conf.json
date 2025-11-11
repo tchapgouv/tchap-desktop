@@ -1,4 +1,11 @@
 {
+  "app": {
+    "windows": [
+      {
+        "userAgent": "tchap-windows"
+      }
+    ]
+  },
   "bundle": {
     "resources": [
       "sqlcipher.dll",
