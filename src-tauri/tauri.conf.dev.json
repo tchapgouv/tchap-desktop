@@ -4,16 +4,18 @@
   "version": "4.17.2",
   "identifier": "fr.gouv.beta.tchap-desktop-dev",
   "build": {
-    "devUrl": "http://localhost:8080",
+    "devUrl": "http://localhost:8088",
     "frontendDist": "../src"
   },
   "app": {
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "tchap-desktop-dev",
-        "width": 800,
-        "height": 600
+        "title": "Tchap dev",
+        "width": 1000,
+        "height": 800,
+        "resizable": true,
+        "maximized": true
       }
     ],
     "security": {

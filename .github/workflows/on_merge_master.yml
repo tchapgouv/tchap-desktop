@@ -1,0 +1,36 @@
+name: "on-merge-master"
+
+on:
+  push:
+    branches:
+      - master
+
+
+# This workflow will create artifcats that can be used for testing without creating a release 
+# The artifacts uri can be found in the job logs history
+# For now, only generating for windows
+
+jobs:
+  build-tchap-desktop-dev:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - platform: "windows-latest"
+            args: "--config src-tauri\\tauri.conf.dev.json"
+          # - platform: "macos-latest" # for Arm based macs (M1 and above).
+          #   args: "--target aarch64-apple-darwin"
+          # - platform: "macos-latest" # for Intel based macs.
+          #   args: "--target x86_64-apple-darwin"
+          # - platform: "ubuntu-22.04"
+    uses: ./.github/workflows/build-tauri.yml
+    with:
+      platform: ${{ matrix.platform }}
+      args: ${{ matrix.args }}
+      env: dev
+      onPR: true
+    secrets:
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
