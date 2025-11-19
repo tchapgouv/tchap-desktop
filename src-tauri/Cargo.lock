@@ -6230,7 +6230,7 @@ dependencies = [
 
 [[package]]
 name = "tchap-desktop"
-version = "4.17.4"
+version = "4.17.5"
 dependencies = [
  "anyhow",
  "blake2",
