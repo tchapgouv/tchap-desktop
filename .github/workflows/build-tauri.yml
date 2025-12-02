@@ -130,7 +130,7 @@ jobs:
         shell: bash
 
 # Uploading the tauri app to a release
-      - name: install Tauri app
+      - name: create Tauri app artifacts
         if: inputs.platform != 'ubuntu-22.04'
         uses: tauri-apps/tauri-action@v0
         env:
@@ -143,7 +143,7 @@ jobs:
           includeDebug: false
           updaterJsonKeepUniversal: true
  
-      - name: install Tauri app for linux
+      - name: create Tauri app for linux
         if: inputs.platform == 'ubuntu-22.04'
         uses: tauri-apps/tauri-action@v0
         env:
@@ -156,6 +156,18 @@ jobs:
           args: ${{ inputs.args }}
           includeDebug: true
           updaterJsonKeepUniversal: true
+      
+      - name: create Windows app without updater
+        if: inputs.platform == 'windows-latest'
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          releaseId: ${{ inputs.releaseId }}
+          args: --config src-tauri/tauri.conf.noupdater.json --features no-updater
+          includeDebug: false
 
 # Uploading the tauri app only as artifcats and not release 
       - name: List build output
