@@ -1,0 +1,60 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "tchap_no_updater",
+  "version": "4.18.0",
+  "identifier": "fr.gouv.beta.tchap-desktop",
+  "build": {
+    "frontendDist": "../src"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "userAgent": "tchap-linux",
+        "title": "Tchap",
+        "width": 1000,
+        "height": 800,
+        "resizable": true,
+        "maximized": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "windows": {
+      "allowDowngrades": true,
+      "nsis": {
+        "installMode": "both"
+      },
+      "wix": {
+        "language": "fr-FR"
+      }
+    },
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "createUpdaterArtifacts": false
+  },
+  "plugins": {
+    "deep-link": {
+      "desktop": {
+        "schemes": [
+          "tchap"
+        ]
+      }
+    },
+    "protocol": {
+      "schemas": [
+        "tchap"
+      ]
+    }
+  }
+}

@@ -73,10 +73,15 @@ pub fn run() {
                 .set_focus();
         }));
     }
+    // doessnt initialize the updater plugin if the feature no-updater is applied during build
+
+    #[cfg(not(feature = "no-updater"))]
+    {
+        builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
+    }
 
     builder
         .plugin(tauri_plugin_deep_link::init())
-        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_upload::init())
         .plugin(tauri_plugin_fs::init())
