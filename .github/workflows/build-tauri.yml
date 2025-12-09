@@ -158,17 +158,20 @@ jobs:
           updaterJsonKeepUniversal: true
 
 # Uploading the tauri app only as artifcats and not release 
-      - name: List build output
-        run: |
-          echo "Listing src-tauri/target/release structure:"
-          ls -R src-tauri/target/release/bundle || true
-        shell: bash
-
       - name: Upload artifacts for windows
         if: inputs.onPR == true && inputs.platform == 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
           name: tauri-app-${{ inputs.platform }}
           path: src-tauri/target/release/bundle/msi
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload artifacts for macos
+        if: inputs.onPR == true && inputs.platform == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: tauri-app-${{ inputs.platform }}
+          path: src-tauri/target/aarch64-apple-darwin/release/bundle/dmg
           if-no-files-found: warn
           retention-days: 7
