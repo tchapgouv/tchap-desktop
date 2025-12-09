@@ -2,6 +2,7 @@
   "app": {
     "windows": [
       {
+        "dragDropEnabled": false,
         "userAgent": "tchap-macos",
         "title": "Tchap",
         "width": 1000,
