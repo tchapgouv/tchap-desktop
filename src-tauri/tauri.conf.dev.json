@@ -11,6 +11,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
+        "dragDropEnabled": false,
         "title": "Tchap dev",
         "width": 1000,
         "height": 800,

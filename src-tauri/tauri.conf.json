@@ -11,6 +11,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
+        "dragDropEnabled": false,
         "userAgent": "tchap-linux",
         "title": "Tchap",
         "width": 1000,
