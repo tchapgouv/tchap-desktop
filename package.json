@@ -43,6 +43,7 @@
     "typescript": "^5.7.3"
   },
   "dependencies": {
-    "@tauri-apps/plugin-shell": "^2.3.1"
+    "@tauri-apps/plugin-shell": "^2.3.1",
+    "tauri-plugin-keyring-api": "^0.1.1"
   }
 }

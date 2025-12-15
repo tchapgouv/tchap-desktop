@@ -34,7 +34,7 @@ blake2 = "0.10"
 rand = "0.9.0"
 tauri-plugin-deep-link = "2"
 tauri-plugin-shell = "2"
-tauri-plugin-keyring = "0.1.0"
+keyring = { version = "3.6.3", features = ["apple-native", "windows-native", "sync-secret-service"] }
 
 [features]
 # by default Tauri runs in production mode

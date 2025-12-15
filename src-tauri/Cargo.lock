@@ -960,9 +960,9 @@ dependencies = [
 
 [[package]]
 name = "dbus"
-version = "0.9.9"
+version = "0.9.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "190b6255e8ab55a7b568df5a883e9497edc3e4821c06396612048b430e5ad1e9"
+checksum = "21b3aa68d7e7abee336255bd7248ea965cc393f3e70411135a6f6a4b651345d4"
 dependencies = [
  "libc",
  "libdbus-sys",
@@ -2549,9 +2549,9 @@ checksum = "58f929b4d672ea937a23a1ab494143d968337a5f47e56d0815df1e0890ddf174"
 
 [[package]]
 name = "libdbus-sys"
-version = "0.2.6"
+version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5cbe856efeb50e4681f010e9aaa2bf0a644e10139e54cde10fc83a307c23bd9f"
+checksum = "328c4789d42200f1eeec05bd86c9c13c7f091d2ba9a6ea35acdf51f31bc0f043"
 dependencies = [
  "pkg-config",
 ]
@@ -5335,19 +5335,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tauri-plugin-keyring"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a52455d6472f3c0f9cac1b1f017cfce85e177db32ccd5f4b50e2e31deeaf25e"
-dependencies = [
- "keyring",
- "serde",
- "tauri",
- "tauri-plugin",
- "thiserror 2.0.17",
-]
-
-[[package]]
 name = "tauri-plugin-notification"
 version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5610,6 +5597,7 @@ version = "4.18.3"
 dependencies = [
  "anyhow",
  "blake2",
+ "keyring",
  "rand 0.9.2",
  "serde",
  "serde_json",
@@ -5619,7 +5607,6 @@ dependencies = [
  "tauri-plugin-deep-link",
  "tauri-plugin-dialog",
  "tauri-plugin-fs",
- "tauri-plugin-keyring",
  "tauri-plugin-notification",
  "tauri-plugin-opener",
  "tauri-plugin-persisted-scope",

@@ -23,7 +23,6 @@
     "fs:default",
     "notification:default",
     "dialog:default",
-    "shell:allow-open",
-    "keyring:default"
+    "shell:allow-open"
   ]
 }

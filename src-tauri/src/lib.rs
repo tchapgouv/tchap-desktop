@@ -1,5 +1,6 @@
 mod common_commands;
 mod common_error;
+mod keyring_commands;
 mod seshat_commands;
 mod seshat_utils;
 
@@ -59,7 +60,6 @@ pub fn run() {
     }
 
     builder
-        .plugin(tauri_plugin_keyring::init())
         .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_upload::init())
@@ -149,6 +149,9 @@ pub fn run() {
             seshat_commands::get_user_version,
             common_commands::clear_storage,
             common_commands::user_download_action,
+            keyring_commands::get_password,
+            keyring_commands::set_password,
+            keyring_commands::delete_password,
             welcome
         ])
         .run(tauri::generate_context!())
