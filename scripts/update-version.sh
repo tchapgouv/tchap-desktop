@@ -24,6 +24,9 @@ fi
 # Update version in tauri.conf for prod environment
 jq '.version = "'"$new_version"'"' src-tauri/tauri.conf.json > src-tauri/tauri.conf.json.tmp && mv src-tauri/tauri.conf.json.tmp src-tauri/tauri.conf.json
 
+# Update version in tauri.conf.noupdater.json for prod environment
+jq '.version = "'"$new_version"'"' src-tauri/tauri.conf.noupdater.json > src-tauri/tauri.conf.noupdater.json.tmp && mv src-tauri/tauri.conf.noupdater.json.tmp src-tauri/tauri.conf.noupdater.json
+
 # Update version in tauri.conf.dev.json for dev environment
 jq '.version = "'"$new_version"'"' src-tauri/tauri.conf.dev.json > src-tauri/tauri.conf.dev.json.tmp && mv src-tauri/tauri.conf.dev.json.tmp src-tauri/tauri.conf.dev.json
 
