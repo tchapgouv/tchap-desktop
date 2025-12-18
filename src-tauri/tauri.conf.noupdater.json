@@ -27,7 +27,7 @@
     "windows": {
       "allowDowngrades": true,
       "nsis": {
-        "installMode": "both"
+        "installMode": "currentUser"
       },
       "wix": {
         "language": "fr-FR"
