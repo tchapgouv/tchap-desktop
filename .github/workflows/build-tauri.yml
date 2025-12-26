@@ -166,14 +166,14 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           releaseId: ${{ inputs.releaseId }}
-          args: --config src-tauri/tauri.conf.noupdater.json --features no-updater
+          args: --target x86_64-pc-windows-msvc --config src-tauri/tauri.conf.noupdater-windows.json --features no-updater
           includeDebug: false
 
 # Uploading the tauri app only as artifcats and not release 
       - name: List build output
         run: |
           echo "Listing src-tauri/target/release structure:"
-          ls -R src-tauri/target/release/bundle || true
+          ls -R src-tauri/target/ || true
         shell: bash
 
       - name: Upload artifacts for windows
@@ -181,6 +181,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tauri-app-${{ inputs.platform }}
-          path: src-tauri/target/release/bundle/msi
+          path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi/
           if-no-files-found: warn
           retention-days: 7
