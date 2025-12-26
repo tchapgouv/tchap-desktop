@@ -1,3 +1,5 @@
+> [!WARNING]
+> Tchap desktop is still experimental, disruptive changes can occur and the stable release is planned for T1 2026
 
 <p align="center">
   <a href="https://github.com/tchapgouv">
