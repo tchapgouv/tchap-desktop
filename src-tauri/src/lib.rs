@@ -10,8 +10,13 @@ use std::sync::Mutex;
 use blake2::{Blake2b512, Digest};
 use rand::TryRngCore;
 use seshat::Database;
-use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
-use tauri::Manager;
+use tauri::{
+    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
+    utils::config::WebviewUrl,
+    webview::{DownloadEvent, WebviewWindowBuilder},
+    Manager,
+    Emitter
+};
 
 /// A state shared on Tauri.
 #[derive(Clone)]
@@ -23,6 +28,18 @@ pub struct MyState {
 #[tauri::command]
 fn welcome() {
     println!("Welcome on Tchap desktop app!")
+}
+
+fn user_agent(app: &tauri::AppHandle) -> String {
+    let version = app.package_info().version.to_string();
+  
+    if cfg!(target_os = "windows") {
+      format!("tchap-windows/{version} (Windows; Tauri)")
+    } else if cfg!(target_os = "macos") {
+      format!("tchap-macos/{version} (macOS; Tauri)")
+    } else {
+      format!("tchap-linux/{version} (Linux; Tauri)")
+    }
 }
 
 fn get_or_create_salt(salt_path: &Path) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
@@ -133,6 +150,30 @@ pub fn run() {
                 })
                 .build(app)?;
 
+            // Manually build windows, because on_download listenner can only be added on the build of the windows
+            // Needs to remove app: {windows } from tauri conf, otherwise there will be two window creation
+            let product_name = match app.config().product_name.as_deref() {
+                Some("tchap_no_updater") => "Tchap".to_string(),
+                Some(other) => other.to_string(),
+                None => "Tchap".to_string(), // fallback if missing
+              };
+
+            let handle = app.app_handle().clone();
+            let handle_for_on_download = app.app_handle().clone();
+            WebviewWindowBuilder::new(&handle, "main", WebviewUrl::App("index.html".into()))
+                .on_download(move |_webview, event| {
+                    if let DownloadEvent::Finished { url, path, success } = event {
+                        println!("downloaded {} to {:?}, success: {}", url, path, success);
+                        let _ = handle_for_on_download.emit("download-finished", &path);
+                    }
+                    // let the download start
+                    true
+                })
+                .disable_drag_drop_handler()
+                .title(product_name)
+                .user_agent(&user_agent(&handle))
+                .build()?;
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -155,6 +196,7 @@ pub fn run() {
             seshat_commands::set_user_version,
             seshat_commands::get_user_version,
             common_commands::clear_storage,
+            common_commands::user_download_action,
             welcome
         ])
         .run(tauri::generate_context!())

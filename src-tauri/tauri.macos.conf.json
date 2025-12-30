@@ -1,17 +1,4 @@
 {
-  "app": {
-    "windows": [
-      {
-        "dragDropEnabled": false,
-        "userAgent": "tchap-macos",
-        "title": "Tchap",
-        "width": 1000,
-        "height": 800,
-        "resizable": true,
-        "maximized": true
-      }
-    ]
-  },
   "bundle": {
     "macOS": {
       "entitlements": "entitlements.plist"

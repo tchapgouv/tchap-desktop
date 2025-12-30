@@ -1,18 +1,23 @@
 {
-  "app": {
-    "windows": [
-      {
-        "dragDropEnabled": false,
-        "userAgent": "tchap-windows",
-        "title": "Tchap",
-        "width": 1000,
-        "height": 800,
-        "resizable": true,
-        "maximized": true
-      }
-    ]
-  },
   "bundle": {
+    "windows": {
+      "allowDowngrades": true,
+      "nsis": {
+        "installMode": "currentUser"
+      },
+      "wix": {
+        "language": "fr-FR"
+      }
+    },
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
     "resources": {
       "sqlcipher.dll": "",
       "libcrypto-3-x64.dll": "",
