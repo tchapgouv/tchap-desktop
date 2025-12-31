@@ -15,7 +15,8 @@ use tauri::{
     utils::config::WebviewUrl,
     webview::{DownloadEvent, WebviewWindowBuilder},
     Manager,
-    Emitter
+    Emitter,
+    menu::{Menu, MenuItem}
 };
 
 /// A state shared on Tauri.
@@ -130,23 +131,29 @@ pub fn run() {
             // Register it with Tauri's state management
             app.manage(Mutex::new(initial_state));
 
+            let show_hide = MenuItem::with_id(app, "show_hide", "Show / Hide", true, None::<&str>)?;
+            let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+            let tray_menu = Menu::with_items(app, &[&show_hide, &quit])?;
             TrayIconBuilder::new()
                 .icon(app.default_window_icon().unwrap().clone())
-                //focus on main window when clicking the tray icon
-                .on_tray_icon_event(|tray, event| {
-                    if let TrayIconEvent::Click {
-                        button: MouseButton::Left,
-                        button_state: MouseButtonState::Up,
-                        ..
-                    } = event
-                    {
-                        let app = tray.app_handle();
+                .menu(&tray_menu)
+                .show_menu_on_left_click(true)
+                .on_menu_event(|app, event| match event.id.as_ref() {
+                    "show_hide" => {
                         if let Some(webview_window) = app.get_webview_window("main") {
-                            let _ = webview_window.unminimize();
-                            let _ = webview_window.show();
-                            let _ = webview_window.set_focus();
+                            if webview_window.is_visible().unwrap() {
+                                webview_window.hide().unwrap();
+                            } else {
+                                let _ = webview_window.unminimize();
+                                let _ = webview_window.set_focus();
+                                let _ = webview_window.show();
+                            }
                         }
                     }
+                    "quit" => {
+                        app.exit(0);
+                    }
+                    _ => {}
                 })
                 .build(app)?;
 
