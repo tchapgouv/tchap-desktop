@@ -13,12 +13,12 @@
     ]
   },
   "bundle": {
-    "resources": [
-      "sqlcipher.dll",
-      "libcrypto-3-x64.dll",
-      "libssl-3-x64.dll",
-      "resources/windows/msvcp140.dll",
-      "resources/windows/vcruntime140.dll"
-    ]
+    "resources": {
+      "sqlcipher.dll": "",
+      "libcrypto-3-x64.dll": "",
+      "libssl-3-x64.dll": "",
+      "resources/windows/msvcp140.dll": "./msvcp140.dll",
+      "resources/windows/vcruntime140.dll": "./vcruntime140.dll"
+    }
   }
 }
