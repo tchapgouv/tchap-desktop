@@ -9,16 +9,6 @@
   },
   "app": {
     "withGlobalTauri": true,
-    "windows": [
-      {
-        "dragDropEnabled": false,
-        "title": "Tchap dev",
-        "width": 1000,
-        "height": 800,
-        "resizable": true,
-        "maximized": true
-      }
-    ],
     "security": {
       "csp": null
     }

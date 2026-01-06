@@ -1,5 +1,8 @@
 use std::fs;
 use tauri::{AppHandle, Manager, Runtime};
+use tauri_plugin_opener::OpenerExt;
+
+use crate::common_error::CommonError;
 
 #[tauri::command]
 pub async fn clear_storage<R: Runtime>(app_handle: AppHandle<R>) -> Result<(), String> {
@@ -19,4 +22,13 @@ pub async fn clear_storage<R: Runtime>(app_handle: AppHandle<R>) -> Result<(), S
 
     // Restart the app
     app_handle.restart()
+}
+
+
+// Called when a download is finished, the user can ignore the toast or open the downloaded file
+#[tauri::command]
+pub async fn user_download_action<R: Runtime>(app_handle: AppHandle<R>, path: String) -> Result<(), CommonError> {
+    println!("in command user download action {:?}", path);
+    let _ = app_handle.opener().open_path(path, None::<&str>);
+    Ok(())
 }
