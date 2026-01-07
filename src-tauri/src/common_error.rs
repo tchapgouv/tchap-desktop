@@ -12,6 +12,8 @@ pub enum CommonError {
     RecvError(#[from] RecvError),
     #[error(transparent)]
     Anyhow(#[from] anyhow::Error),
+    #[error("Keyring error: {0}")] 
+    Keyring(#[from] keyring::Error),  
     #[error("{0}")]
     String(String),
 }

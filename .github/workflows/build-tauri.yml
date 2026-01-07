@@ -184,3 +184,12 @@ jobs:
           path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi/
           if-no-files-found: warn
           retention-days: 7
+
+      - name: Upload artifacts for macos
+        if: inputs.onPR == true && inputs.platform == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: tauri-app-${{ inputs.platform }}
+          path: src-tauri/target/aarch64-apple-darwin/release/bundle/dmg
+          if-no-files-found: warn
+          retention-days: 7
