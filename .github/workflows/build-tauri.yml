@@ -132,7 +132,7 @@ jobs:
 # Uploading the tauri app to a release
       - name: create Tauri app artifacts
         if: inputs.platform != 'ubuntu-22.04'
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@dev
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
@@ -140,12 +140,11 @@ jobs:
         with:
           releaseId: ${{ inputs.releaseId }}
           args: ${{ inputs.args }}
-          includeDebug: false
-          updaterJsonKeepUniversal: true
+          uploadWorkflowArtifacts: true
  
       - name: create Tauri app for linux
         if: inputs.platform == 'ubuntu-22.04'
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@dev
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
@@ -154,12 +153,18 @@ jobs:
         with:
           releaseId: ${{ inputs.releaseId }}
           args: ${{ inputs.args }}
-          includeDebug: true
-          updaterJsonKeepUniversal: true
       
+      - name: Create release asset name pattern for no updater version
+        id: create-pattern-no-updater
+        run: |
+          PATTERN="[name]-[version]_[arch]_${{ inputs.env }}_no_updater[ext]"
+          echo "PATTERN=$PATTERN" >> $GITHUB_OUTPUT
+          echo "Generated pattern: $PATTERN"
+        shell: bash
+
       - name: create Windows app without updater
         if: inputs.platform == 'windows-latest'
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@dev
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
@@ -167,20 +172,22 @@ jobs:
         with:
           releaseId: ${{ inputs.releaseId }}
           args: --target x86_64-pc-windows-msvc --config src-tauri/tauri.conf.noupdater-windows.json --features no-updater
-          includeDebug: false
+          releaseAssetNamePattern: ${{ steps.create-pattern-no-updater.outputs.PATTERN }}
+          uploadWorkflowArtifacts: true
+          workflowArtifactNamePattern: ${{ steps.create-pattern-no-updater.outputs.PATTERN }}
 
 # Uploading the tauri app only as artifcats and not release 
-      - name: List build output
-        run: |
-          echo "Listing src-tauri/target/release structure:"
-          ls -R src-tauri/target/ || true
-        shell: bash
+      # - name: List build output
+      #   run: |
+      #     echo "Listing src-tauri/target/release structure:"
+      #     ls -R src-tauri/target/ || true
+      #   shell: bash
 
-      - name: Upload artifacts for windows
-        if: inputs.onPR == true && inputs.platform == 'windows-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: tauri-app-${{ inputs.platform }}
-          path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi/
-          if-no-files-found: warn
-          retention-days: 7
+      # - name: Upload artifacts for windows
+      #   if: inputs.onPR == true && inputs.platform == 'windows-latest'
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: tauri-app-${{ inputs.platform }}
+      #     path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi/
+      #     if-no-files-found: warn
+      #     retention-days: 7

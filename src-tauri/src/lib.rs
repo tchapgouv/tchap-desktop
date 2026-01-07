@@ -151,15 +151,14 @@ pub fn run() {
                 .build(app)?;
 
             // Manually build windows, because on_download listenner can only be added on the build of the windows
-            // Needs to remove app: {windows } from tauri conf, otherwise there will be two window creation
             let product_name = match app.config().product_name.as_deref() {
-                Some("tchap_no_updater") => "Tchap".to_string(),
                 Some(other) => other.to_string(),
                 None => "Tchap".to_string(), // fallback if missing
               };
 
             let handle = app.app_handle().clone();
             let handle_for_on_download = app.app_handle().clone();
+            // Needs to remove app: {windows } from tauri conf, otherwise there will be two window creation
             WebviewWindowBuilder::new(&handle, "main", WebviewUrl::App("index.html".into()))
                 .on_download(move |_webview, event| {
                     if let DownloadEvent::Finished { url, path, success } = event {
