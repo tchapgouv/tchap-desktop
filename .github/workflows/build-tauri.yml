@@ -140,7 +140,7 @@ jobs:
         with:
           releaseId: ${{ inputs.releaseId }}
           args: ${{ inputs.args }}
-          uploadWorkflowArtifacts: true
+          uploadWorkflowArtifacts: ${{ inputs.onPR }}
  
       - name: create Tauri app for linux
         if: inputs.platform == 'ubuntu-22.04'
