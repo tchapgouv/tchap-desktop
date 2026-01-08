@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "tchap_no_updater",
+  "productName": "Tchap",
   "version": "4.18.3",
-  "identifier": "fr.gouv.beta.tchap-desktop",
+  "identifier": "fr.gouv.beta.tchap-desktop-no-updater",
   "build": {
     "frontendDist": "../src"
   },
