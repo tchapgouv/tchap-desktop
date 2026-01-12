@@ -175,6 +175,7 @@ jobs:
           releaseAssetNamePattern: ${{ steps.create-pattern-no-updater.outputs.PATTERN }}
           uploadWorkflowArtifacts: true
           workflowArtifactNamePattern: ${{ steps.create-pattern-no-updater.outputs.PATTERN }}
+          uploadUpdaterJson: false
 
 # Uploading the tauri app only as artifcats and not release 
       # - name: List build output
