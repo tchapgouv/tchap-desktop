@@ -1,6 +1,6 @@
 {
   "name": "tchap-desktop",
-  "version": "4.18.4",
+  "version": "4.18.2",
   "description": "",
   "main": "./scripts/index.ts",
   "scripts": {
@@ -8,7 +8,7 @@
     "update-version": "./scripts/update-version.sh"
   },
   "tchapConfig": {
-    "use_github": false,
+    "use_github": true,
     "prod": {
       "tchap-web_version": "4.18.4",
       "tchap-web_archive_name": "tchap-4.18.4-prod-20260120.tar.gz",
@@ -21,7 +21,7 @@
       "tchap-web_version": "4.18.4",
       "tchap-web_archive_name": "tchap-4.18.4-dev-20260120.tar.gz",
       "tchap-web_github": {
-        "branch": "develop_tchap",
+        "branch": "desktop-automatic-update-improvements",
         "repo": "https://github.com/tchapgouv/tchap-web-v4"
       }
     },
