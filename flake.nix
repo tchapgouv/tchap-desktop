@@ -1,5 +1,5 @@
 {
-  description = "Tchap desktop";
+  description = "Tchap linux";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
