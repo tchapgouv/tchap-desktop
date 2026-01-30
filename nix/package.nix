@@ -164,10 +164,12 @@ rustPlatform.buildRustPackage rec {
     [Desktop Entry]
     Name=Tchap
     Comment=Messagerie instantanée du secteur public français
-    Exec=$out/bin/tchap-desktop
+    Exec=$out/bin/tchap-desktop %U
     Icon=tchap
     Type=Application
     Categories=Network;InstantMessaging;
+    MimeType=x-scheme-handler/tchap;
+    StartupWMClass=tchap-desktop
     EOF
   '';
 
