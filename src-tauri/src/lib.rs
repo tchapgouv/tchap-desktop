@@ -7,11 +7,11 @@ mod seshat_utils;
 use std::sync::Mutex;
 use seshat::Database;
 use tauri::{
+    Emitter, Manager,
+    menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     utils::config::WebviewUrl,
     webview::{DownloadEvent, WebviewWindowBuilder},
-    Manager,
-    Emitter
 };
 
 /// A state shared on Tauri.
@@ -28,13 +28,13 @@ fn welcome() {
 
 fn user_agent(app: &tauri::AppHandle) -> String {
     let version = app.package_info().version.to_string();
-  
+
     if cfg!(target_os = "windows") {
-      format!("tchap-windows/{version} (Windows; Tauri)")
+        format!("tchap-windows/{version} (Windows; Tauri)")
     } else if cfg!(target_os = "macos") {
-      format!("tchap-macos/{version} (macOS; Tauri)")
+        format!("tchap-macos/{version} (macOS; Tauri)")
     } else {
-      format!("tchap-linux/{version} (Linux; Tauri)")
+        format!("tchap-linux/{version} (Linux; Tauri)")
     }
 }
 
@@ -82,9 +82,15 @@ pub fn run() {
             // Register it with Tauri's state management
             app.manage(Mutex::new(initial_state));
 
+            let show_hide =
+                MenuItem::with_id(app, "show_hide", "Montrer / Cacher", true, None::<&str>)?;
+            let quit = MenuItem::with_id(app, "quit", "Quitter", true, None::<&str>)?;
+            let tray_menu = Menu::with_items(app, &[&show_hide, &quit])?;
             TrayIconBuilder::new()
+                .show_menu_on_left_click(false)
                 .icon(app.default_window_icon().unwrap().clone())
-                //focus on main window when clicking the tray icon
+                .menu(&tray_menu)
+                // display or hide the app on left click in the tray icon
                 .on_tray_icon_event(|tray, event| {
                     if let TrayIconEvent::Click {
                         button: MouseButton::Left,
@@ -100,18 +106,35 @@ pub fn run() {
                         }
                     }
                 })
+                // Display the menu only on right click on the tray icon, not supported on linux
+                .on_menu_event(|app, event| match event.id.as_ref() {
+                    "show_hide" => {
+                        if let Some(webview_window) = app.get_webview_window("main") {
+                            if webview_window.is_visible().unwrap() {
+                                webview_window.hide().unwrap();
+                            } else {
+                                let _ = webview_window.unminimize();
+                                let _ = webview_window.set_focus();
+                                let _ = webview_window.show();
+                            }
+                        }
+                    }
+                    "quit" => {
+                        app.exit(0);
+                    }
+                    _ => {}
+                })
                 .build(app)?;
 
             // Manually build windows, because on_download listenner can only be added on the build of the windows
-            // Needs to remove app: {windows } from tauri conf, otherwise there will be two window creation
             let product_name = match app.config().product_name.as_deref() {
-                Some("tchap_no_updater") => "Tchap".to_string(),
                 Some(other) => other.to_string(),
                 None => "Tchap".to_string(), // fallback if missing
-              };
+            };
 
             let handle = app.app_handle().clone();
             let handle_for_on_download = app.app_handle().clone();
+            // Needs to remove app: {windows } from tauri conf, otherwise there will be two window creation
             WebviewWindowBuilder::new(&handle, "main", WebviewUrl::App("index.html".into()))
                 .on_download(move |_webview, event| {
                     if let DownloadEvent::Finished { url, path, success } = event {
@@ -124,9 +147,16 @@ pub fn run() {
                 .disable_drag_drop_handler()
                 .title(product_name)
                 .user_agent(&user_agent(&handle))
+                .inner_size(1000.0, 1000.0)
                 .build()?;
 
             Ok(())
+        })
+        // When closing the app with the cross button, we only hide the app, and dont close it completly
+        // The same behavior as Element app and apps on MacOS
+        .on_window_event(|window, event| if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+            window.hide().unwrap();
+            api.prevent_close();
         })
         .invoke_handler(tauri::generate_handler![
             seshat_commands::supports_event_indexing,
