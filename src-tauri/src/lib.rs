@@ -1,14 +1,10 @@
 mod common_commands;
 mod common_error;
+mod keyring_commands;
 mod seshat_commands;
 mod seshat_utils;
 
-use std::fs;
-use std::path::Path;
 use std::sync::Mutex;
-
-use blake2::{Blake2b512, Digest};
-use rand::TryRngCore;
 use seshat::Database;
 use tauri::{
     Emitter, Manager,
@@ -40,40 +36,6 @@ fn user_agent(app: &tauri::AppHandle) -> String {
     } else {
         format!("tchap-linux/{version} (Linux; Tauri)")
     }
-}
-
-fn get_or_create_salt(salt_path: &Path) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-    if !salt_path.exists() {
-        // Generate new salt
-        let mut salt = vec![0u8; 32];
-        let mut rng = rand::rngs::OsRng;
-        rng.try_fill_bytes(&mut salt)?;
-        // Ensure directory exists
-        fs::create_dir_all(salt_path.parent().unwrap())?;
-        // Write salt to file
-        fs::write(salt_path, &salt)?;
-        Ok(salt)
-    } else {
-        // Read existing salt
-        Ok(fs::read(salt_path)?)
-    }
-}
-
-fn create_stronghold_key(app: &tauri::AppHandle, password: &[u8]) -> Vec<u8> {
-    let salt_path = app
-        .path()
-        .app_local_data_dir()
-        .expect("could not resolve app local data path")
-        .join("salt.txt");
-
-    let salt = get_or_create_salt(&salt_path).unwrap();
-
-    // Looks like hashing blake2b512 is faster than argo, so we use blake here
-    // TODO : will need to check if it was the real issue when loading stronghold took long time
-    let mut hasher = Blake2b512::new();
-    hasher.update(salt);
-    hasher.update(password);
-    hasher.finalize().to_vec()[..32].to_vec()
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -113,16 +75,6 @@ pub fn run() {
                 use tauri_plugin_deep_link::DeepLinkExt;
                 app.deep_link().register("tchap")?;
             }
-
-            // Registerering stronghold plugin
-            let app_handle = app.app_handle().clone();
-            // Convert to Vec<u8> for Stronghold
-            app.handle().plugin(
-                tauri_plugin_stronghold::Builder::new(move |password| {
-                    create_stronghold_key(&app_handle, password.as_ref())
-                })
-                .build(),
-            )?;
 
             // Create the initial state
             let initial_state = MyState { database: None };
@@ -227,6 +179,9 @@ pub fn run() {
             seshat_commands::get_user_version,
             common_commands::clear_storage,
             common_commands::user_download_action,
+            keyring_commands::get_password,
+            keyring_commands::set_password,
+            keyring_commands::delete_password,
             welcome
         ])
         .run(tauri::generate_context!())
