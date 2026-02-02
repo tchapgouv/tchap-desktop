@@ -119,17 +119,20 @@ jobs:
           echo "PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/share/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
           echo "Finish installing deps"
 
-      - name: Install SQLCipher for MacOS
+      - name: Build SQLCipher and OpenSSL from source (macOS)
         if: inputs.platform == 'macos-latest'
         run: |
-          echo "--- Updating brew"
-          brew upgrade
-          echo "--- Installing sqlcipher"
-          brew install sqlcipher
-          echo "LIBRARY_PATH=$(brew --prefix sqlcipher)/lib" >> "$GITHUB_ENV"
+          chmod +x scripts/build-openssl-macos.sh
+          chmod +x scripts/build-sqlcipher-macos.sh
+          
+          ./scripts/build-openssl-macos.sh
+          ./scripts/build-sqlcipher-macos.sh
+          
+          ls -la vendor/sqlcipher-macos/lib/
+          ls -la vendor/openssl-macos/lib/
         shell: bash
 
-# Uploading the tauri app to a release
+      # Uploading the tauri app to a release
       - name: create Tauri app artifacts
         if: inputs.platform != 'ubuntu-22.04'
         uses: tauri-apps/tauri-action@dev
