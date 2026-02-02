@@ -1,4 +1,5 @@
-
+use std::env;
+use std::path::PathBuf;
 
 fn main() {
     tauri_build::build();
@@ -10,9 +11,6 @@ fn main() {
 }
 
 #[cfg(target_os = "macos")]
-use std::env;
-use std::path::PathBuf;
-
 fn setup_sqlcipher_macos() {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let sqlcipher_dir = PathBuf::from(&manifest_dir)
