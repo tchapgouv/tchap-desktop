@@ -4,8 +4,8 @@ set -e
 
 SQLCIPHER_VERSION="v4.5.6"
 BUILD_DIR="$(pwd)/build"
-INSTALL_DIR="$(pwd)/vendor/sqlcipher-macos"
-OPENSSL_DIR="$(pwd)/vendor/openssl-macos"
+INSTALL_DIR="$(pwd)/vendor/sqlcipher-macos-arm64"
+OPENSSL_DIR="$(pwd)/vendor/openssl-macos-arm64"
 
 mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR"

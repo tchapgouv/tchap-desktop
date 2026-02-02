@@ -4,7 +4,7 @@ set -e
 
 OPENSSL_VERSION="3.2.1"
 BUILD_DIR="$(pwd)/build"
-INSTALL_DIR="$(pwd)/vendor/openssl-macos"
+INSTALL_DIR="$(pwd)/vendor/openssl-macos-arm64"
 
 mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR"

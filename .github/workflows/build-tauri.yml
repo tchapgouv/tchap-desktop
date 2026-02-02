@@ -119,17 +119,33 @@ jobs:
           echo "PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/share/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
           echo "Finish installing deps"
 
-      - name: Build SQLCipher and OpenSSL from source (macOS)
+#activate cache if needed (not tested)
+#      - name: Cache SQLCipher build (macOS-arm64)
+#        if: inputs.platform == 'macos-latest'
+#        uses: actions/cache@v4
+#        with:
+#          #cache for artifacts and sources
+#          path: |
+#            vendor/openssl-macos-arm64
+#            vendor/sqlcipher-macos-arm64
+#            build/
+#          key: ${{ runner.os }}-sqlcipher-${{ hashFiles('scripts/build-*.sh') }}
+      
+      - name: Build SQLCipher and OpenSSL from source (macOS-arm64)
         if: inputs.platform == 'macos-latest'
         run: |
-          chmod +x scripts/build-openssl-macos.sh
-          chmod +x scripts/build-sqlcipher-macos.sh
+          if [ ! -d "vendor/sqlcipher-macos-arm64" ] || [ ! -d "vendor/openssl-macos-arm64" ]; then
+            chmod +x scripts/build-openssl-macos-arm64.sh
+            chmod +x scripts/build-sqlcipher-macos-arm64.sh
           
-          ./scripts/build-openssl-macos.sh
-          ./scripts/build-sqlcipher-macos.sh
+            ./scripts/build-openssl-macos-arm64.sh
+            ./scripts/build-sqlcipher-macos-arm64.sh
           
-          ls -la vendor/sqlcipher-macos/lib/
-          ls -la vendor/openssl-macos/lib/
+            ls -la vendor/sqlcipher-macos-arm64/lib/
+            ls -la vendor/openssl-macos-arm64/lib/
+          else
+            echo "Using cached SQLCipher and OpenSSL"
+          fi
         shell: bash
 
       # Uploading the tauri app to a release
