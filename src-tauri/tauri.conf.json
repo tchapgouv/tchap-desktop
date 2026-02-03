@@ -4,6 +4,7 @@
   "version": "4.18.4",
   "identifier": "fr.gouv.beta.tchap-desktop",
   "build": {
+    "devUrl": "http://localhost:8088",
     "frontendDist": "../src"
   },
   "app": {
