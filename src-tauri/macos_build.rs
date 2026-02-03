@@ -11,7 +11,7 @@ pub fn setup_sqlcipher() {
     if !sqlcipher_dir.exists() {
         panic!("SQLCipher not found! Run: ./scripts/build-sqlcipher-macos-arm64.sh");
     }
-    
+ 
     // Tell Cargo where to find the static libs
     println!("cargo:rustc-link-search=native={}/lib", sqlcipher_dir.display());
     println!("cargo:rustc-link-search=native={}/lib", openssl_dir.display());

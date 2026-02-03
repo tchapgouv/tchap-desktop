@@ -2,7 +2,7 @@
 # statically compile SQLCIPHER linked to a statically compiled openssl
 set -e
 
-SQLCIPHER_VERSION="v4.5.6"
+SQLCIPHER_VERSION="v4.13.0"
 BUILD_DIR="$(pwd)/build"
 INSTALL_DIR="$(pwd)/vendor/sqlcipher-macos-arm64"
 OPENSSL_DIR="$(pwd)/vendor/openssl-macos-arm64"
@@ -25,7 +25,7 @@ cd sqlcipher
     LDFLAGS="-L${OPENSSL_DIR}/lib -lcrypto"
 
 make clean
-make -j$(sysctl -n hw.ncpu)
+make -j
 make install
 
 echo "SQLCipher compiled and installed in $INSTALL_DIR"

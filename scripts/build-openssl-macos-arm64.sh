@@ -2,7 +2,7 @@
 # statically compile openssl for ARM64 arch
 set -e
 
-OPENSSL_VERSION="3.2.1"
+OPENSSL_VERSION="3.6.1"
 BUILD_DIR="$(pwd)/build"
 INSTALL_DIR="$(pwd)/vendor/openssl-macos-arm64"
 
@@ -22,7 +22,7 @@ cd "openssl-${OPENSSL_VERSION}"
     --openssldir="$INSTALL_DIR"
 
 make clean
-make -j$(sysctl -n hw.ncpu)
+make -j
 make install_sw
 
 echo "openssl compiled and installed in $INSTALL_DIR"
