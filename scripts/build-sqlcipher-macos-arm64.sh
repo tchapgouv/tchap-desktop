@@ -42,4 +42,9 @@ make clean
 make -j
 make install
 
-echo "SQLCipher compiled and installed in $INSTALL_DIR"
+# https://github.com/sqlcipher/sqlcipher/blob/master/CHANGELOG.md#470---march-2025---470-changes
+# breaking changes in 4.7 - libs have changed names
+# create simlink because name have changed since 4.7.0
+ln -sf "$INSTALL_DIR/lib/libsqlite3.a" "$INSTALL_DIR/lib/libsqlcipher.a"
+
+echo "SQLCipher compiled and installed in $INSTALL_DIR with a simlink"
