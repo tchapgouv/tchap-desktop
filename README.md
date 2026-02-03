@@ -33,11 +33,19 @@ A `TauriPlatform` has been created in tchap-web (which is a soft fork of [elemen
 
 - Install prerequisites (https://v2.tauri.app/start/prerequisites/)
 
-- Install sqlcipher for your platform, on Macos : brew install sqlcipher
+- For Macos : compile openssl and sqlcipher with 
+
+```bash
+bash ./scripts/build-openssl-macos-arm64.sh
+bash ./scripts/build-sqlcipher-macos-arm64.sh
+```
+
 
 - Install Node and npm using a version manager like nvm. The frontend required a node version = 20.
 
 - If you want to build the project locally, on windows platform you may need to manually put the sqlcipher dll in the `src-tauri/` folder. See more about the install workflow in the github workflow section. (`.github/workflows`)
+
+
 
 ## Dev local using local frontend
 

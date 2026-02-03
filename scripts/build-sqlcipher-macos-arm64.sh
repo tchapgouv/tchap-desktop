@@ -16,13 +16,27 @@ fi
 
 cd sqlcipher
 
+# Build with full-text search enabled (from homebrew recipe)
+CFLAGS="-DSQLITE_HAS_CODEC \
+-DSQLITE_ENABLE_JSON1 \
+-DSQLITE_ENABLE_FTS3 \
+-DSQLITE_ENABLE_FTS3_PARENTHESIS \
+-DSQLITE_ENABLE_FTS5 \
+-DSQLITE_ENABLE_COLUMN_METADATA \
+-DSQLITE_EXTRA_INIT=sqlcipher_extra_init \
+-DSQLITE_EXTRA_SHUTDOWN=sqlcipher_extra_shutdown \
+-I${OPENSSL_DIR}/include"
+
 ./configure \
-    --enable-tempstore=yes \
+    --with-tempstore=yes \
+    --prefix="$INSTALL_DIR" \
     --disable-shared \
     --enable-static \
-    --prefix="$INSTALL_DIR" \
-    CFLAGS="-DSQLITE_HAS_CODEC -I${OPENSSL_DIR}/include" \
+    --disable-tcl \
+    --enable-load-extension \
+    CFLAGS="$CFLAGS" \
     LDFLAGS="-L${OPENSSL_DIR}/lib -lcrypto"
+
 
 make clean
 make -j
