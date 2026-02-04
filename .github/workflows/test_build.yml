@@ -12,16 +12,16 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - platform: "windows-latest"
+          #- platform: "windows-latest"
             # this config will be merge with tauri.conf.json,
             # Needs to explicitly set tauri conf for dev build to overide name and identifier
-            args: "--target x86_64-pc-windows-msvc --config src-tauri\\tauri.conf.dev.json"
+          #  args: "--target x86_64-pc-windows-msvc --config src-tauri\\tauri.conf.dev.json"
           #- platform: "macos-latest" # for Arm based macs (M1 and above).
           #  args: "--target aarch64-apple-darwin --config src-tauri/tauri.conf.dev.json"
           #- platform: "macos-latest" # for Intel based macs.
           #  args: "--target x86_64-apple-darwin --config src-tauri/tauri.conf.dev.json"
-          #- platform: "ubuntu-22.04"
-          #  args: "--config src-tauri/tauri.conf.dev.json"
+          - platform: "ubuntu-22.04"
+            args: "--config src-tauri/tauri.conf.dev.json"
     uses: ./.github/workflows/build-tauri.yml
     with:
       platform: ${{ matrix.platform }}
