@@ -27,6 +27,7 @@ tauri-plugin-notification = "2"
 tauri-plugin-persisted-scope = "2"
 tauri-plugin-dialog = "2"
 seshat = { git = "https://github.com/tchapgouv/seshat.git", branch = "main_tchap",  features = ["bundled-sqlcipher"] }
+thiserror = "2.0.11"
 anyhow = "1.0.97"
 uuid = "1.15.1"
 blake2 = "0.10"
