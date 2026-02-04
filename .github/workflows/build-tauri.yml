@@ -99,26 +99,26 @@ jobs:
           echo Current directory contents:
           dir
 
-      # dependencies are bundled in seshat
-      # - name: Install SQLCipher for Linux
-      #   if: inputs.platform == 'ubuntu-22.04'
-      #   run: |
-      #     sudo apt-get update
-      #     echo "--- Installing linux dependencies"
-      #     sudo apt-get install -y \
-      #       libgtk-3-dev \
-      #       libwebkit2gtk-4.1-0 \
-      #       libwebkit2gtk-4.1-dev \
-      #       libappindicator3-dev \
-      #       librsvg2-dev \
-      #       patchelf
-      #     echo "--- Installing sqlcipher"
-      #     sudo apt install -y \
-      #       sqlcipher \
-      #       libsqlcipher-dev \
-      #       libsqlcipher0
-      #     echo "PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/share/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
-      #     echo "Finish installing deps"
+      # remove sqlcipher that is bundled in seshat
+      - name: Install dependencies for Linux
+        if: inputs.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          echo "--- Installing linux dependencies"
+          sudo apt-get install -y \
+            libgtk-3-dev \
+            libwebkit2gtk-4.1-0 \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf
+          #echo "--- Installing sqlcipher"
+          #sudo apt install -y \
+          #  sqlcipher \
+          #  libsqlcipher-dev \
+          #  libsqlcipher0
+          echo "PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/share/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
+          echo "Finish installing deps"
 
       - name: Install SQLCipher for MacOS
         if: inputs.platform == 'macos-latest'
