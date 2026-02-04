@@ -90,10 +90,10 @@ jobs:
           dir installed\x64-windows-static\lib
           .\vcpkg.exe list
           cd ..
-          #xcopy /y vcpkg\installed\x64-windows\bin\sqlcipher.dll .\src-tauri\
+          xcopy /y vcpkg\installed\x64-windows\bin\sqlcipher.dll .\src-tauri\
           xcopy /y vcpkg\installed\x64-windows\bin\libcrypto-3-x64.dll .\src-tauri\
           xcopy /y vcpkg\installed\x64-windows\bin\libssl-3-x64.dll .\src-tauri\
-          #xcopy /y vcpkg\installed\x64-windows\lib\sqlcipher.lib .\src-tauri\
+          xcopy /y vcpkg\installed\x64-windows\lib\sqlcipher.lib .\src-tauri\
           echo Listing copied files in src-tauri:
           dir .\src-tauri\
           echo Current directory contents:
@@ -111,11 +111,11 @@ jobs:
             libappindicator3-dev \
             librsvg2-dev \
             patchelf
-          #echo "--- Installing sqlcipher"
-          #sudo apt install -y \
-          #  sqlcipher \
-          #  libsqlcipher-dev \
-          #  libsqlcipher0
+          echo "--- Installing sqlcipher"
+          sudo apt install -y \
+            sqlcipher \
+            libsqlcipher-dev \
+            libsqlcipher0
           echo "PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/share/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
           echo "Finish installing deps"
 
