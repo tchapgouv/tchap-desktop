@@ -66,38 +66,38 @@ jobs:
           # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
           targets: ${{ inputs.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-      - name: Install SQLCipher for Windows
-        if: inputs.platform == 'windows-latest'
-        shell: cmd
-        run: |
-          dir .\src-tauri\
-          if exist vcpkg rmdir /s /q vcpkg
-          git clone https://github.com/microsoft/vcpkg
-          cd vcpkg
-          call .\bootstrap-vcpkg.bat -disableMetrics
-          call .\vcpkg.exe install sqlcipher:x64-windows-static --clean-after-build
-          call .\vcpkg.exe install sqlcipher:x64-windows --clean-after-build
-          call .\vcpkg.exe integrate install
-          echo VCPKG_ROOT=%CD%>>%GITHUB_ENV%
-          echo "SQLCIPHER_USE_VCPKG=1">>%GITHUB_ENV%
-          echo "VCPKGRS_DYNAMIC=1">>%GITHUB_ENV%
-          echo VCPKG_DEFAULT_TRIPLET=x64-windows>>%GITHUB_ENV%
-          echo "VCPKG_INSTALLED_DIR=%CD%\installed">>%GITHUB_ENV%
-          echo "LIBCLANG_PATH=%CD%\installed\x64-windows\tools\libclang">>%GITHUB_ENV%
-          echo "SQLCIPHER_LIB_DIR=%CD%\installed\x64-windows\lib">>%GITHUB_ENV%
-          echo "SQLCIPHER_INCLUDE_DIR=%CD%\installed\x64-windows\include">>%GITHUB_ENV%
-          dir installed\x64-windows\lib
-          dir installed\x64-windows-static\lib
-          .\vcpkg.exe list
-          cd ..
-          #xcopy /y vcpkg\installed\x64-windows\bin\sqlcipher.dll .\src-tauri\
-          xcopy /y vcpkg\installed\x64-windows\bin\libcrypto-3-x64.dll .\src-tauri\
-          xcopy /y vcpkg\installed\x64-windows\bin\libssl-3-x64.dll .\src-tauri\
-          #xcopy /y vcpkg\installed\x64-windows\lib\sqlcipher.lib .\src-tauri\
-          echo Listing copied files in src-tauri:
-          dir .\src-tauri\
-          echo Current directory contents:
-          dir
+      # - name: Install SQLCipher for Windows
+      #   if: inputs.platform == 'windows-latest'
+      #   shell: cmd
+      #   run: |
+      #     dir .\src-tauri\
+      #     if exist vcpkg rmdir /s /q vcpkg
+      #     git clone https://github.com/microsoft/vcpkg
+      #     cd vcpkg
+      #     call .\bootstrap-vcpkg.bat -disableMetrics
+      #     call .\vcpkg.exe install sqlcipher:x64-windows-static --clean-after-build
+      #     call .\vcpkg.exe install sqlcipher:x64-windows --clean-after-build
+      #     call .\vcpkg.exe integrate install
+      #     echo VCPKG_ROOT=%CD%>>%GITHUB_ENV%
+      #     echo "SQLCIPHER_USE_VCPKG=1">>%GITHUB_ENV%
+      #     echo "VCPKGRS_DYNAMIC=1">>%GITHUB_ENV%
+      #     echo VCPKG_DEFAULT_TRIPLET=x64-windows>>%GITHUB_ENV%
+      #     echo "VCPKG_INSTALLED_DIR=%CD%\installed">>%GITHUB_ENV%
+      #     echo "LIBCLANG_PATH=%CD%\installed\x64-windows\tools\libclang">>%GITHUB_ENV%
+      #     echo "SQLCIPHER_LIB_DIR=%CD%\installed\x64-windows\lib">>%GITHUB_ENV%
+      #     echo "SQLCIPHER_INCLUDE_DIR=%CD%\installed\x64-windows\include">>%GITHUB_ENV%
+      #     dir installed\x64-windows\lib
+      #     dir installed\x64-windows-static\lib
+      #     .\vcpkg.exe list
+      #     cd ..
+      #     #xcopy /y vcpkg\installed\x64-windows\bin\sqlcipher.dll .\src-tauri\
+      #     xcopy /y vcpkg\installed\x64-windows\bin\libcrypto-3-x64.dll .\src-tauri\
+      #     xcopy /y vcpkg\installed\x64-windows\bin\libssl-3-x64.dll .\src-tauri\
+      #     #xcopy /y vcpkg\installed\x64-windows\lib\sqlcipher.lib .\src-tauri\
+      #     echo Listing copied files in src-tauri:
+      #     dir .\src-tauri\
+      #     echo Current directory contents:
+      #     dir
 
       - name: Install SQLCipher for Linux
         if: inputs.platform == 'ubuntu-22.04'
