@@ -33,11 +33,7 @@ A `TauriPlatform` has been created in tchap-web (which is a soft fork of [elemen
 
 - Install prerequisites (https://v2.tauri.app/start/prerequisites/)
 
-- Install sqlcipher for your platform, on Macos : brew install sqlcipher
-
 - Install Node and npm using a version manager like nvm. The frontend required a node version = 20.
-
-- If you want to build the project locally, on windows platform you may need to manually put the sqlcipher dll in the `src-tauri/` folder. See more about the install workflow in the github workflow section. (`.github/workflows`)
 
 ## Dev local using local frontend
 
@@ -112,7 +108,7 @@ cargo tauri build
 
 - Test on build: This will only test the build of the app. From the build of the webapp to the build of the tauri app.
 
-- To build tauri we use the `build-tauri.yml` workflow. This workflow will build the app for windows platform. It will use the `tauri.conf.prod.json` file that we pass as an argument to the workflow in order to use the correct sqlcipher dll.
+- To build tauri we use the `build-tauri.yml` workflow. This workflow will build the app for windows platform. It will use the `tauri.conf.prod.json`.
 
 - TODO : Run tests
 
@@ -151,45 +147,3 @@ cargo tauri icon
 - This will automatically generate all the icons needed.
 
 ## Troubleshoot
-
-### 'sqlcipher' not found on MacOs
-
-If you have the following error
-
-```
-error: linking with `cc` failed: exit status: 1
-..
-ld: library 'sqlcipher' not found
-```
-
-You can export LIBRARY_PATH and C_INCLUDE_PATH to point to your sqlcipher installation
-
-```shell
-export LIBRARY_PATH=/opt/homebrew/Cellar/sqlcipher/4.6.1/lib
-export C_INCLUDE_PATH=/opt/homebrew/Cellar/sqlcipher/4.6.1/include
-```
-
-### compile sqlcipher on windows
-
-Be sure to install all Microsoft C++ Build Tools dependencies listed here : https://tauri.app/start/prerequisites/#microsoft-c-build-tools
-
-Sqlcipher is installed with vcpkg tools and copied to `src-tauri` folder
-
-```
-git clone https://github.com/microsoft/vcpkg.git
-cd vcpkg
-set "VCPKG_ROOT=%cd%"
-.\bootstrap-vcpkg.bat
-.\vcpkg integrate install
-.\vcpkg install openssl:x64-windows-static
-.\vcpkg.exe install sqlcipher:x64-windows-static #not sure if needed
-.\vcpkg.exe install sqlcipher:x64-windows
-
-echo %VCPKG_ROOT%
-
-cd ..\tchap-desktop
-xcopy /y %VCPKG_ROOT%\installed\x64-windows\bin\sqlcipher.dll .\src-tauri\
-xcopy /y %VCPKG_ROOT%\installed\x64-windows\bin\libcrypto-3-x64.dll .\src-tauri\
-xcopy /y %VCPKG_ROOT%\installed\x64-windows\bin\libssl-3-x64.dll .\src-tauri\
-xcopy /y %VCPKG_ROOT%\installed\x64-windows\lib\sqlcipher.lib .\src-tauri\
-```
