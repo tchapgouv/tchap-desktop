@@ -66,40 +66,7 @@ jobs:
           # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
           targets: ${{ inputs.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-      - name: Install SQLCipher for Windows
-        if: inputs.platform == 'windows-latest'
-        shell: cmd
-        run: |
-          dir .\src-tauri\
-          if exist vcpkg rmdir /s /q vcpkg
-          git clone https://github.com/microsoft/vcpkg
-          cd vcpkg
-          call .\bootstrap-vcpkg.bat -disableMetrics
-          call .\vcpkg.exe install sqlcipher:x64-windows-static --clean-after-build
-          call .\vcpkg.exe install sqlcipher:x64-windows --clean-after-build
-          call .\vcpkg.exe integrate install
-          echo VCPKG_ROOT=%CD%>>%GITHUB_ENV%
-          echo "SQLCIPHER_USE_VCPKG=1">>%GITHUB_ENV%
-          echo "VCPKGRS_DYNAMIC=1">>%GITHUB_ENV%
-          echo VCPKG_DEFAULT_TRIPLET=x64-windows>>%GITHUB_ENV%
-          echo "VCPKG_INSTALLED_DIR=%CD%\installed">>%GITHUB_ENV%
-          echo "LIBCLANG_PATH=%CD%\installed\x64-windows\tools\libclang">>%GITHUB_ENV%
-          echo "SQLCIPHER_LIB_DIR=%CD%\installed\x64-windows\lib">>%GITHUB_ENV%
-          echo "SQLCIPHER_INCLUDE_DIR=%CD%\installed\x64-windows\include">>%GITHUB_ENV%
-          dir installed\x64-windows\lib
-          dir installed\x64-windows-static\lib
-          .\vcpkg.exe list
-          cd ..
-          xcopy /y vcpkg\installed\x64-windows\bin\sqlcipher.dll .\src-tauri\
-          xcopy /y vcpkg\installed\x64-windows\bin\libcrypto-3-x64.dll .\src-tauri\
-          xcopy /y vcpkg\installed\x64-windows\bin\libssl-3-x64.dll .\src-tauri\
-          xcopy /y vcpkg\installed\x64-windows\lib\sqlcipher.lib .\src-tauri\
-          echo Listing copied files in src-tauri:
-          dir .\src-tauri\
-          echo Current directory contents:
-          dir
-
-      - name: Install SQLCipher for Linux
+      - name: Install dependencies for Linux
         if: inputs.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
@@ -111,26 +78,11 @@ jobs:
             libappindicator3-dev \
             librsvg2-dev \
             patchelf
-          echo "--- Installing sqlcipher"
-          sudo apt install -y \
-            sqlcipher \
-            libsqlcipher-dev \
-            libsqlcipher0
           echo "PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/share/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
           echo "Finish installing deps"
 
-      - name: Install SQLCipher for MacOS
-        if: inputs.platform == 'macos-latest'
-        run: |
-          echo "--- Updating brew"
-          brew upgrade
-          echo "--- Installing sqlcipher"
-          brew install sqlcipher
-          echo "LIBRARY_PATH=$(brew --prefix sqlcipher)/lib" >> "$GITHUB_ENV"
-        shell: bash
-
-# Uploading the tauri app to a release
-      - name: create Tauri app artifacts
+      # Uploading the tauri app to a release
+      - name: Create Tauri app artifacts for MacOS and Windows
         if: inputs.platform != 'ubuntu-22.04'
         uses: tauri-apps/tauri-action@dev
         env:
@@ -142,7 +94,7 @@ jobs:
           args: ${{ inputs.args }}
           uploadWorkflowArtifacts: ${{ inputs.onPR }}
  
-      - name: create Tauri app for linux
+      - name: Create Tauri app for linux
         if: inputs.platform == 'ubuntu-22.04'
         uses: tauri-apps/tauri-action@dev
         env:
@@ -154,7 +106,7 @@ jobs:
           releaseId: ${{ inputs.releaseId }}
           args: ${{ inputs.args }}
       
-      - name: Create release asset name pattern for no updater version
+      - name: Prepare asset name pattern for no updater version
         id: create-pattern-no-updater
         run: |
           PATTERN="[name]-[version]_[arch]_${{ inputs.env }}_no_updater[ext]"
@@ -162,7 +114,7 @@ jobs:
           echo "Generated pattern: $PATTERN"
         shell: bash
 
-      - name: create Windows app without updater
+      - name: Create Windows app without updater
         if: inputs.platform == 'windows-latest'
         uses: tauri-apps/tauri-action@dev
         env:
