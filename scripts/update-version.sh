@@ -5,6 +5,7 @@ current_version=$(jq -r '.version' package.json)
 
 # Get new version from argument
 new_version=$1
+CURRENT_DATE=$(date +%Y%m%d)
 
 # Check version format x.y.z
 if [[ ! $new_version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -35,6 +36,12 @@ jq '.version = "'"$new_version"'"' src-tauri/tauri.conf.preprod.json > src-tauri
 
 
 # Update the version in package.json
-jq '.version = "'"$new_version"'"' package.json > package.json.tmp && mv package.json.tmp package.json
+jq '.version = "'"$new_version"'" |
+  .tchapConfig.prod."tchap-web_version" = "'"$new_version"'" |
+  .tchapConfig.dev."tchap-web_version" = "'"$new_version"'" |
+  .tchapConfig.preprod."tchap-web_version" = "'"$new_version"'" |
+  .tchapConfig.prod."tchap-web_archive_name" = "tchap-\("'"$new_version"'")-prod-\("'$CURRENT_DATE'").tar.gz" |
+  .tchapConfig.dev."tchap-web_archive_name" = "tchap-\("'"$new_version"'")-dev-\("'$CURRENT_DATE'").tar.gz" |
+  .tchapConfig.preprod."tchap-web_archive_name" = "tchap-\("'"$new_version"'")-preprod-\("'$CURRENT_DATE'").tar.gz"' package.json > package.json.tmp && mv package.json.tmp package.json
 
 echo "Version updated from $current_version to $new_version"
