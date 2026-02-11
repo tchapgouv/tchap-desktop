@@ -105,6 +105,7 @@ jobs:
         with:
           releaseId: ${{ inputs.releaseId }}
           args: ${{ inputs.args }}
+          uploadWorkflowArtifacts: ${{ inputs.onPR }}
       
       - name: Prepare asset name pattern for no updater version
         id: create-pattern-no-updater
