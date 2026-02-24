@@ -20,7 +20,8 @@
         "installMode": "currentUser"
       },
       "wix": {
-        "language": "fr-FR"
+        "language": "fr-FR",
+        "template": "./src-tauri/resources/windows/config.wxs"
       }
     },
     "active": true,
