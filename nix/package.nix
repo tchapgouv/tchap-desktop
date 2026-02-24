@@ -168,7 +168,7 @@ rustPlatform.buildRustPackage rec {
     Icon=tchap
     Type=Application
     Categories=Network;InstantMessaging;
-    MimeType=x-scheme-handler/tchap;
+    MimeType=x-scheme-handler/tchap
     EOF
   '';
 
