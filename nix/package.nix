@@ -155,6 +155,7 @@ rustPlatform.buildRustPackage rec {
 
   # Phase d'installation
   postInstall = lib.optionalString stdenv.hostPlatform.isLinux ''
+    rm -f $out/share/applications/Tchap.desktop
     # Les icônes sont dans src-tauri/icons depuis la racine
     install -Dm644 src-tauri/icons/icon.png $out/share/icons/hicolor/128x128/apps/tchap.png
     
@@ -164,7 +165,7 @@ rustPlatform.buildRustPackage rec {
     [Desktop Entry]
     Name=Tchap
     Comment=Messagerie instantanée du secteur public français
-    Exec=$out/bin/tchap-desktop
+    Exec=$out/bin/tchap-desktop %u
     Icon=tchap
     Type=Application
     Categories=Network;InstantMessaging;
