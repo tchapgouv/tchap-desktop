@@ -4,16 +4,16 @@ use seshat::{
     RecoveryDatabase,
 };
 use std::fs;
-use std::sync::mpsc;
 use std::sync::Mutex;
+use std::sync::mpsc;
 use tauri::{AppHandle, Manager, Runtime, State};
 
+use crate::MyState;
 use crate::common_error::CommonError;
 use crate::seshat_utils::{
     add_historic_events_helper, checkpoints_to_json, deserialize_event, parse_event, parse_profile,
     parse_search_object, perform_manual_reindex, profile_to_json, search_result_to_json,
 };
-use crate::MyState;
 
 #[tauri::command]
 pub async fn supports_event_indexing() -> bool {
@@ -81,7 +81,9 @@ pub async fn init_event_index<R: Runtime>(
             println!("[Command] Recovery DB user version: {user_version}");
 
             if user_version == 0 {
-                println!("[Command] User version is 0. Deleting database contents instead of reindexing.");
+                println!(
+                    "[Command] User version is 0. Deleting database contents instead of reindexing."
+                );
                 // Drop recovery_db explicitly *before* deleting files to release file handles
                 drop(recovery_db);
                 fs::remove_dir_all(&db_path).map_err(|e| {
@@ -437,7 +439,7 @@ pub async fn load_file_events(
                 _ => {
                     return Err(CommonError::String(format!(
                         "No direction found, could not load file event {d_string}"
-                    )))
+                    )));
                 }
             };
 
