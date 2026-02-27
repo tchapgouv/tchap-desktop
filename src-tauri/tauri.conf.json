@@ -21,7 +21,7 @@
       },
       "wix": {
         "language": "fr-FR",
-        "template": "./src-tauri/resources/windows/config.wxs"
+        "template": "./resources/windows/config.wxs"
       }
     },
     "active": true,

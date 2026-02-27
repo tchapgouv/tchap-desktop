@@ -20,13 +20,12 @@
             Manufacturer="{{manufacturer}}"
             Version="{{version}}">
 
-        <!-- TCHP change installscope to perUser -->
         <Package Id="*"
                  Keywords="Installer"
                  InstallerVersion="450"
                  Languages="0"
                  Compressed="yes"
-                 InstallScope="perUser" 
+                 InstallScope="perMachine"
                  SummaryCodepage="!(loc.TauriCodepage)"/>
 
         <!-- https://docs.microsoft.com/en-us/windows/win32/msi/reinstallmode -->
@@ -116,18 +115,12 @@
                 <Component Id="ApplicationShortcutDesktop" Guid="*">
                     <Shortcut Id="ApplicationDesktopShortcut" Name="{{product_name}}" Description="Runs {{product_name}}" Target="[!Path]" WorkingDirectory="INSTALLDIR" />
                     <RemoveFolder Id="DesktopFolder" On="uninstall" />
-                    <!-- :TCHAP: remove KeyPath=yes-->
-                    <RegistryValue Root="HKCU" Key="Software\\{{manufacturer}}\\{{product_name}}" Name="Desktop Shortcut" Type="integer" Value="1" />
+                    <RegistryValue Root="HKCU" Key="Software\\{{manufacturer}}\\{{product_name}}" Name="Desktop Shortcut" Type="integer" Value="1" KeyPath="yes" />
                 </Component>
             </Directory>
-            <!-- :TCHAP: -->
-            <!-- <Directory Id="$(var.PlatformProgramFilesFolder)" Name="PFiles">
+            <Directory Id="$(var.PlatformProgramFilesFolder)" Name="PFiles">
                 <Directory Id="INSTALLDIR" Name="{{product_name}}"/>
-            </Directory> -->
-             <Directory Id="LocalAppDataFolder" Name="LData">
-                <Directory Id="INSTALLDIR" Name="{{{product_name}}}"/>
             </Directory>
-            <!-- end :TCHAP: -->
             <Directory Id="ProgramMenuFolder">
                 <Directory Id="ApplicationProgramsFolder" Name="{{product_name}}"/>
             </Directory>
@@ -136,12 +129,11 @@
         <DirectoryRef Id="INSTALLDIR">
             <Component Id="RegistryEntries" Guid="*">
                 <RegistryKey Root="HKCU" Key="Software\\{{manufacturer}}\\{{product_name}}">
-                <!-- :TCHAP: remove KeyPath=yes-->
-                    <RegistryValue Name="InstallDir" Type="string" Value="[INSTALLDIR]" />
+                    <RegistryValue Name="InstallDir" Type="string" Value="[INSTALLDIR]" KeyPath="yes" />
                 </RegistryKey>
                 <!-- Change the Root to HKCU for perUser installations -->
                 {{#each deep_link_protocols as |protocol| ~}}
-                <RegistryKey Root="HKCU" Key="Software\Classes\\{{protocol}}">
+                <RegistryKey Root="HKLM" Key="Software\Classes\\{{protocol}}">
                     <RegistryValue Type="string" Name="URL Protocol" Value=""/>
                     <RegistryValue Type="string" Value="URL:{{bundle_id}} protocol"/>
                     <RegistryKey Key="DefaultIcon">
@@ -167,45 +159,18 @@
             </Component>
             {{#each binaries as |bin| ~}}
             <Component Id="{{ bin.id }}" Guid="{{bin.guid}}" Win64="$(var.Win64)">
-            <!-- :TCHAP: -->
-                <RegistryValue Root="HKCU" Key="Software\\{{{manufacturer}}}\\{{{product_name}}}"
-                        Name="InstallDir"
-                        Value="[INSTALLDIR]"
-                        Type="string"
-                        KeyPath="yes" />
-                <File Id="Bin_{{ bin.id }}" Source="{{bin.path}}"/>
+                <File Id="Bin_{{ bin.id }}" Source="{{bin.path}}" KeyPath="yes"/>
             </Component>
             {{/each~}}
             {{#if enable_elevated_update_task}}
             <Component Id="UpdateTask" Guid="C492327D-9720-4CD5-8DB8-F09082AF44BE" Win64="$(var.Win64)">
-            <!-- :TCHAP: -->
-                <RegistryValue Root="HKCU" Key="Software\\{{{manufacturer}}}\\{{{product_name}}}"
-                        Name="InstallDir"
-                        Value="[INSTALLDIR]"
-                        Type="string"
-                        KeyPath="yes" />
-                <File Id="UpdateTask" Source="update.xml" Checksum="yes"/>
-            <!-- end :TCHAP: -->
+                <File Id="UpdateTask" Source="update.xml" KeyPath="yes" Checksum="yes"/>
             </Component>
             <Component Id="UpdateTaskInstaller" Guid="011F25ED-9BE3-50A7-9E9B-3519ED2B9932" Win64="$(var.Win64)">
-            <!-- :TCHAP: -->
-                <RegistryValue Root="HKCU" Key="Software\\{{{manufacturer}}}\\{{{product_name}}}"
-                        Name="InstallDir"
-                        Value="[INSTALLDIR]"
-                        Type="string"
-                        KeyPath="yes" />
-                <File Id="UpdateTaskInstaller" Source="install-task.ps1" Checksum="yes"/>
-            <!-- end :TCHAP: -->
+                <File Id="UpdateTaskInstaller" Source="install-task.ps1" KeyPath="yes" Checksum="yes"/>
             </Component>
             <Component Id="UpdateTaskUninstaller" Guid="D4F6CC3F-32DC-5FD0-95E8-782FFD7BBCE1" Win64="$(var.Win64)">
-            <!-- :TCHAP: -->
-                <RegistryValue Root="HKCU" Key="Software\\{{{manufacturer}}}\\{{{product_name}}}"
-                        Name="InstallDir"
-                        Value="[INSTALLDIR]"
-                        Type="string"
-                        KeyPath="yes" />
-                <File Id="UpdateTaskUninstaller" Source="uninstall-task.ps1" Checksum="yes"/>
-            <!-- end :TCHAP: -->
+                <File Id="UpdateTaskUninstaller" Source="uninstall-task.ps1" KeyPath="yes" Checksum="yes"/>
             </Component>
             {{/if}}
             {{resources}}
