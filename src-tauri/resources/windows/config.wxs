@@ -20,13 +20,15 @@
             Manufacturer="{{manufacturer}}"
             Version="{{version}}">
 
+        <!-- TCHP change installscope to perUser -->
         <Package Id="*"
                  Keywords="Installer"
                  InstallerVersion="450"
                  Languages="0"
                  Compressed="yes"
-                 InstallScope="perMachine"
+                 InstallScope="perUser" 
                  SummaryCodepage="!(loc.TauriCodepage)"/>
+
 
         <!-- https://docs.microsoft.com/en-us/windows/win32/msi/reinstallmode -->
         <!-- reinstall all files; rewrite all registry entries; reinstall all shortcuts -->
@@ -115,12 +117,18 @@
                 <Component Id="ApplicationShortcutDesktop" Guid="*">
                     <Shortcut Id="ApplicationDesktopShortcut" Name="{{product_name}}" Description="Runs {{product_name}}" Target="[!Path]" WorkingDirectory="INSTALLDIR" />
                     <RemoveFolder Id="DesktopFolder" On="uninstall" />
-                    <RegistryValue Root="HKCU" Key="Software\\{{manufacturer}}\\{{product_name}}" Name="Desktop Shortcut" Type="integer" Value="1" KeyPath="yes" />
+                    <!-- :TCHAP: remove KeyPath="yes"  -->
+                    <RegistryValue Root="HKCU" Key="Software\\{{manufacturer}}\\{{product_name}}" Name="Desktop Shortcut" Type="integer" Value="1"/>
                 </Component>
             </Directory>
-            <Directory Id="$(var.PlatformProgramFilesFolder)" Name="PFiles">
+            <!-- :TCHAP: -->
+            <!-- <Directory Id="$(var.PlatformProgramFilesFolder)" Name="PFiles">
                 <Directory Id="INSTALLDIR" Name="{{product_name}}"/>
+            </Directory> -->
+             <Directory Id="LocalAppDataFolder">
+                <Directory Id="INSTALLDIR" Name="{{{product_name}}}"/>
             </Directory>
+            <!-- end :TCHAP: -->
             <Directory Id="ProgramMenuFolder">
                 <Directory Id="ApplicationProgramsFolder" Name="{{product_name}}"/>
             </Directory>
@@ -129,11 +137,13 @@
         <DirectoryRef Id="INSTALLDIR">
             <Component Id="RegistryEntries" Guid="*">
                 <RegistryKey Root="HKCU" Key="Software\\{{manufacturer}}\\{{product_name}}">
-                    <RegistryValue Name="InstallDir" Type="string" Value="[INSTALLDIR]" KeyPath="yes" />
+                <!-- :TCHAP: remove KeyPath="yes"  -->
+                    <RegistryValue Name="InstallDir" Type="string" Value="[INSTALLDIR]"/>
                 </RegistryKey>
                 <!-- Change the Root to HKCU for perUser installations -->
                 {{#each deep_link_protocols as |protocol| ~}}
-                <RegistryKey Root="HKLM" Key="Software\Classes\\{{protocol}}">
+                <!-- :TCHAP: HKLM TO HKCU-->
+                <RegistryKey Root="HKCU" Key="Software\Classes\\{{protocol}}">
                     <RegistryValue Type="string" Name="URL Protocol" Value=""/>
                     <RegistryValue Type="string" Value="URL:{{bundle_id}} protocol"/>
                     <RegistryKey Key="DefaultIcon">
