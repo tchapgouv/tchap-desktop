@@ -36,7 +36,6 @@
         <Property Id="ALLUSERS" Secure="yes" Value="2"/>
         <Property Id="MSIINSTALLPERUSER" Secure="yes" Value="1" />
 
-
         <!-- Auto launch app after installation, useful for passive mode which usually used in updates -->
         <Property Id="AUTOLAUNCHAPP" Secure="yes" />
         <!-- Property to forward cli args to the launched app to not lose those of the pre-update instance -->
@@ -79,7 +78,7 @@
              RegistrySearch elements are listed under a single Property, the LAST successful
              match wins. We list the NSIS default-key search first and the MSI InstallDir
              search second so that the MSI-specific path takes priority when both keys exist. -->
-        <Property Id="INSTALLDIR">
+        <Property Id="INSTALLDIR" Value="[LocalAppDataFolder]Programs\{{product_name}}">
           <!-- First attempt: Search for the default key value (this is how the nsis installer stores the path) -->
           <RegistrySearch Id="PrevInstallDirNoName" Root="HKCU" Key="Software\\{{manufacturer}}\\{{product_name}}" Type="raw" />
 
@@ -123,8 +122,8 @@
                     <RegistryValue Root="HKCU" Key="Software\\{{manufacturer}}\\{{product_name}}" Name="Desktop Shortcut" Type="integer" Value="1" KeyPath="yes"/>
                 </Component>
             </Directory>
-            <Directory Id="LocalAppDataFolder">
-                <Directory Id="INSTALLDIR" Name="{{product_name}}" />
+            <Directory Id="$(var.PlatformProgramFilesFolder)" Name="PFiles">
+                <Directory Id="INSTALLDIR" Name="{{product_name}}"/>
             </Directory>
             <Directory Id="ProgramMenuFolder">
                 <Directory Id="ApplicationProgramsFolder" Name="{{product_name}}"/>
