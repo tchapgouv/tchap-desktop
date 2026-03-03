@@ -1,5 +1,6 @@
 use std::fs;
 use tauri::{AppHandle, Manager, Runtime};
+use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_opener::OpenerExt;
 
 use crate::common_error::CommonError;
@@ -24,11 +25,68 @@ pub async fn clear_storage<R: Runtime>(app_handle: AppHandle<R>) -> Result<(), S
     app_handle.restart()
 }
 
-
 // Called when a download is finished, the user can ignore the toast or open the downloaded file
 #[tauri::command]
-pub async fn user_download_action<R: Runtime>(app_handle: AppHandle<R>, path: String) -> Result<(), CommonError> {
+pub async fn user_download_action<R: Runtime>(
+    app_handle: AppHandle<R>,
+    path: String,
+) -> Result<(), CommonError> {
     println!("in command user download action {:?}", path);
     let _ = app_handle.opener().open_path(path, None::<&str>);
+    Ok(())
+}
+
+// Command to get or update user settings
+#[tauri::command]
+pub async fn settings_get_value<R: Runtime>(
+    app_handle: AppHandle<R>,
+    name: String,
+) -> Result<String, CommonError> {
+    println!("in get_setting {:?}", name);
+    match name.as_str() {
+        "Tauri.autoLaunch" => {
+            let autostart_manager = app_handle.autolaunch();
+
+            match autostart_manager.is_enabled() {
+                Ok(enabled) => {
+                    if enabled {
+                        Ok("enabled".to_string())
+                    } else {
+                        Ok("disabled".to_string())
+                    }
+                }
+                Err(e) => {
+                    println!("Autolaunch error: {:?}", e);
+                    Err(CommonError::String(format!(
+                        "Failed to launch auto start: {e}"
+                    ))) // adapt to your error type
+                }
+            }
+        }
+        _ => Ok("disabled".to_string()),
+    }
+}
+
+// Command to get or update user settings
+#[tauri::command]
+pub async fn settings_set_value<R: Runtime>(
+    app_handle: AppHandle<R>,
+    name: String,
+    value: String,
+) -> Result<(), CommonError> {
+    println!("in update_setting {:?}", name);
+    if name.as_str() == "Tauri.autoLaunch" {
+        let autostart_manager = app_handle.autolaunch();
+
+        if value == "enabled" {
+            autostart_manager
+                .enable()
+                .map_err(|e| CommonError::String(format!("Failed to launch auto start: {e}")))?;
+        } else {
+            autostart_manager
+                .disable()
+                .map_err(|e| CommonError::String(format!("Failed to launch auto start: {e}")))?;
+        }
+    }
     Ok(())
 }

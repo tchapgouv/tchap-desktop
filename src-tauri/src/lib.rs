@@ -4,8 +4,8 @@ mod keyring_commands;
 mod seshat_commands;
 mod seshat_utils;
 
-use std::sync::Mutex;
 use seshat::Database;
+use std::sync::Mutex;
 use tauri::{
     Emitter, Manager,
     menu::{Menu, MenuItem},
@@ -13,6 +13,7 @@ use tauri::{
     utils::config::WebviewUrl,
     webview::{DownloadEvent, WebviewWindowBuilder},
 };
+use tauri_plugin_autostart::MacosLauncher;
 
 /// A state shared on Tauri.
 #[derive(Clone)]
@@ -40,7 +41,8 @@ fn user_agent(app: &tauri::AppHandle) -> String {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let mut builder = tauri::Builder::default().plugin(tauri_plugin_shell::init());
+    let mut builder = tauri::Builder::default()
+        .plugin(tauri_plugin_shell::init());
 
     // Instanciate single instance plugin, with focus on the main window
     #[cfg(desktop)]
@@ -67,6 +69,10 @@ pub fn run() {
         .plugin(tauri_plugin_persisted_scope::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_autostart::init(
+            MacosLauncher::LaunchAgent,
+            Some(vec!["--flag1", "--flag2"]),
+        ))
         .setup(|app| {
             // Removing deeplink registration on macos for now, since it's not working and throwing an error on build
             // https://github.com/tchapgouv/tchap-desktop/issues/44
@@ -154,9 +160,11 @@ pub fn run() {
         })
         // When closing the app with the cross button, we only hide the app, and dont close it completly
         // The same behavior as Element app and apps on MacOS
-        .on_window_event(|window, event| if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-            window.hide().unwrap();
-            api.prevent_close();
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                window.hide().unwrap();
+                api.prevent_close();
+            }
         })
         .invoke_handler(tauri::generate_handler![
             seshat_commands::supports_event_indexing,
@@ -179,11 +187,29 @@ pub fn run() {
             seshat_commands::get_user_version,
             common_commands::clear_storage,
             common_commands::user_download_action,
+            common_commands::settings_set_value,
+            common_commands::settings_get_value,
             keyring_commands::get_password,
             keyring_commands::set_password,
             keyring_commands::delete_password,
             welcome
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|_app, event| match event {
+            //show/hide window on click on the docker app icon (RunEvent::Reopen is only for macOs)
+            #[cfg(target_os = "macos")]
+            tauri::RunEvent::Reopen { has_visible_windows , .. } => {
+                if let Some(webview_window) = _app.get_webview_window("main") {
+                    if has_visible_windows {
+                       webview_window.hide().unwrap();
+                   } else {
+                       let _ = webview_window.unminimize();
+                       let _ = webview_window.set_focus();
+                       let _ = webview_window.show();
+                   }
+                }
+            }
+            _ => {}
+        });
 }
