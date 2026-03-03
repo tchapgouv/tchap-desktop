@@ -46,5 +46,6 @@ custom-protocol = [ "tauri/custom-protocol" ]
 no-updater = []
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-autostart = "2"
 tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
 tauri-plugin-updater = "2"
