@@ -36,6 +36,7 @@
         <!-- reinstall all files; rewrite all registry entries; reinstall all shortcuts -->
         <Property Id="REINSTALLMODE" Value="amus" />
         <!-- :TCHAP: dual purpose install https://learn.microsoft.com/en-us/windows/win32/msi/msiinstallperuser -->
+        <!-- This is actually a hack because setting applocal as install dir is not working (light.exe error) -->
         <Property Id="ALLUSERS" Secure="yes" Value="2"/>
         <Property Id="MSIINSTALLPERUSER" Secure="yes" Value="1" />
 

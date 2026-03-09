@@ -35,12 +35,12 @@ A `TauriPlatform` has been created in tchap-web (which is a soft fork of [elemen
 
 - Install Node and npm using a version manager like nvm. The frontend required a node version = 20.
 
-## For windows admin
+## For windows installation
 Two different type of builds are proposed : 
-- With no updater : the admin of the fleets will have the burden 
+- With no updater : the admin of the fleets will have the burden to push new version of the app
 - With auto updates: updates will be pushed automatically to users by Tchap team
 
-The .msi installer is perUser only whereas the .exe is both (will take perMachine mode by default so will ask admin privileges to install).
+The .msi installer which include the auto-update is perUser only whereas the .exe is both (will take perMachine mode by default so will ask admin privileges to install). Whereas the .msi installer with no updater is perMachine, it will require admin rights to install the app
 
 
 ## Dev local using local frontend

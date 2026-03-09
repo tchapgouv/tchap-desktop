@@ -14,16 +14,6 @@
     }
   },
   "bundle": {
-    "windows": {
-      "allowDowngrades": true,
-      "nsis": {
-        "installMode": "currentUser"
-      },
-      "wix": {
-        "language": "fr-FR",
-        "template": "./resources/windows/config.wxs"
-      }
-    },
     "active": true,
     "targets": "all",
     "icon": [
