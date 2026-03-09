@@ -1,3 +1,5 @@
+<!-- :TCHAP: This file is taken from https://github.com/tauri-apps/tauri/blob/dev/crates/tauri-bundler/src/bundle/windows/msi/main.wxs with minor changes to make it perUser as default-->
+<!-- With the help of this open issue on tauri https://github.com/tauri-apps/tauri/issues/13792 -->
 <?if $(sys.BUILDARCH)="x86"?>
     <?define Win64 = "no" ?>
     <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
@@ -20,7 +22,7 @@
             Manufacturer="{{manufacturer}}"
             Version="{{version}}">
 
-        <!-- TCHP change installscope to perUser -->
+        <!-- :TCHAP: change installscope to perUser -->
         <Package Id="*"
                  Keywords="Installer"
                  InstallerVersion="450"
@@ -33,6 +35,7 @@
         <!-- https://docs.microsoft.com/en-us/windows/win32/msi/reinstallmode -->
         <!-- reinstall all files; rewrite all registry entries; reinstall all shortcuts -->
         <Property Id="REINSTALLMODE" Value="amus" />
+        <!-- :TCHAP: dual purpose install https://learn.microsoft.com/en-us/windows/win32/msi/msiinstallperuser -->
         <Property Id="ALLUSERS" Secure="yes" Value="2"/>
         <Property Id="MSIINSTALLPERUSER" Secure="yes" Value="1" />
 
@@ -78,6 +81,7 @@
              RegistrySearch elements are listed under a single Property, the LAST successful
              match wins. We list the NSIS default-key search first and the MSI InstallDir
              search second so that the MSI-specific path takes priority when both keys exist. -->
+        <!-- :TCHAP: add value to use localappdata folder as default -->
         <Property Id="INSTALLDIR" Value="[LocalAppDataFolder]Programs\{{product_name}}">
           <!-- First attempt: Search for the default key value (this is how the nsis installer stores the path) -->
           <RegistrySearch Id="PrevInstallDirNoName" Root="HKCU" Key="Software\\{{manufacturer}}\\{{product_name}}" Type="raw" />
