@@ -16,21 +16,13 @@
     "windows": {
       "allowDowngrades": true,
       "nsis": {
-        "installMode": "currentUser"
+        "installMode": "both"
       },
       "wix": {
-        "language": "fr-FR"
+        "language": "fr-FR",
+        "template": null
       }
     },
-    "active": true,
-    "targets": "all",
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
-    ],
     "createUpdaterArtifacts": false,
     "resources": {
       "resources/windows/msvcp140.dll": "./msvcp140.dll",
