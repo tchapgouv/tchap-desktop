@@ -14,6 +14,20 @@
     }
   },
   "bundle": {
+    "windows": {
+      "allowDowngrades": true,
+      "nsis": {
+        "installMode": "both"
+      },
+      "wix": {
+        "language": "fr-FR",
+        "template": "./resources/windows/config.wxs"
+      }
+    },
+    "resources": {
+      "resources/windows/msvcp140.dll": "./msvcp140.dll",
+      "resources/windows/vcruntime140.dll": "./vcruntime140.dll"
+    },
     "active": true,
     "targets": "all",
     "icon": [
@@ -38,15 +52,11 @@
     },
     "deep-link": {
       "desktop": {
-        "schemes": [
-          "tchap"
-        ]
+        "schemes": ["tchap"]
       }
     },
     "protocol": {
-      "schemas": [
-        "tchap"
-      ]
+      "schemas": ["tchap"]
     }
   }
 }
