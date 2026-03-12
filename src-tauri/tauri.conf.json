@@ -21,7 +21,7 @@
       },
       "wix": {
         "language": "fr-FR",
-        "template": "./resources/windows/config.wxs"
+        "template": null
       }
     },
     "resources": {
