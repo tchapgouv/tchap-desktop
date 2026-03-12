@@ -28,6 +28,9 @@
       "resources/windows/msvcp140.dll": "./msvcp140.dll",
       "resources/windows/vcruntime140.dll": "./vcruntime140.dll"
     },
+    "macOS": {
+      "entitlements": "entitlements.plist"
+    },
     "active": true,
     "targets": "all",
     "icon": [

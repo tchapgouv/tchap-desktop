@@ -1,7 +1,0 @@
-{
-  "bundle": {
-    "macOS": {
-      "entitlements": "entitlements.plist"
-    }
-  }
-}
