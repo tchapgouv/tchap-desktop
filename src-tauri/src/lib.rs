@@ -132,7 +132,8 @@ pub fn run() {
 
             let handle = app.app_handle().clone();
             let handle_for_on_download = app.app_handle().clone();
-            // Needs to remove app: {windows } from tauri conf, otherwise there will be two window creation
+            // Needs to remove app: { windows } from tauri conf, otherwise there will be two window creation
+            // Only way to setup custom user agents
             WebviewWindowBuilder::new(&handle, "main", WebviewUrl::App("index.html".into()))
                 .on_download(move |_webview, event| {
                     if let DownloadEvent::Finished { url, path, success } = event {
