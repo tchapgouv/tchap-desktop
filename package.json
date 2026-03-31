@@ -8,7 +8,7 @@
     "update-version": "./scripts/update-version.sh"
   },
   "tchapConfig": {
-    "use_github": true,
+    "use_github": false,
     "prod": {
       "tchap-web_version": "4.19.2",
       "tchap-web_archive_name": "tchap-4.19.2-prod-20260319.tar.gz",
@@ -21,7 +21,7 @@
       "tchap-web_version": "4.19.2",
       "tchap-web_archive_name": "tchap-4.19.2-dev-20260319.tar.gz",
       "tchap-web_github": {
-        "branch": "desktop-fix-notification",
+        "branch": "develop_tchap",
         "repo": "https://github.com/tchapgouv/tchap-web-v4"
       }
     },
