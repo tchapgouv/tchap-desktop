@@ -14,7 +14,7 @@ use tauri::{
     webview::{DownloadEvent, WebviewWindowBuilder},
 };
 use tauri_plugin_autostart::MacosLauncher;
-
+use tauri_plugin_deep_link::DeepLinkExt;
 /// A state shared on Tauri.
 #[derive(Clone)]
 pub struct MyState {
@@ -74,6 +74,8 @@ pub fn run() {
             Some(vec!["--flag1", "--flag2"]),
         ))
         .setup(|app| {
+            app.deep_link().register("tchap")?;
+
             // Create the initial state
             let initial_state = MyState { database: None };
 
