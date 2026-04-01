@@ -57,15 +57,12 @@ The .msi installer which include the auto-update is perUser only whereas the .ex
 - Go to your frontend folder
 
 ```shell
-# On tchap only this branch is compatible with tauri otherwise the tauri platform won't be detected
-git checkout desktop-search-ipc
+git checkout develop_tchap
 
 yarn install
 
 yarn start
 ```
-
-| For now only the branch "desktop-search-ipc" on the frontend repository support tauri as his backend.
 
 - Go back to your tauri app and run
 

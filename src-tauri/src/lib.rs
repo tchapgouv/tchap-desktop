@@ -54,7 +54,7 @@ pub fn run() {
                 .set_focus();
         }));
     }
-    // doessnt initialize the updater plugin if the feature no-updater is applied during build
+    // doesnt initialize the updater plugin if the feature no-updater is applied during build
 
     #[cfg(not(feature = "no-updater"))]
     {
@@ -74,14 +74,6 @@ pub fn run() {
             Some(vec!["--flag1", "--flag2"]),
         ))
         .setup(|app| {
-            // Removing deeplink registration on macos for now, since it's not working and throwing an error on build
-            // https://github.com/tchapgouv/tchap-desktop/issues/44
-            #[cfg(all(desktop, not(target_os = "macos")))]
-            {
-                use tauri_plugin_deep_link::DeepLinkExt;
-                app.deep_link().register("tchap")?;
-            }
-
             // Create the initial state
             let initial_state = MyState { database: None };
 
@@ -140,7 +132,8 @@ pub fn run() {
 
             let handle = app.app_handle().clone();
             let handle_for_on_download = app.app_handle().clone();
-            // Needs to remove app: {windows } from tauri conf, otherwise there will be two window creation
+            // Needs to remove app: { windows } from tauri conf, otherwise there will be two window creation
+            // Only way to setup custom user agents
             WebviewWindowBuilder::new(&handle, "main", WebviewUrl::App("index.html".into()))
                 .on_download(move |_webview, event| {
                     if let DownloadEvent::Finished { url, path, success } = event {
