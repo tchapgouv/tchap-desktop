@@ -54,7 +54,7 @@ pub fn run() {
                 .set_focus();
         }));
     }
-    // doesnt initialize the updater plugin if the feature no-updater is applied during build
+    // doessnt initialize the updater plugin if the feature no-updater is applied during build
 
     #[cfg(not(feature = "no-updater"))]
     {
@@ -74,7 +74,13 @@ pub fn run() {
             Some(vec!["--flag1", "--flag2"]),
         ))
         .setup(|app| {
-            app.deep_link().register("tchap")?;
+            // Removing deeplink registration on macos for now, since it's not working and throwing an error on build
+            // https://github.com/tchapgouv/tchap-desktop/issues/44
+            #[cfg(all(desktop, not(target_os = "macos")))]
+            {
+                use tauri_plugin_deep_link::DeepLinkExt;
+                app.deep_link().register("tchap")?;
+            }
 
             // Create the initial state
             let initial_state = MyState { database: None };
