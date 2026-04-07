@@ -14,7 +14,7 @@ use tauri::{
     webview::{DownloadEvent, WebviewWindowBuilder},
 };
 use tauri_plugin_autostart::MacosLauncher;
-use tauri_plugin_deep_link::DeepLinkExt;
+
 /// A state shared on Tauri.
 #[derive(Clone)]
 pub struct MyState {
@@ -54,7 +54,7 @@ pub fn run() {
                 .set_focus();
         }));
     }
-    // doessnt initialize the updater plugin if the feature no-updater is applied during build
+    // doesnt initialize the updater plugin if the feature no-updater is applied during build
 
     #[cfg(not(feature = "no-updater"))]
     {
