@@ -14,7 +14,7 @@ use tauri::{
     webview::{DownloadEvent, WebviewWindowBuilder},
 };
 use tauri_plugin_autostart::MacosLauncher;
-use tauri_plugin_deep_link::DeepLinkExt;
+
 /// A state shared on Tauri.
 #[derive(Clone)]
 pub struct MyState {
@@ -74,7 +74,13 @@ pub fn run() {
             Some(vec!["--flag1", "--flag2"]),
         ))
         .setup(|app| {
-            app.deep_link().register("tchap")?;
+            // Removing deeplink registration on macos for now, since it's not working and throwing an error on build
+            // https://github.com/tchapgouv/tchap-desktop/issues/44
+            #[cfg(all(desktop, not(target_os = "macos")))]
+            {
+                use tauri_plugin_deep_link::DeepLinkExt;
+                app.deep_link().register("tchap")?;
+            }
 
             // Create the initial state
             let initial_state = MyState { database: None };
