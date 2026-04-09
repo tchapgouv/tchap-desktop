@@ -198,17 +198,13 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
         .run(|_app, event| match event {
-            //show/hide window on click on the docker app icon (RunEvent::Reopen is only for macOs)
+            //show window on click on the docker app icon (RunEvent::Reopen is only for macOs)
             #[cfg(target_os = "macos")]
-            tauri::RunEvent::Reopen { has_visible_windows , .. } => {
-                if let Some(webview_window) = _app.get_webview_window("main") {
-                    if has_visible_windows {
-                       webview_window.hide().unwrap();
-                   } else {
-                       let _ = webview_window.unminimize();
-                       let _ = webview_window.set_focus();
-                       let _ = webview_window.show();
-                   }
+            tauri::RunEvent::Reopen {  .. } => {
+                if let Some(webview_window) = _app.get_webview_window("main") { 
+                    let _ = webview_window.unminimize();
+                    let _ = webview_window.set_focus();
+                    let _ = webview_window.show();
                 }
             }
             _ => {}
