@@ -18,8 +18,6 @@ jobs:
             args: "--target x86_64-pc-windows-msvc --config src-tauri\\tauri.conf.dev.json"
           - platform: "macos-latest" # for Arm based macs (M1 and above) and Intel based macs.
             args: "--target universal-apple-darwin --config src-tauri/tauri.conf.dev.json"
-          #- platform: "macos-latest" # for Intel based macs.
-          #  args: "--target x86_64-apple-darwin --config src-tauri/tauri.conf.dev.json"
           #- platform: "ubuntu-22.04"
           #  args: "--config src-tauri/tauri.conf.dev.json"
     uses: ./.github/workflows/build-tauri.yml
