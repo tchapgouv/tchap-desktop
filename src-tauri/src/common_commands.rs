@@ -25,14 +25,14 @@ pub async fn clear_storage<R: Runtime>(app_handle: AppHandle<R>) -> Result<(), S
     app_handle.restart()
 }
 
-// Called when a download is finished, the user can ignore the toast or open the downloaded file
+// Called when a download is finished, the user can ignore the toast or reveal the downloaded file in the default explorer
 #[tauri::command]
 pub async fn user_download_action<R: Runtime>(
     app_handle: AppHandle<R>,
     path: String,
 ) -> Result<(), CommonError> {
     println!("in command user download action {:?}", path);
-    let _ = app_handle.opener().open_path(path, None::<&str>);
+    let _ = app_handle.opener().reveal_item_in_dir(path);
     Ok(())
 }
 
