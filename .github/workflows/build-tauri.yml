@@ -84,7 +84,7 @@ jobs:
       - name: Prepare asset name pattern for normal version
         id: create-pattern-updater
         run: |
-          PATTERN="[name]-${{ inputs.env }}_[version]_[arch][ext]"
+          PATTERN="Tchap-${{ inputs.env }}_[version]_[arch][ext]"
           echo "PATTERN=$PATTERN" >> $GITHUB_OUTPUT
           echo "Generated pattern: $PATTERN"
         shell: bash
@@ -92,7 +92,7 @@ jobs:
       - name: Prepare asset name pattern for no updater version
         id: create-pattern-no-updater
         run: |
-          PATTERN="[name]-${{ inputs.env }}_[version]_[arch]_no_updater[ext]"
+          PATTERN="Tchap-${{ inputs.env }}_[version]_[arch]_no_updater[ext]"
           echo "PATTERN_NO_UPDATER=$PATTERN" >> $GITHUB_OUTPUT
           echo "Generated no updater pattern: $PATTERN"
         shell: bash
