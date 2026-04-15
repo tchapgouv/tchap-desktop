@@ -109,8 +109,8 @@ jobs:
           releaseId: ${{ inputs.releaseId }}
           args: ${{ inputs.args }}
           uploadWorkflowArtifacts: ${{ inputs.onPR }}
-          releaseAssetNamePattern: ${{ steps.create-pattern-no-updater.outputs.PATTERN }}
-          workflowArtifactNamePattern: ${{ steps.create-pattern-no-updater.outputs.PATTERN }}
+          releaseAssetNamePattern: ${{ steps.create-pattern-updater.outputs.PATTERN }}
+          workflowArtifactNamePattern: ${{ steps.create-pattern-updater.outputs.PATTERN }}
  
       - name: Create Tauri app for linux
         if: inputs.platform == 'ubuntu-22.04'
@@ -124,8 +124,8 @@ jobs:
           releaseId: ${{ inputs.releaseId }}
           args: ${{ inputs.args }}
           uploadWorkflowArtifacts: ${{ inputs.onPR }}
-          releaseAssetNamePattern: ${{ steps.create-pattern-no-updater.outputs.PATTERN }}
-          workflowArtifactNamePattern: ${{ steps.create-pattern-no-updater.outputs.PATTERN }}
+          releaseAssetNamePattern: ${{ steps.create-pattern-updater.outputs.PATTERN }}
+          workflowArtifactNamePattern: ${{ steps.create-pattern-updater.outputs.PATTERN }}
 
       - name: Create Windows app without updater
         if: inputs.platform == 'windows-latest'
