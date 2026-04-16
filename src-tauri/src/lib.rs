@@ -79,7 +79,8 @@ pub fn run() {
             #[cfg(all(desktop, not(target_os = "macos")))]
             {
                 use tauri_plugin_deep_link::DeepLinkExt;
-                app.deep_link().register("tchap")?;
+                app.deep_link().register("tchap")?; 
+                //TODO should use the value from tauri.conf
             }
 
             // Create the initial state
