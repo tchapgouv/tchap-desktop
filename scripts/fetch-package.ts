@@ -10,15 +10,16 @@ import { exec as execCallback, spawn } from "node:child_process";
 import { promisify } from "node:util";
 
 interface TchapConfig {
-  use_github: boolean;
   prod: TchapConfigEnv;
   dev: TchapConfigEnv;
+  preprod: TchapConfigEnv;
 }
 
 interface TchapConfigEnv {
   "tchap-web_version": string;
   "tchap-web_archive_name": string;
-  "tchap-web_github": { branch: string; repo: string; };
+  "tchap-web_github": { branch: string; repo: string };
+  "use_github": boolean;
 }
 
 const config: TchapConfig = tchapConfig as TchapConfig;
@@ -185,16 +186,18 @@ async function buildFromArchive(targetVersion: string, filename: string) {
 
 async function main(): Promise<number | undefined> {
 
-    if (config.use_github) {
+    if (config[TCHAP_ENV].use_github) {
       await buildFromGithubRepo(
         (config[TCHAP_ENV] as TchapConfigEnv)["tchap-web_github"].repo,
-        (config[TCHAP_ENV] as TchapConfigEnv)["tchap-web_github"].branch
+        (config[TCHAP_ENV] as TchapConfigEnv)["tchap-web_github"].branch,
       );
     } else {
-      const targetVersion: string | undefined =
-        (config[TCHAP_ENV] as TchapConfigEnv)["tchap-web_version"];
-      const filename: string | undefined =
-        (config[TCHAP_ENV] as TchapConfigEnv)["tchap-web_archive_name"];
+      const targetVersion: string | undefined = (
+        config[TCHAP_ENV] as TchapConfigEnv
+      )["tchap-web_version"];
+      const filename: string | undefined = (
+        config[TCHAP_ENV] as TchapConfigEnv
+      )["tchap-web_archive_name"];
       await buildFromArchive(targetVersion, filename);
     }
     console.log("Done!");

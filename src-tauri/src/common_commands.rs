@@ -2,6 +2,7 @@ use std::fs;
 use tauri::{AppHandle, Manager, Runtime};
 use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_opener::OpenerExt;
+use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
 
 use crate::common_error::CommonError;
 
@@ -32,7 +33,21 @@ pub async fn user_download_action<R: Runtime>(
     path: String,
 ) -> Result<(), CommonError> {
     println!("in command user download action {:?}", path);
-    let _ = app_handle.opener().reveal_item_in_dir(path);
+    // let _ = app_handle.opener().open_path(path, None::<&str>);
+    let message = format!("Voulez vous ouvrir le fichier {path} ?");
+
+    app_handle.dialog()
+        .message(message)
+        .kind(MessageDialogKind::Info)
+        .title("Téléchargement réussi")
+        .buttons(MessageDialogButtons::YesNo)
+        .show(move |result| match result {
+            true => {
+                println!("in command user download action true");
+                let _ = app_handle.opener().open_path(path, None::<&str>);
+            },
+            false => println!("in command user download action false"),
+        });
     Ok(())
 }
 

@@ -8,8 +8,8 @@
     "update-version": "./scripts/update-version.sh"
   },
   "tchapConfig": {
-    "use_github": false,
     "prod": {
+      "use_github": false,
       "tchap-web_version": "4.19.4",
       "tchap-web_archive_name": "tchap-4.19.4-prod-20260409.tar.gz",
       "tchap-web_github": {
@@ -18,18 +18,20 @@
       }
     },
     "dev": {
+      "use_github": true,
       "tchap-web_version": "4.19.4",
       "tchap-web_archive_name": "tchap-4.19.4-dev-20260409.tar.gz",
       "tchap-web_github": {
-        "branch": "develop_tchap",
+        "branch": "desktop-fix-file-opener-security-issue",
         "repo": "https://github.com/tchapgouv/tchap-web-v4"
       }
     },
     "preprod": {
+      "use_github": false,
       "tchap-web_version": "4.19.4",
       "tchap-web_archive_name": "tchap-4.19.4-preprod-20260409.tar.gz",
       "tchap-web_github": {
-        "branch": "develop_tchap",
+        "branch": "desktop-fix-file-opener-security-issue",
         "repo": "https://github.com/tchapgouv/tchap-web-v4"
       }
     }
