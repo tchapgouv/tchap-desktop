@@ -74,18 +74,6 @@ pub fn run() {
             Some(vec!["--flag1", "--flag2"]),
         ))
         .setup(|app| {
-            // commenting this part because it seems to be redundant with the conf in the plugin
-            //  "deep-link": { "desktop": { "schemes": ["tchap" ...
-            /*
-            // Removing deeplink registration on macos for now, since it's not working and throwing an error on build
-            // https://github.com/tchapgouv/tchap-desktop/issues/44
-            #[cfg(all(desktop, not(target_os = "macos")))]
-            {
-                use tauri_plugin_deep_link::DeepLinkExt;
-                app.deep_link().register("tchap")?;                 
-            }
-            */
-
             // Create the initial state
             let initial_state = MyState { database: None };
 
