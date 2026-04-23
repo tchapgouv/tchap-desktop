@@ -60,11 +60,6 @@
           "tchap"
         ]
       }
-    },
-    "protocol": {
-      "schemas": [
-        "tchap"
-      ]
     }
   }
 }

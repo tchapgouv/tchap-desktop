@@ -27,10 +27,12 @@
         "installMode": "passive"
       }
     },
-    "protocol": {
-      "schemas": [
-        "tchap"
-      ]
+    "deep-link": {
+      "desktop": {
+        "schemes": [
+          "tchap-dev"
+        ]
+      }
     }
   }
 }

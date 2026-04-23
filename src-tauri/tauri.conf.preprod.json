@@ -4,7 +4,7 @@
   "version": "4.19.5",
   "identifier": "fr.gouv.beta.tchap-desktop-preprod",
   "build": {
-    "devUrl": "http://localhost:8080",
+    "devUrl": "http://localhost:8088",
     "frontendDist": "../src"
   },
   "app": {
@@ -27,10 +27,12 @@
         "installMode": "passive"
       }
     },
-    "protocol": {
-      "schemas": [
-        "tchap"
-      ]
+    "deep-link": {
+      "desktop": {
+        "schemes": [
+          "tchap-preprod"
+        ]
+      }
     }
   }
 }

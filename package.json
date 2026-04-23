@@ -8,7 +8,7 @@
     "update-version": "./scripts/update-version.sh"
   },
   "tchapConfig": {
-    "use_github": false,
+    "use_github": true,
     "prod": {
       "tchap-web_version": "4.19.5",
       "tchap-web_archive_name": "tchap-4.19.5-prod-20260415.tar.gz",
