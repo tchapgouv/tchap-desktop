@@ -21,7 +21,7 @@
       "tchap-web_version": "4.19.4",
       "tchap-web_archive_name": "tchap-4.19.4-dev-20260409.tar.gz",
       "tchap-web_github": {
-        "branch": "feat/custom_deep_link_by_env",
+        "branch": "develop_tchap",
         "repo": "https://github.com/tchapgouv/tchap-web-v4"
       }
     },
