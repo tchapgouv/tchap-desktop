@@ -65,6 +65,30 @@ jobs:
       TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
       TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
+  latest-json-generation-prod:
+    runs-on: ${{ matrix.platform }}
+    needs: build-tchap-desktop-dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create release_prod.json file
+        shell: bash
+        run: |
+          curl -s \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }} \
+            > release_prod.json
+
+      - name: Run latest json script for prod
+        shell: bash
+        run: ./scripts/get-latest-file-per-env.sh prod ${{ github.ref_name }}
+
+      - name: Upload lastest_prod.json as artifact
+        uses: actions/upload-artifact@v4
+        continue-on-error: true # Means that another platform already uploaded the artifact, so we don't need to fail the build
+        with:
+          name: latest_prod.json
+          path: /
 
   build-tchap-desktop-dev:
     needs: create-release
@@ -89,9 +113,34 @@ jobs:
       releaseId: ${{ needs.create-release.outputs.release_id }}
       env: dev
     secrets:
-      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-      
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_DEV }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_DEV_PASSWORD }}
+  
+  latest-json-generation-dev:
+    runs-on: ${{ matrix.platform }}
+    needs: build-tchap-desktop-dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create release_dev.json file
+        shell: bash
+        run: |
+          curl -s \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }} \
+            > release_dev.json
+
+      - name: Run latest json script for dev
+        shell: bash
+        run: ./scripts/get-latest-file-per-env.sh dev ${{ github.ref_name }}
+
+      - name: Upload lastest_dev.json as artifact
+        uses: actions/upload-artifact@v4
+        continue-on-error: true # Means that another platform already uploaded the artifact, so we don't need to fail the build
+        with:
+          name: latest_dev.json
+          path: /
+
   build-tchap-desktop-preprod:
     needs: create-release
     permissions:
@@ -115,6 +164,31 @@ jobs:
       releaseId: ${{ needs.create-release.outputs.release_id }}
       env: preprod
     secrets:
-      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_PREPROD_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PREPROD_PASSWORD }}
+
+  latest-json-generation-preprod:
+    runs-on: ${{ matrix.platform }}
+    needs: build-tchap-desktop-preprod
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create release_preprod.json file
+        shell: bash
+        run: |
+          curl -s \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }} \
+            > release_preprod.json
+
+      - name: Run latest json script for preprod
+        shell: bash
+        run: ./scripts/get-latest-file-per-env.sh preprod ${{ github.ref_name }}
+
+      - name: Upload lastest_preprod.json as artifact
+        uses: actions/upload-artifact@v4
+        continue-on-error: true # Means that another platform already uploaded the artifact, so we don't need to fail the build
+        with:
+          name: latest_preprod.json
+          path: /
 

@@ -14,11 +14,11 @@
     }
   },
   "bundle": {
-    "createUpdaterArtifacts": false
+    "createUpdaterArtifacts": true
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQ2QTA4NzMxQzFENEZBRDIKUldUUyt0VEJNWWVnUmhqOXFZcXd6U3grTnd0emU1d0EySklYN3ZBOEhpMEtZZXdmNEVJVWMvZloK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IERBMEFFODMxQTNBQjY4RjIKUldUeWFLdWpNZWdLMnNYT0tmdWMvTWZLaUp5VmlpTHVNNjdxcEVaWStoVGg5cVpsUEwrWGVIRXQK",
       "endpoints": [
         "https://tchap.incubateur.net/client/config/agent/desktop",
         "https://tchap.incubateur.net/client/config/agent/desktop/desktop.json"
