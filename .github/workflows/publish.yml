@@ -114,7 +114,7 @@ jobs:
       releaseId: ${{ needs.create-release.outputs.release_id }}
       env: preprod
     secrets:
-      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_PREPROD_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PREPROD }}
       TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PREPROD_PASSWORD }}
 
   latest-json-generation:
