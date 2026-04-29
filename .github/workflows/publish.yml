@@ -65,31 +65,6 @@ jobs:
       TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
       TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
-  latest-json-generation-prod:
-    runs-on: ${{ matrix.platform }}
-    needs: build-tchap-desktop-dev
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Create release_prod.json file
-        shell: bash
-        run: |
-          curl -s \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }} \
-            > release_prod.json
-
-      - name: Run latest json script for prod
-        shell: bash
-        run: ./scripts/get-latest-file-per-env.sh prod ${{ github.ref_name }}
-
-      - name: Upload lastest_prod.json as artifact
-        uses: actions/upload-artifact@v4
-        continue-on-error: true # Means that another platform already uploaded the artifact, so we don't need to fail the build
-        with:
-          name: latest_prod.json
-          path: /
-
   build-tchap-desktop-dev:
     needs: create-release
     permissions:
@@ -116,31 +91,6 @@ jobs:
       TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_DEV }}
       TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_DEV_PASSWORD }}
   
-  latest-json-generation-dev:
-    runs-on: ${{ matrix.platform }}
-    needs: build-tchap-desktop-dev
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Create release_dev.json file
-        shell: bash
-        run: |
-          curl -s \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }} \
-            > release_dev.json
-
-      - name: Run latest json script for dev
-        shell: bash
-        run: ./scripts/get-latest-file-per-env.sh dev ${{ github.ref_name }}
-
-      - name: Upload lastest_dev.json as artifact
-        uses: actions/upload-artifact@v4
-        continue-on-error: true # Means that another platform already uploaded the artifact, so we don't need to fail the build
-        with:
-          name: latest_dev.json
-          path: /
-
   build-tchap-desktop-preprod:
     needs: create-release
     permissions:
@@ -167,28 +117,37 @@ jobs:
       TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_PREPROD_KEY }}
       TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PREPROD_PASSWORD }}
 
-  latest-json-generation-preprod:
-    runs-on: ${{ matrix.platform }}
-    needs: build-tchap-desktop-preprod
+  latest-json-generation:
+    runs-on: ubuntu-latest
+    needs: [create-release, build-tchap-desktop, build-tchap-desktop-dev, build-tchap-desktop-preprod]
     steps:
       - uses: actions/checkout@v4
 
-      - name: Create release_preprod.json file
+      - name: Create release.json file
         shell: bash
         run: |
           curl -s \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }} \
-            > release_preprod.json
+            > release.json
 
+      - name: Run latest json script for dev
+        shell: bash
+        run: ./scripts/get-latest-file-per-env.sh ${{ github.ref_name }} dev
+      
       - name: Run latest json script for preprod
         shell: bash
-        run: ./scripts/get-latest-file-per-env.sh preprod ${{ github.ref_name }}
+        run: ./scripts/get-latest-file-per-env.sh ${{ github.ref_name }} preprod
 
-      - name: Upload lastest_preprod.json as artifact
-        uses: actions/upload-artifact@v4
-        continue-on-error: true # Means that another platform already uploaded the artifact, so we don't need to fail the build
+      - name: Run latest json script for prod
+        shell: bash
+        run: ./scripts/get-latest-file-per-env.sh ${{ github.ref_name }} prod
+
+      - name: Upload all latest.json to release
+        uses: softprops/action-gh-release@v3
         with:
-          name: latest_preprod.json
-          path: /
+          files: |
+            latest_prod.json
+            latest_preprod.json
+            latest_dev.json
 

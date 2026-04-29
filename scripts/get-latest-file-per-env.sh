@@ -75,7 +75,7 @@
 # $2 second argument should be the env
 VERSION=$(echo $1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
 ENV=$2
-RELEASE_FILE=release_${ENV}.json
+RELEASE_FILE=release.json
 PUB_DATE=$(jq -r '.created_at' $RELEASE_FILE) # get date from release json file
 
 # platform → filename pattern
@@ -114,7 +114,7 @@ jq -n \
 
 for platform in "${!MAP[@]}"; do
     filename="${MAP[$platform]}"
-
+    echo $filename
     case "$platform" in
         # for windows we use our own self hosted files
         windows-x86_64-msi|windows-x86_64-nsis|windows-x86_64)
