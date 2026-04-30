@@ -22,7 +22,7 @@
       "tchap-web_version": "4.19.4",
       "tchap-web_archive_name": "tchap-4.19.4-dev-20260409.tar.gz",
       "tchap-web_github": {
-        "branch": "desktop-fix-file-opener-security-issue",
+        "branch": "develop_tchap",
         "repo": "https://github.com/tchapgouv/tchap-web-v4"
       }
     },
@@ -31,7 +31,7 @@
       "tchap-web_version": "4.19.4",
       "tchap-web_archive_name": "tchap-4.19.4-preprod-20260409.tar.gz",
       "tchap-web_github": {
-        "branch": "desktop-fix-file-opener-security-issue",
+        "branch": "develop_tchap",
         "repo": "https://github.com/tchapgouv/tchap-web-v4"
       }
     }
