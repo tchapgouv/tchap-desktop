@@ -81,6 +81,22 @@ jobs:
           echo "PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/share/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
           echo "Finish installing deps"
 
+      - name: Prepare asset name pattern for normal version
+        id: create-pattern-updater
+        run: |
+          PATTERN="Tchap-${{ inputs.env }}_[version]_[arch][ext]"
+          echo "PATTERN=$PATTERN" >> $GITHUB_OUTPUT
+          echo "Generated pattern: $PATTERN"
+        shell: bash
+
+      - name: Prepare asset name pattern for no updater version
+        id: create-pattern-no-updater
+        run: |
+          PATTERN="Tchap-${{ inputs.env }}_[version]_[arch]_no_updater[ext]"
+          echo "PATTERN_NO_UPDATER=$PATTERN" >> $GITHUB_OUTPUT
+          echo "Generated no updater pattern: $PATTERN"
+        shell: bash
+
       # Uploading the tauri app to a release
       - name: Create Tauri app artifacts for MacOS and Windows
         if: inputs.platform != 'ubuntu-22.04'
@@ -93,6 +109,8 @@ jobs:
           releaseId: ${{ inputs.releaseId }}
           args: ${{ inputs.args }}
           uploadWorkflowArtifacts: ${{ inputs.onPR }}
+          releaseAssetNamePattern: ${{ steps.create-pattern-updater.outputs.PATTERN }}
+          workflowArtifactNamePattern: ${{ steps.create-pattern-updater.outputs.PATTERN }}
  
       - name: Create Tauri app for linux
         if: inputs.platform == 'ubuntu-22.04'
@@ -106,14 +124,8 @@ jobs:
           releaseId: ${{ inputs.releaseId }}
           args: ${{ inputs.args }}
           uploadWorkflowArtifacts: ${{ inputs.onPR }}
-      
-      - name: Prepare asset name pattern for no updater version
-        id: create-pattern-no-updater
-        run: |
-          PATTERN="[name]-[version]_[arch]_${{ inputs.env }}_no_updater[ext]"
-          echo "PATTERN=$PATTERN" >> $GITHUB_OUTPUT
-          echo "Generated pattern: $PATTERN"
-        shell: bash
+          releaseAssetNamePattern: ${{ steps.create-pattern-updater.outputs.PATTERN }}
+          workflowArtifactNamePattern: ${{ steps.create-pattern-updater.outputs.PATTERN }}
 
       - name: Create Windows app without updater
         if: inputs.platform == 'windows-latest'
@@ -125,7 +137,7 @@ jobs:
         with:
           releaseId: ${{ inputs.releaseId }}
           args: --target x86_64-pc-windows-msvc --config src-tauri/tauri.conf.noupdater-windows.json --features no-updater
-          releaseAssetNamePattern: ${{ steps.create-pattern-no-updater.outputs.PATTERN }}
+          releaseAssetNamePattern: ${{ steps.create-pattern-no-updater.outputs.PATTERN_NO_UPDATER }}
+          workflowArtifactNamePattern: ${{ steps.create-pattern-no-updater.outputs.PATTERN_NO_UPDATER }}
           uploadWorkflowArtifacts: true
-          workflowArtifactNamePattern: ${{ steps.create-pattern-no-updater.outputs.PATTERN }}
           uploadUpdaterJson: false
