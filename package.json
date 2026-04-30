@@ -8,8 +8,8 @@
     "update-version": "./scripts/update-version.sh"
   },
   "tchapConfig": {
-    "use_github": true,
     "prod": {
+      "use_github": false,
       "tchap-web_version": "4.19.6",
       "tchap-web_archive_name": "tchap-4.19.6-prod-20260423.tar.gz",
       "tchap-web_github": {
@@ -18,6 +18,7 @@
       }
     },
     "dev": {
+      "use_github": true,
       "tchap-web_version": "4.19.6",
       "tchap-web_archive_name": "tchap-4.19.6-dev-20260423.tar.gz",
       "tchap-web_github": {
@@ -26,6 +27,7 @@
       }
     },
     "preprod": {
+      "use_github": false,
       "tchap-web_version": "4.19.6",
       "tchap-web_archive_name": "tchap-4.19.6-preprod-20260423.tar.gz",
       "tchap-web_github": {
