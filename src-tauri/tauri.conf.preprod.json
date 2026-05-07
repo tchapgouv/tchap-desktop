@@ -14,11 +14,11 @@
     }
   },
   "bundle": {
-    "createUpdaterArtifacts": false
+    "createUpdaterArtifacts": true
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQ2QTA4NzMxQzFENEZBRDIKUldUUyt0VEJNWWVnUmhqOXFZcXd6U3grTnd0emU1d0EySklYN3ZBOEhpMEtZZXdmNEVJVWMvZloK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDkzQjg1NjFFRTlGMjE3MkMKUldRc0YvTHBIbGE0aytKZnFzZ0dGVWhXNmdrMURvRkVyNWlaMkNtR3pMU0gwOStHOHJycDFyb20K",
       "endpoints": [
         "https://beta.tchap.gouv.fr/client/config/agent/desktop",
         "https://beta.tchap.gouv.fr/client/config/agent/desktop/desktop.json"
