@@ -67,10 +67,13 @@ yarn start
 - Go back to your tauri app and run
 
 ```
-cargo tauri dev
+cargo tauri dev --config src-tauri/tauri.conf.dev.json
 ```
 
-- It will automatically use your frontend configured on the url in the `tauri.conf.json` file. So modify the `build: devUrl` to match your dev frontend
+- It will automatically use your frontend configured on the url in the `tauri.conf.json` file if no `--config` as been specified. So modify the `build: devUrl` to match your dev frontend
+
+- The deeplink scheme register will depends on the env used (tchap-dev, tchap-preprod, tchap-prod), it should match with the frontend.
+
 
 ## Dev using a specific web archive version
 
