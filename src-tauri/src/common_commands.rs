@@ -1,8 +1,8 @@
 use std::fs;
 use tauri::{AppHandle, Manager, Runtime};
 use tauri_plugin_autostart::ManagerExt;
-use tauri_plugin_opener::OpenerExt;
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
+use tauri_plugin_opener::OpenerExt;
 
 use crate::common_error::CommonError;
 
@@ -35,7 +35,8 @@ pub async fn user_download_action<R: Runtime>(
     println!("in command user download action {:?}", path);
     let message = format!("Voulez vous ouvrir le fichier {path} ?");
 
-    app_handle.dialog()
+    app_handle
+        .dialog()
         .message(message)
         .kind(MessageDialogKind::Info)
         .title("Téléchargement réussi")
@@ -44,7 +45,7 @@ pub async fn user_download_action<R: Runtime>(
             true => {
                 println!("in command user download action true");
                 let _ = app_handle.opener().open_path(path, None::<&str>);
-            },
+            }
             false => println!("in command user download action false"),
         });
     Ok(())
@@ -103,4 +104,14 @@ pub async fn settings_set_value<R: Runtime>(
         }
     }
     Ok(())
+}
+
+#[tauri::command]
+pub async fn can_self_update<R: Runtime>(_: AppHandle<R>) -> Result<bool, CommonError> {
+    // Allow self update if auto updater version of the app
+    if cfg!(not(feature = "no-updater")) {
+        Ok(true)
+    } else {
+        Ok(false)
+    }
 }

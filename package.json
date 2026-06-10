@@ -18,7 +18,7 @@
       }
     },
     "dev": {
-      "use_github": false,
+      "use_github": true,
       "tchap-web_version": "4.19.8",
       "tchap-web_archive_name": "tchap-4.19.8-dev-20260601.tar.gz",
       "tchap-web_github": {
@@ -27,7 +27,7 @@
       }
     },
     "preprod": {
-      "use_github": false,
+      "use_github": true,
       "tchap-web_version": "4.19.8",
       "tchap-web_archive_name": "tchap-4.19.8-preprod-20260601.tar.gz",
       "tchap-web_github": {
@@ -43,10 +43,5 @@
     "tar": "^7.4.3",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"
-  },
-  "dependencies": {
-    "@tauri-apps/plugin-autostart": "^2.5.1",
-    "@tauri-apps/plugin-shell": "^2.3.1",
-    "tauri-plugin-keyring-api": "^0.1.1"
   }
 }

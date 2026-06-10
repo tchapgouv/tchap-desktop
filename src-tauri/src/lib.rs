@@ -42,6 +42,7 @@ fn user_agent(app: &tauri::AppHandle) -> String {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let mut builder = tauri::Builder::default()
+        .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_shell::init());
 
     // Instanciate single instance plugin, with focus on the main window
@@ -182,6 +183,7 @@ pub fn run() {
             common_commands::user_download_action,
             common_commands::settings_set_value,
             common_commands::settings_get_value,
+            common_commands::can_self_update,
             keyring_commands::get_password,
             keyring_commands::set_password,
             keyring_commands::delete_password,
@@ -192,8 +194,8 @@ pub fn run() {
         .run(|_app, event| match event {
             //show window on click on the docker app icon (RunEvent::Reopen is only for macOs)
             #[cfg(target_os = "macos")]
-            tauri::RunEvent::Reopen {  .. } => {
-                if let Some(webview_window) = _app.get_webview_window("main") { 
+            tauri::RunEvent::Reopen { .. } => {
+                if let Some(webview_window) = _app.get_webview_window("main") {
                     let _ = webview_window.unminimize();
                     let _ = webview_window.set_focus();
                     let _ = webview_window.show();

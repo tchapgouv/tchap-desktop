@@ -34,6 +34,7 @@ rand = "0.9.0"
 tauri-plugin-deep-link = "2"
 tauri-plugin-shell = "2"
 keyring = { version = "3.6.3", features = ["apple-native", "windows-native", "sync-secret-service"] }
+tauri-plugin-process = "2"
 
 [features]
 # by default Tauri runs in production mode
