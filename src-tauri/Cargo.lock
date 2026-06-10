@@ -5915,7 +5915,7 @@ dependencies = [
 
 [[package]]
 name = "tchap-desktop"
-version = "4.19.8"
+version = "4.19.9"
 dependencies = [
  "anyhow",
  "keyring",
