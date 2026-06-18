@@ -41,9 +41,7 @@ fn user_agent(app: &tauri::AppHandle) -> String {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let mut builder = tauri::Builder::default()
-        .plugin(tauri_plugin_process::init())
-        .plugin(tauri_plugin_shell::init());
+    let mut builder = tauri::Builder::default();
 
     // Instanciate single instance plugin, with focus on the main window
     #[cfg(desktop)]
@@ -64,6 +62,8 @@ pub fn run() {
 
     builder
         .plugin(tauri_plugin_deep_link::init())
+        .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_upload::init())
         .plugin(tauri_plugin_fs::init())

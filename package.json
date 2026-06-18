@@ -22,7 +22,7 @@
       "tchap-web_version": "4.19.9",
       "tchap-web_archive_name": "tchap-4.19.9-dev-20260610.tar.gz",
       "tchap-web_github": {
-        "branch": "develop_tchap",
+        "branch": "desktop-remove-service-from-ipc-keyring",
         "repo": "https://github.com/tchapgouv/tchap-web-v4"
       }
     },
