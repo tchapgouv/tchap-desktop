@@ -30,10 +30,70 @@ pub async fn clear_storage<R: Runtime>(app_handle: AppHandle<R>) -> Result<(), S
 #[tauri::command]
 pub async fn user_download_action<R: Runtime>(
     app_handle: AppHandle<R>,
-    path: String,
+    filename: String,
 ) -> Result<(), CommonError> {
-    println!("in command user download action {:?}", path);
-    let message = format!("Voulez vous ouvrir le fichier {path} ?");
+    // Validate filename, should not contain slashs and hidden file
+    if filename.contains('/')
+        || filename.contains('\\')
+        || filename.contains("..")
+        || filename.starts_with('.')
+    {
+        app_handle
+            .dialog()
+            .message("Nom de fichier invalide")
+            .kind(MessageDialogKind::Error)
+            .title("Erreur")
+            .show(|_| {});
+        return Ok(());
+    }
+    // Get the downloads directory
+    let downloads_dir = match app_handle.path().download_dir() {
+        Ok(dir) => dir,
+        Err(_) => {
+            app_handle
+                .dialog()
+                .message("Impossible d'accéder au dossier de téléchargements")
+                .kind(MessageDialogKind::Error)
+                .title("Erreur")
+                .show(|_| {});
+            return Ok(());
+        }
+    };
+
+    // Construct the full path safely
+    let full_path = downloads_dir.join(&filename);
+
+    // Canonicalize and verify path containment (prevents symlink escapes)
+    let canonical_full_path = match fs::canonicalize(&full_path) {
+        Ok(path) => path,
+        Err(_) => {
+            app_handle
+                .dialog()
+                .message(format!(
+                    "Impossible de résoudre le chemin du fichier: {}",
+                    filename
+                ))
+                .kind(MessageDialogKind::Error)
+                .title("Erreur")
+                .show(|_| {});
+            return Ok(());
+        }
+    };
+
+    if !canonical_full_path.is_file() {
+        app_handle
+            .dialog()
+            .message("Le fichier n'existe pas")
+            .kind(MessageDialogKind::Error)
+            .title("Erreur")
+            .show(|_| {});
+        return Ok(());
+    }
+
+    let path_str = full_path.to_string_lossy().into_owned();
+    println!("*** downloads_dir path_str {:?}", path_str);
+    println!("*** in command user download action {:?}", filename);
+    let message = format!("Voulez vous ouvrir le fichier {filename} ?");
 
     app_handle
         .dialog()
@@ -44,7 +104,7 @@ pub async fn user_download_action<R: Runtime>(
         .show(move |result| match result {
             true => {
                 println!("in command user download action true");
-                let _ = app_handle.opener().open_path(path, None::<&str>);
+                let _ = app_handle.opener().open_path(path_str, None::<&str>);
             }
             false => println!("in command user download action false"),
         });
