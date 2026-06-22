@@ -45,11 +45,13 @@ jobs:
         id: build-type
         shell: bash
         run: |
-          if [ "$(jq -r '.tchapConfig.use_github // false' package.json)" = "true" ]; then
+          if [ "$(jq -r --arg env "$ENV" '.tchapConfig[$env].use_github // false' package.json)" = "true" ]; then
             echo "BUILD_TYPE=github" >> $GITHUB_OUTPUT
           else
             echo "BUILD_TYPE=package" >> $GITHUB_OUTPUT
           fi
+        env:
+          ENV: ${{ inputs.env }}
 
       # Install dependencies based on build type
       - name: Install dependencies (Package)
@@ -72,8 +74,8 @@ jobs:
           BRANCH=$(jq -r --arg env "$ENV" '.tchapConfig[$env]["tchap-web_github"].branch' package.json)
 
           echo "Cloning $REPO branch $BRANCH..."
-          git clone --depth 1 --branch $BRANCH $REPO archives/$BRANCH
-          
+          git clone -c core.longpaths=true --depth 1 --branch $BRANCH $REPO archives/$BRANCH
+
           cd archives/$BRANCH
           echo "Installing dependencies..."
           yarn install --frozen-lockfile
@@ -81,7 +83,7 @@ jobs:
           # apply patches to the tchap webapp manually because postinstall doesnt seems to work
           echo "Applying patches..."
           ./scripts/tchap/apply_patches.sh
-          
+
           echo "Copying config..."
           if [ "$ENV" = "prod" ]; then
             echo "for PROD config"
@@ -93,10 +95,10 @@ jobs:
             echo "for DEV config"
             cp config.dev.json config.json
           fi
-          
+
           echo "Building..."
           yarn build
-          
+
           cd ../..
           echo "Copying build output..."
           mkdir -p src
