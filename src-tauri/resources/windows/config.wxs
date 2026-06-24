@@ -114,6 +114,16 @@
                      Value="WelcomeDlg"
                      Order="2">1</Publish>
             {{/unless}}
+
+            <!-- :TCHAP: TODO remove after first official release finish - Simple notification dialog for uninstalling previous version -->
+            <!-- Neccessary when switching to user context application install-->
+            <Dialog Id="NotificationDlg" Width="370" Height="270" Title="![ProductName] Installation">
+                <Control Id="Title" Type="Text" X="36" Y="6" Width="300" Height="30" Transparent="yes" NoPrefix="yes" Text="Please Uninstall Previous Version if it exist"/>
+                <Control Id="Description" Type="Text" X="36" Y="40" Width="300" Height="120" Transparent="yes" NoPrefix="yes" Text="If a previous version of ![ProductName] is currently installed. Please uninstall it first using Control Panel > Programs > Programs and Features, then run this installer again."/>
+                <Control Id="ContinueButton" Type="PushButton" X="304" Y="243" Width="56" Height="17" Default="yes" Cancel="yes" Text="Continue">
+                    <Publish Event="EndDialog" Value="Return"/>
+                </Control>
+            </Dialog>
         </UI>
 
         <UIRef Id="WixUI_InstallDir" />
