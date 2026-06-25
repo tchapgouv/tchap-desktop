@@ -80,6 +80,21 @@ pub async fn user_download_action<R: Runtime>(
         }
     };
 
+    // Ensure the resolved path is still inside the downloads directory
+    let canonical_downloads_dir = match fs::canonicalize(&downloads_dir) {
+        Ok(dir) => dir,
+        Err(_) => return Ok(()),
+    };
+    if !canonical_full_path.starts_with(&canonical_downloads_dir) {
+        app_handle
+            .dialog()
+            .message("Le fichier se trouve en dehors du dossier de téléchargements")
+            .kind(MessageDialogKind::Error)
+            .title("Erreur")
+            .show(|_| {});
+        return Ok(());
+    }
+
     if !canonical_full_path.is_file() {
         app_handle
             .dialog()
