@@ -28,7 +28,7 @@
                  InstallerVersion="450"
                  Languages="0"
                  Compressed="yes"
-                 InstallScope="perUser" 
+                 InstallScope="perUser"
                  SummaryCodepage="!(loc.TauriCodepage)"/>
 
 
