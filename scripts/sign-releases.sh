@@ -7,6 +7,32 @@
 # Example: ./sign-releases.sh 4.21.1
 ################################################################################
 
+
+
+# prerequisites 
+
+
+## on MacOS install : 
+# brew install libp11"
+## on MacOS install :
+# https://github.com/OpenSC/OpenSC/releases/download/0.27.1/OpenSC-0.27.1.dmg"
+
+
+## (optional, should test without it) Télécharger le certificat racine HARICA EV Code Signing
+# curl -o harica-root.crt https://www.harica.gr/files/certificates/harica_ecc_rsa_root_ca.crt
+## Télécharger le certificat intermédiaire
+# curl -o harica-intermediate.crt https://www.harica.gr/files/certificates/harica_code_signing_rsa_ca.crt
+## Créer une chaîne de certificats PEM
+# cat harica-root.crt harica-intermediate.crt > harica-chain.pem
+
+
+
+
+
+
+
+
+
 set -e
 
 # Configuration
