@@ -12,15 +12,10 @@ set -e
 # Configuration
 VERSION="${1:-4.21.1}"
 OSSLSIGNCODE="/Users/olivier/workspace/tchap/desktop/osslsigncode-2.14-macOS/bin/osslsigncode"
+HARICA_CHAIN="/Users/olivier/workspace/tchap/desktop/osslsigncode-2.14-macOS/bin/harica-chain.pem"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CERT_DIR="${SCRIPT_DIR}/certs"
-HARICA_CHAIN="${CERT_DIR}/harica-chain.pem"
 WORK_DIR="${SCRIPT_DIR}/releases/${VERSION}"
 GITHUB_BASE_URL="https://github.com/tchapgouv/tchap-desktop/releases/download/tchap-${VERSION}"
-
-# HARICA certificate URLs (intermediate + root for EV Code Signing RSA)
-HARICA_INTERMEDIATE_URL="https://repo.harica.gr/certs/HARICA-EV-Code-Signing-RSA.pem"
-HARICA_ROOT_URL="https://repo.harica.gr/certs/HARICA-Code-Signing-RSA-Root-CA-2021.pem"
 
 # Colors for output
 RED='\033[0;31m'
@@ -66,73 +61,17 @@ check_prerequisites() {
     fi
     log_success "osslsigncode found"
     
+    if [ ! -f "$HARICA_CHAIN" ]; then
+        log_error "harica-chain.pem not found at: $HARICA_CHAIN"
+        exit 1
+    fi
+    log_success "harica-chain.pem found"
+    
     if ! command -v curl &> /dev/null; then
         log_error "curl is not installed"
         exit 1
     fi
     log_success "curl found"
-    
-    if ! command -v openssl &> /dev/null; then
-        log_error "openssl is not installed"
-        exit 1
-    fi
-    log_success "openssl found"
-}
-
-# Convert a certificate file to PEM format if it is in DER
-ensure_pem() {
-    local file="$1"
-    if ! openssl x509 -in "$file" -noout 2>/dev/null; then
-        log_info "Converting $(basename "$file") from DER to PEM"
-        openssl x509 -inform DER -in "$file" -out "${file}.pem"
-        mv "${file}.pem" "$file"
-    fi
-}
-
-generate_harica_chain() {
-    log_info "Generating HARICA certificate chain..."
-    
-    mkdir -p "$CERT_DIR"
-    
-    # Skip if chain already exists
-    if [ -f "$HARICA_CHAIN" ]; then
-        log_warning "HARICA chain already exists, skipping generation: $HARICA_CHAIN"
-        return 0
-    fi
-    
-    local root_cert="${CERT_DIR}/harica-root.crt"
-    local intermediate_cert="${CERT_DIR}/harica-intermediate.crt"
-    
-    # Download the root certificate
-    log_info "Downloading HARICA root certificate"
-    if ! curl -L -f -o "$root_cert" "$HARICA_ROOT_URL"; then
-        log_error "Failed to download HARICA root certificate from: $HARICA_ROOT_URL"
-        return 1
-    fi
-    log_success "Root certificate downloaded"
-    
-    # Download the intermediate certificate
-    log_info "Downloading HARICA intermediate certificate"
-    if ! curl -L -f -o "$intermediate_cert" "$HARICA_INTERMEDIATE_URL"; then
-        log_error "Failed to download HARICA intermediate certificate from: $HARICA_INTERMEDIATE_URL"
-        return 1
-    fi
-    log_success "Intermediate certificate downloaded"
-    
-    # Ensure both certificates are in PEM format
-    ensure_pem "$root_cert"
-    ensure_pem "$intermediate_cert"
-    
-    # Assemble chain in the correct order: intermediate first, then root
-    cat "$intermediate_cert" "$root_cert" > "$HARICA_CHAIN"
-    log_success "Chain assembled: $HARICA_CHAIN"
-    
-    # Verify the chain (intermediate signed by root)
-    if openssl verify -CAfile "$root_cert" "$intermediate_cert" > /dev/null 2>&1; then
-        log_success "HARICA chain verified (intermediate trusted by root)"
-    else
-        log_warning "Chain generated but verification had warnings (check certificate order/URLs)"
-    fi
 }
 
 setup_directories() {
@@ -293,7 +232,6 @@ main() {
     echo ""
     
     check_prerequisites
-    generate_harica_chain
     setup_directories
     get_pin
     download_files
