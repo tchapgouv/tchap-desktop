@@ -4,7 +4,7 @@
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
   outputs =
-    { nixpkgs, ... }:
+    { self, nixpkgs, ... }:
     let
       supportedSystems = [
         "x86_64-linux"
@@ -22,6 +22,18 @@
         rec {
           tchap-desktop = pkgs.callPackage ./nix/package.nix { };
           default = tchap-desktop;
+        }
+      );
+
+      checks = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        {
+          smoke = pkgs.callPackage ./nix/smoke-test.nix {
+            package = self.packages.${system}.tchap-desktop;
+          };
         }
       );
     };
