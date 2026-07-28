@@ -1,0 +1,7 @@
+{
+  "appId": "fr.gouv.beta.tchap-desktop",
+  "name": "tchap-desktop",
+  "productName": "Tchap",
+  "description": "Messagerie instantanée du secteur public français",
+  "protocols": ["tchap"]
+}
