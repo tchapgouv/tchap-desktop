@@ -4,7 +4,7 @@
 # Script: sign-releases.sh
 # Description: Download Tchap desktop releases and sign them with osslsigncode
 # Usage: ./sign-releases.sh [VERSION]
-# Example: ./sign-releases.sh 4.21.1
+# Example: ./sign-releases.sh 4.21.1 prod
 ################################################################################
 
 
@@ -37,6 +37,7 @@ set -e
 
 # Configuration
 VERSION="${1:-4.21.1}"
+ENV="$2"
 OSSLSIGNCODE="/Users/olivier/workspace/tchap/desktop/osslsigncode-2.14-macOS/bin/osslsigncode"
 HARICA_CHAIN="/Users/olivier/workspace/tchap/desktop/osslsigncode-2.14-macOS/bin/harica-chain.pem"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -52,10 +53,10 @@ NC='\033[0m' # No Color
 
 # Files to download
 FILES=(
-    "Tchap-prod_${VERSION}_x64.exe"
-    "Tchap-prod_${VERSION}_x64.msi"
-    "Tchap-prod_${VERSION}_x64_no_updater.exe"
-    "Tchap-prod_${VERSION}_x64_no_updater.msi"
+    "Tchap-${ENV}_${VERSION}_x64.exe"
+    "Tchap-${ENV}_${VERSION}_x64.msi"
+    "Tchap-${ENV}_${VERSION}_x64_no_updater.exe"
+    "Tchap-${ENV}_${VERSION}_x64_no_updater.msi"
 )
 
 ################################################################################

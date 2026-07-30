@@ -4,7 +4,7 @@
 # Script: sign-releases_linux.sh
 # Description: Download Tchap desktop releases and sign them with osslsigncode
 # Usage: ./sign-releases_linux.sh [VERSION]
-# Example: ./sign-releases_linux.sh 4.21.1
+# Example: ./sign-releases_linux.sh 4.21.1 prod
 ################################################################################
 
 
@@ -41,7 +41,8 @@
 set -e
 
 # Configuration
-VERSION="${1:-4.21.1}"
+VERSION="${1:-4.21.1}" # Default value to 4.21.1
+ENV="$2"
 OSSLSIGNCODE="/usr/bin/osslsigncode"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORK_DIR="${SCRIPT_DIR}/releases/${VERSION}"
@@ -56,10 +57,10 @@ NC='\033[0m' # No Color
 
 # Files to download
 FILES=(
-    "Tchap-prod_${VERSION}_x64.exe"
-    "Tchap-prod_${VERSION}_x64.msi"
-    "Tchap-prod_${VERSION}_x64_no_updater.exe"
-    "Tchap-prod_${VERSION}_x64_no_updater.msi"
+    "Tchap-${ENV}_${VERSION}_x64.exe"
+    "Tchap-${ENV}_${VERSION}_x64.msi"
+    "Tchap-${ENV}_${VERSION}_x64_no_updater.exe"
+    "Tchap-${ENV}_${VERSION}_x64_no_updater.msi"
 )
 
 ################################################################################
