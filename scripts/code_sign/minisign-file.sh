@@ -1,6 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
 # minisign file signer (port of Tauri's sign_file) https://github.com/tauri-apps/tauri/blob/dev/crates/tauri-cli/src/helpers/updater_signature.rs
 # Usage: ./minisign_file.sh <secret_key_file> <file_to_sign> [output_sig]
 
@@ -20,7 +19,6 @@ TRUSTED_COMMENT="timestamp:${TIMESTAMP}	file:${FILENAME}"
 # Temporary file for minisign's raw output
 TEMP_SIG=$(mktemp)
 trap "rm -f $TEMP_SIG" EXIT
-
 # Sign the file with minisign
 # -S: sign
 # -s: secret key file
@@ -31,8 +29,8 @@ minisign -S \
   -m "$FILE_TO_SIGN" \
   -t "$TRUSTED_COMMENT" \
   -c "signature from tauri secret key" \
-  -x "$TEMP_SIG"
+  -x "$TEMP_SIG" >/dev/null # only keep the ENCODED_SIG as result from this script
 
-# Read the signature file and base64 encode it
+# Read the signature file that is in minisign format and base64 encode it
 ENCODED_SIG=$(base64 -w 0 < "$TEMP_SIG")
-echo "✓ Encoded: $ENCODED_SIG"
+echo "$ENCODED_SIG"
