@@ -47,4 +47,6 @@ no-updater = []
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-autostart = "2"
 tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
-tauri-plugin-updater = "2"
+# Getting the PR https://github.com/tauri-apps/plugins-workspace/pull/3526
+# In order to have system proxy enabled for updater in official release
+tauri-plugin-updater = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
