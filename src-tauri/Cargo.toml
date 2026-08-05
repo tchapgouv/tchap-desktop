@@ -50,3 +50,4 @@ tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
 # Getting the PR https://github.com/tauri-apps/plugins-workspace/pull/3526
 # In order to have system proxy enabled for updater in official release
 tauri-plugin-updater = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
+tauri-plugin-window-state = "2"
