@@ -100,7 +100,7 @@ jobs:
       # Uploading the tauri app to a release
       - name: Create Tauri app artifacts for MacOS and Windows
         if: inputs.platform != 'ubuntu-22.04'
-        uses: tauri-apps/tauri-action@dev
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
@@ -111,10 +111,10 @@ jobs:
           uploadWorkflowArtifacts: ${{ inputs.onPR }}
           releaseAssetNamePattern: ${{ steps.create-pattern-updater.outputs.PATTERN }}
           workflowArtifactNamePattern: ${{ steps.create-pattern-updater.outputs.PATTERN }}
- 
+
       - name: Create Tauri app for linux
         if: inputs.platform == 'ubuntu-22.04'
-        uses: tauri-apps/tauri-action@dev
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
@@ -129,7 +129,7 @@ jobs:
 
       - name: Create Windows app without updater
         if: inputs.platform == 'windows-latest'
-        uses: tauri-apps/tauri-action@dev
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}

@@ -29,8 +29,7 @@ archives/**/*
 src/*
 !src/.gitkeep
 !src/.
+scripts/code_sign/releases/*
 
 # windows dev environment
 vcpkg/*
-
-
