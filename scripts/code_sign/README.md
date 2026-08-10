@@ -1,8 +1,8 @@
 ## Sign artifacts
 After creating a release with the standard process. The 
-Depending on your platform, choose to use `sign-release_linux.sh` or `sign-release_mac.sh`.
+Depending on your platform, choose to use `sign-release-ossl_linux.sh` or `sign-release-ossl_mac.sh`.
 
-This will create the releases with our signed certificate, that can be found in code_sign/releases/VERSION
+This will create the releases with our signed certificate, that can be found in code_sign/releases/VERSION using ossl and a hardware token certificate.
 
 ## Release process after signature
 Once the build artifact are re-signed, it render obsolète the updater plugin signature. In other word, the signature from the latest_*.json files are not correct anymore. Since, the signature from this file is used to match the update to download, we need to update those signature.
