@@ -4501,8 +4501,8 @@ dependencies = [
 
 [[package]]
 name = "seshat"
-version = "4.0.1"
-source = "git+https://github.com/tchapgouv/seshat.git?branch=main_tchap#43dda3f0429211ce6d90ef21dde990b93c2eb03c"
+version = "5.0.0"
+source = "git+https://github.com/tchapgouv/seshat.git?branch=main_tchap#7bfde416196ec6ec0ad2b841823c1f5ba4901ace"
 dependencies = [
  "aes",
  "byteorder",

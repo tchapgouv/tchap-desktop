@@ -118,7 +118,7 @@ pub async fn init_event_index<R: Runtime>(
     };
 
     // --- Store the successfully opened database (either first try or after recovery) ---
-    state_lock.database = Some(database.clone());
+    state_lock.database = Some(database);
     println!("[Command] init_event_index completed successfully.");
 
     Ok(())
