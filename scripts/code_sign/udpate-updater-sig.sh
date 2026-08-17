@@ -130,11 +130,16 @@ update_latest_file_signature() {
 
     log_info "Updating latest.json: $key"
 
-    # Get current URL and modify it to add _signed before extension
+    local new_url=()
+    # Get current URL and modify it to add _signed before extension (if not exist already)
     local url=$(jq -r ".platforms[\"$key\"].url" "$LATEST_JSON")
-    local new_url=$(echo "$url" | sed 's/\([^/]*\)\(\.[^/.]*\)$/\1_signed\2/')
+    if [[ $url == *"_signed"* ]]; then
+        new_url=$url
+    else
+        new_url=$(echo "$url" | sed 's/\([^/]*\)\(\.[^/.]*\)$/\1_signed\2/')
+    fi
 
-    # Update signature and URL (add _signed before file extension)
+    # Update signature and URL
     jq --arg sig "$signature" --arg url "$new_url" \
         ".platforms[\"$key\"].signature = \$sig | .platforms[\"$key\"].url = \$url" \
         "$LATEST_JSON" > "${LATEST_JSON}.tmp"

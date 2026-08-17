@@ -16,8 +16,7 @@ read -r -s -p "Enter your private key password: " PASSWORD
 # Sign the file with tauri signer cli
 cargo tauri signer sign $FILE_TO_SIGN \
     -f $SECRET_KEY_FILE \
-    -p $PASSWORD \
-    -v
+    -p $PASSWORD >/dev/null
 
 # Read the signature file
 RESULT_PATH="$FILE_TO_SIGN.sig"

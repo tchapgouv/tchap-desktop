@@ -21,7 +21,7 @@
 # set SSL_CERT_FILE="C:\Users\DINUM\OpenSSL-win64\cacert.pem" https://curl.se/docs/caextract.html
 # set OPENSSL_NO_VENDOR=1
 # set RUSTFLAGS=-Ctarget-feature=+crt-static
-TARGET="${2:?Missing target (x86_64-pc-windows-msvc or universal-apple-darwin)}"
+TARGET="${1:?Missing target (x86_64-pc-windows-msvc or universal-apple-darwin)}"
 ENV="${2:?Missing Env}"
 VERSION="${3:?Missing version}"
 SKIP_SOURCE="${4:?false}"
@@ -31,7 +31,7 @@ SCRIPT_DIR="../scripts/code_sign"
 WORK_DIR="${SCRIPT_DIR}/releases/${VERSION}/sources"
 SOURCES_URL="https://github.com/tchapgouv/tchap-desktop/archive/refs/tags/tchap-${VERSION}.tar.gz"
 
-case ENV in
+case $ENV in
     dev)
         CONFIG = "./tauri.conf.dev.json"
     ;;
@@ -81,16 +81,15 @@ fi
 
 # # Sign apps
 echo "Signing the app"
-case TARGET in
+case $TARGET in
     x86_64-pc-windows-msvc)
-        cargo tauri bundle -v  -a ./releases/Tchap-$ENV_${version}x64.msi --sign-command "./sign-releases-ossl_linux.sh $VERSION $ENV"
-        cargo tauri bundle -v  -a ./releases/Tchap-$ENV_${version}x64_no_updater.msi --sign-command "./sign-releases-ossl_linux.sh $VERSION $ENV"
-        cargo tauri bundle -v  -a ./releases/Tchap-$ENV_${version}x64.exe --sign-command "./sign-releases-ossl_linux.sh $VERSION $ENV"
-        cargo tauri bundle -v  -a ./releases/Tchap-$ENV_${version}x64_no_updater.exe --sign-command "./sign-releases-ossl_linux.sh $VERSION $ENV"
+        cargo tauri bundle -v --sign-command "./sign-releases-ossl_windows.sh $VERSION $ENV" -c $CONFIG
+        # Only for prod no_updater version
+        # cargo tauri bundle -v --sign-command "./sign-releases-ossl_linux.sh $VERSION $ENV" -f no-updater -c "./tauri.conf.noupdater-windows.json"
     ;;
     universal-apple-darwin)
-        cargo tauri bundle -v  -a ./releases/Tchap-$ENV_${version}_universal.dmg --sign-command "./sign-releases-ossl_mac.sh $VERSION $ENV"
+    cargo tauri bundle -v --sign-command "./sign-releases-ossl_mac.sh $VERSION $ENV"
     ;;
     *)
-        echo No correct target found
+        echo No correct target found $TARGET
 esac
