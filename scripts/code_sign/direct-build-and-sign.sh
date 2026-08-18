@@ -11,16 +11,10 @@
 
 
 # Prerequisites :
-# - Follow tauri instzallation instruction
+# - Follow tauri installation instruction, for windows use MINGW64 and pacman -S mingw64/...rust
 # - Install cli tauri : cargo install tauri-cli --version "^2.0.0" --locked
+#
 
-
-# ENV to set for openssl and build to work on windows system
-# Need install https://stackoverflow.com/questions/55912871/how-to-work-with-openssl-for-rust-within-a-windows-development-environment
-# set VCPKG_ROOT="C:\Users\DINUM\vcpkg" https://github.com/Microsoft/vcpkg#quick-start-windows
-# set SSL_CERT_FILE="C:\Users\DINUM\OpenSSL-win64\cacert.pem" https://curl.se/docs/caextract.html
-# set OPENSSL_NO_VENDOR=1
-# set RUSTFLAGS=-Ctarget-feature=+crt-static
 TARGET="${1:?Missing target (x86_64-pc-windows-msvc or universal-apple-darwin)}"
 ENV="${2:?Missing Env}"
 VERSION="${3:?Missing version}"

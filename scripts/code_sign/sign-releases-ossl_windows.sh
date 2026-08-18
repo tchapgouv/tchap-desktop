@@ -7,30 +7,50 @@
 # Example: ./sign-releases-ossl_windows.sh 4.21.1 prod
 ################################################################################
 
+## Pour tester la verification de la signature sur la machine
+# Télécharger le certificat racine HARICA Code Signing RSA Root CA 2021 et rajouter le en tant que
+# trusted root certificate dans MMC windows
+# https://repo.harica.gr/certs/HARICA-CodeSigning-Root-2021-RSA.pem
+
+# Test the signature of the released using cmd
+# "%ProgramFiles(x86)%\Windows Kits\10\bin\10.0.26100.0\x64\signtool" verify /pa /v "%userprofile%\Downloads\Tchap_6.msi"
 
 
 # prerequisites
 
-
-
-## Install osslsigncode on Windows:
-
+## Install osslsigncode on Windows MinGW64:
+## Install libp11 and openSSL https://github.com/OpenSC/libp11/blob/master/INSTALL.md
 ## Install OpenSC for PKCS#11 support:
 # Download from: https://github.com/OpenSC/OpenSC/releases
 
-## (optional, should test without it) Télécharger le certificat racine HARICA EV Code Signing
-# curl -o harica-root.crt https://www.harica.gr/files/certificates/harica_ecc_rsa_root_ca.crt
-## Télécharger le certificat intermédiaire
-# curl -o harica-intermediate.crt https://www.harica.gr/files/certificates/harica_code_signing_rsa_ca.crt
-## Créer une chaîne de certificats PEM
-# cat harica-root.crt harica-intermediate.crt > harica-chain.pem
+# ENV to set for openssl and build to work on windows system
+# Need install https://stackoverflow.com/questions/55912871/how-to-work-with-openssl-for-rust-within-a-windows-development-environment
+# set VCPKG_ROOT="C:\Users\DINUM\vcpkg" https://github.com/Microsoft/vcpkg#quick-start-windows
+# set SSL_CERT_FILE="C:\Users\DINUM\OpenSSL-win64\cacert.pem" https://curl.se/docs/caextract.html
+# set OPENSSL_NO_VENDOR=1
+# set RUSTFLAGS=-Ctarget-feature=+crt-static
+# when using git bash, use export instead of set
 
+# Update openssl.cnf to provide path to pkcs module
+# [openssl_init]
+# providers = provider_sect
 
+# # List of providers to load
+# [provider_sect]
+# default = default_sect
+# pkcs11 = pkcs11_sect
 
+# [default_sect]
+# activate = 1
 
-
-
-
+# [pkcs11_sect]
+# identity = pkcs11prov
+# module = C:/msys64/mingw64/lib/ossl-modules/pkcs11prov.dll
+# pkcs11_module = C:/Program Files/OpenSC Project/OpenSC/pkcs11/opensc-pkcs11.dll
+# debug_level = 7
+# force_login = 1
+# pin = XXXX
+# activate = 1
 
 
 set -e
@@ -38,7 +58,7 @@ set -e
 # Configuration
 VERSION="${1:-4.21.1}" # Default value to 4.21.1
 ENV="$2"
-OSSLSIGNCODE="osslsigncode"
+OSSLSIGNCODE="C:\Users\DINUM\Workspace\osslsigncode-2.14\build\osslsigncode"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORK_DIR="${SCRIPT_DIR}/releases/${VERSION}"
 GITHUB_BASE_URL="https://github.com/tchapgouv/tchap-desktop/releases/download/tchap-${VERSION}"
@@ -146,7 +166,7 @@ sign_file() {
     log_info "Signing: $filename"
     # Note: -ac (additional certificates chain) is optional; remove it to test without it
     if "$OSSLSIGNCODE" sign \
-        -pkcs11module /usr/lib/opensc-pkcs11.so \
+        -pkcs11module "C:\Program Files\OpenSC Project\OpenSC\pkcs11\opensc-pkcs11.dll" \
         -pkcs11cert 'pkcs11:token=DINUM;object=Certificate%201' \
         -key 'pkcs11:token=DINUM;object=Private%20key%201' \
         -pass "$PKCS11_PIN" \
