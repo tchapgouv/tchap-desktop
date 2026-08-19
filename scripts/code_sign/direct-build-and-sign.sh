@@ -3,7 +3,7 @@
 # This script must be run in src-tauri as root (where there is tauri.conf.json file)
 
 # direct-windows-build-and-sign.sh TARGET ENV VERSION SKIP_SOURCE SKIP_BUILD
-# TARGET : can be x86_64-pc-windows-msvc or universal-apple-darwin
+# TARGET : can be x86_64-pc-windows-gnu or universal-apple-darwin
 # ENV : prod, dev, preprod
 # VERSION : x.y.z
 # SKIP_SOURCE: true or false (default to false)
@@ -12,10 +12,11 @@
 
 # Prerequisites :
 # - Follow tauri installation instruction, for windows use MINGW64 and pacman -S mingw64/...rust
+# use rust-target: x86_64-pc-windows-gnu and rust-toolchain: stable-x86_64-pc-windows-gnu
 # - Install cli tauri : cargo install tauri-cli --version "^2.0.0" --locked
-#
 
-TARGET="${1:?Missing target (x86_64-pc-windows-msvc or universal-apple-darwin)}"
+
+TARGET="${1:?Missing target (x86_64-pc-windows-gnu or universal-apple-darwin)}"
 ENV="${2:?Missing Env}"
 VERSION="${3:?Missing version}"
 SKIP_SOURCE="${4:?false}"
@@ -67,19 +68,13 @@ if [ $SKIP_BUILD = false ]; then
     npm install
     npm run fetch-package -- $ENV
     popd
-    # build tauri app
-    pushd "$WORK_DIR/src-tauri"
-    cargo tauri build -v -t $TARGET -c $CONFIG
-    # cargo tauri build -v -t 'x86_64-pc-windows-msvc' -c "./tauri.conf.noupdater-windows.json" -f "no-updater"
 fi
 
 # # Sign apps
 echo "Signing the app"
 case $TARGET in
-    x86_64-pc-windows-msvc)
-        cargo tauri bundle -v --sign-command "./sign-releases-ossl_windows.sh $VERSION $ENV" -c $CONFIG
-        # Only for prod no_updater version
-        # cargo tauri bundle -v --sign-command "./sign-releases-ossl_linux.sh $VERSION $ENV" -f no-updater -c "./tauri.conf.noupdater-windows.json"
+    x86_64-pc-windows-gnu)
+        cargo tauri bundle $VERSION $ENV -c $CONFIG -c "./configs/tauri.conf-sign-windows.json"
     ;;
     universal-apple-darwin)
     cargo tauri bundle -v --sign-command "./sign-releases-ossl_mac.sh $VERSION $ENV"
