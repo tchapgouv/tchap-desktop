@@ -19,14 +19,14 @@
 TARGET="${1:?Missing target (x86_64-pc-windows-gnu or universal-apple-darwin)}"
 ENV="${2:?Missing Env}"
 VERSION="${3:?Missing version}"
-SKIP_SOURCE="${4:?false}"
-SKIP_BUILD="${5:?false}"
+SKIP_SOURCE="${4:-keep}"
+SKIP_BUILD="${5:-keep}"
 CONFIG="./tauri.conf.json"
 SCRIPT_DIR="../scripts/code_sign"
 WORK_DIR="${SCRIPT_DIR}/releases/${VERSION}/sources"
 SOURCES_URL="https://github.com/tchapgouv/tchap-desktop/archive/refs/tags/tchap-${VERSION}.tar.gz"
 
-case $ENV in
+case "$ENV" in
     dev)
         CONFIG = "./tauri.conf.dev.json"
     ;;
@@ -52,15 +52,27 @@ download_sources() {
     fi
 }
 
+get_updater_signing_key() {
+    echo "Enter your updater private signing key"
+    read -s KEY
+    if [ -z "$KEY" ]; then
+        echo "KEY cannot be empty"
+        exit 1
+    fi
+    export TAURI_SIGNING_PRIVATE_KEY="$KEY"
+    echo "KEY set"
+}
+
+echo "$SKIP_SOURCE"
 # Download sources
-if [ $SKIP_SOURCE = false ]; then
+if [ "$SKIP_SOURCE" = "keep" ]; then
     setup_directories
     download_sources
     echo "Extracting sources now"
     tar -xf "$WORK_DIR/tchap-${VERSION}.tar.gz" -C $WORK_DIR --strip-components=1
 fi
 
-if [ $SKIP_BUILD = false ]; then
+if [ "$SKIP_BUILD" = "keep" ]; then
     #  build apps
     # build front end
     pushd "$WORK_DIR"
@@ -70,15 +82,17 @@ if [ $SKIP_BUILD = false ]; then
     popd
 fi
 
+get_updater_signing_key
+
 # # Sign apps
 echo "Signing the app"
-case $TARGET in
+case "$TARGET" in
     x86_64-pc-windows-gnu)
-        cargo tauri bundle $VERSION $ENV -c $CONFIG -c "./configs/tauri.conf-sign-windows.json"
+        cargo tauri bundle -c $CONFIG -c "./configs/tauri.conf-sign-windows.json"
     ;;
     universal-apple-darwin)
     cargo tauri bundle -v --sign-command "./sign-releases-ossl_mac.sh $VERSION $ENV"
     ;;
     *)
-        echo No correct target found $TARGET
+    echo No correct target found $TARGET
 esac
