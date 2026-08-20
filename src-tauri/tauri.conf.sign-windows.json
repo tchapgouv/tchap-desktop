@@ -1,0 +1,10 @@
+{
+  "bundle": {
+    "windows": {
+      "signCommand": {
+        "cmd": "/c/msys64/usr/bin/sh.exe",
+        "args": ["../scripts/code_sign/sign-single-file.sh", "%1"]
+      }
+    }
+  }
+}

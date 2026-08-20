@@ -20,18 +20,25 @@ TARGET="${1:?Missing target (x86_64-pc-windows-gnu or universal-apple-darwin)}"
 ENV="${2:?Missing Env}"
 VERSION="${3:?Missing version}"
 SKIP_SOURCE="${4:-keep}"
-SKIP_BUILD="${5:-keep}"
-CONFIG="./tauri.conf.json"
-SCRIPT_DIR="../scripts/code_sign"
+SKIP_BUILD_FRONTEND="${5:-keep}"
+SKIP_BUILD_TAURI="${6:-keep}"
+CONFIG="./src-tauri/tauri.conf.json"
+# Modify the script_dir path to match your
+SCRIPT_DIR="/c/Users/DINUM/Workspace/tchap-desktop/scripts/code_sign"
 WORK_DIR="${SCRIPT_DIR}/releases/${VERSION}/sources"
 SOURCES_URL="https://github.com/tchapgouv/tchap-desktop/archive/refs/tags/tchap-${VERSION}.tar.gz"
 
+export OPENSSL_NO_VENDOR=1
+export RUSTFLAGS=-Ctarget-feature=+crt-static
+export SSL_CERT_FILE="/c/Users/DINUM/OpenSSL-win64/cacert.pem"
+
+echo "$ENV"
 case "$ENV" in
     dev)
-        CONFIG = "./tauri.conf.dev.json"
+        CONFIG = "./src-tauri/tauri.conf.dev.json"
     ;;
     preprod)
-        CONFIG = "./tauri.conf.preprod.json"
+        CONFIG = "./src-tauri/tauri.conf.preprod.json"
     ;;
 esac
 
@@ -63,7 +70,8 @@ get_updater_signing_key() {
     echo "KEY set"
 }
 
-echo "$SKIP_SOURCE"
+get_updater_signing_key
+
 # Download sources
 if [ "$SKIP_SOURCE" = "keep" ]; then
     setup_directories
@@ -72,26 +80,33 @@ if [ "$SKIP_SOURCE" = "keep" ]; then
     tar -xf "$WORK_DIR/tchap-${VERSION}.tar.gz" -C $WORK_DIR --strip-components=1
 fi
 
-if [ "$SKIP_BUILD" = "keep" ]; then
+pushd "$WORK_DIR"
+if [ "$SKIP_BUILD_FRONTEND" = "keep" ]; then
     #  build apps
     # build front end
-    pushd "$WORK_DIR"
     echo "installing frontend package"
     npm install
     npm run fetch-package -- $ENV
-    popd
 fi
 
-get_updater_signing_key
+if [ "$SKIP_BUILD_TAURI" = "keep" ]; then
+    #  build apps
+    # build front end
+    echo "building tauri"
+    cargo tauri build -c $CONFIG -t $TARGET --no-bundle
+fi
+
+
 
 # # Sign apps
 echo "Signing the app"
+echo "$pwd"
 case "$TARGET" in
     x86_64-pc-windows-gnu)
-        cargo tauri bundle -c $CONFIG -c "./configs/tauri.conf-sign-windows.json"
+        cargo tauri bundle -c $CONFIG -c "./src-tauri/tauri.conf.sign-windows.json" -t $TARGET
     ;;
     universal-apple-darwin)
-    cargo tauri bundle -v --sign-command "./sign-releases-ossl_mac.sh $VERSION $ENV"
+    cargo tauri bundle -c $CONFIG -t $TARGET
     ;;
     *)
     echo No correct target found $TARGET
