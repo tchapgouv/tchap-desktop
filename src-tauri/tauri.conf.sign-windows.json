@@ -1,0 +1,9 @@
+{
+  "bundle": {
+    "windows": {
+      "certificateThumbprint": "d6a8895445ee17bded15b88565ca16f582cb3bb7",
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "http://ts.harica.gr"
+    }
+  }
+}

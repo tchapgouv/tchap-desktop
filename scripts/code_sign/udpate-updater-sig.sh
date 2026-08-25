@@ -13,6 +13,7 @@
 # Configuration
 VERSION="${1:-4.21.1}" # Default value to 4.21.1
 ENV="${2:?Missing Env}"
+# the script should be launch in the script/code_sign directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORK_DIR="${SCRIPT_DIR}/releases/${VERSION}"
 GITHUB_BASE_URL="https://github.com/tchapgouv/tchap-desktop/releases/download/tchap-${VERSION}"
@@ -103,7 +104,7 @@ minisign_files() {
         log_info "Signing: $file"
 
         # Call minisign_file.sh and capture the encoded signature
-        if signature=$("${SCRIPT_DIR}/minisign-file.sh" "$PRIVATE_KEY_PATH" "$filepath"); then
+        if signature=$("${SCRIPT_DIR}/minisign-file-tauri-cli.sh" "$PRIVATE_KEY_PATH" "$filepath"); then
             log_success "Signed signature: $signature"
 
             # Check file extension
@@ -129,11 +130,16 @@ update_latest_file_signature() {
 
     log_info "Updating latest.json: $key"
 
-    # Get current URL and modify it to add _signed before extension
+    local new_url=()
+    # Get current URL and modify it to add _signed before extension (if not exist already)
     local url=$(jq -r ".platforms[\"$key\"].url" "$LATEST_JSON")
-    local new_url=$(echo "$url" | sed 's/\([^/]*\)\(\.[^/.]*\)$/\1_signed\2/')
+    if [[ $url == *"_signed"* ]]; then
+        new_url=$url
+    else
+        new_url=$(echo "$url" | sed 's/\([^/]*\)\(\.[^/.]*\)$/\1_signed\2/')
+    fi
 
-    # Update signature and URL (add _signed before file extension)
+    # Update signature and URL
     jq --arg sig "$signature" --arg url "$new_url" \
         ".platforms[\"$key\"].signature = \$sig | .platforms[\"$key\"].url = \$url" \
         "$LATEST_JSON" > "${LATEST_JSON}.tmp"
