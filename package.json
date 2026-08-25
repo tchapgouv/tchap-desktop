@@ -1,6 +1,6 @@
 {
   "name": "tchap-desktop",
-  "version": "4.21.3",
+  "version": "4.21.4",
   "description": "",
   "main": "./scripts/index.ts",
   "scripts": {
@@ -9,24 +9,24 @@
   },
   "tchapConfig": {
     "prod": {
-      "tchap-web_version": "4.21.3",
-      "tchap-web_archive_name": "tchap-4.21.3-prod-20260806.tar.gz",
+      "tchap-web_version": "4.21.4",
+      "tchap-web_archive_name": "tchap-4.21.4-prod-20260825.tar.gz",
       "tchap-web_github": {
         "branch": "develop_tchap",
         "repo": "https://github.com/tchapgouv/tchap-web-v4"
       }
     },
     "dev": {
-      "tchap-web_version": "4.21.3",
-      "tchap-web_archive_name": "tchap-4.21.3-dev-20260806.tar.gz",
+      "tchap-web_version": "4.21.4",
+      "tchap-web_archive_name": "tchap-4.21.4-dev-20260825.tar.gz",
       "tchap-web_github": {
         "branch": "develop_tchap",
         "repo": "https://github.com/tchapgouv/tchap-web-v4"
       }
     },
     "preprod": {
-      "tchap-web_version": "4.21.3",
-      "tchap-web_archive_name": "tchap-4.21.3-preprod-20260806.tar.gz",
+      "tchap-web_version": "4.21.4",
+      "tchap-web_archive_name": "tchap-4.21.4-preprod-20260825.tar.gz",
       "tchap-web_github": {
         "branch": "develop_tchap",
         "repo": "https://github.com/tchapgouv/tchap-web-v4"
