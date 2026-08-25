@@ -16,7 +16,6 @@ use tauri::{
 use tauri_plugin_autostart::MacosLauncher;
 
 /// A state shared on Tauri.
-#[derive(Clone)]
 pub struct MyState {
     /// Seshat database.
     pub database: Option<Database>,
