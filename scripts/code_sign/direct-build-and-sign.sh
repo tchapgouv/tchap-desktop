@@ -2,32 +2,34 @@
 # Using Tauri cli and from sources directly build the project without passing by the CI
 # This script must be run in src-tauri as root (where there is tauri.conf.json file)
 
-# direct-windows-build-and-sign.sh TARGET ENV VERSION SKIP_SOURCE SKIP_BUILD
-# TARGET : can be x86_64-pc-windows-gnu or universal-apple-darwin
+# direct-windows-build-and-sign.sh TARGET ENV VERSION SKIP_SOURCE SKIP_BUILD SKIP_TAURI
+# TARGET : can be x86_64-pc-windows-msvc or universal-apple-darwin
 # ENV : prod, dev, preprod
 # VERSION : x.y.z
 # SKIP_SOURCE: true or false (default to false)
-# SKIP_BUILD: true or false (default to false)
+# SKIP_BUILD_FRONTEND: true or false (default to false)
+# SKIP_BUILD_TAURI: true or false (default to false)
 
 
 # Prerequisites :
-# - Follow tauri installation instruction, for windows use MINGW64 and pacman -S mingw64/...rust
-# use rust-target: x86_64-pc-windows-gnu and rust-toolchain: stable-x86_64-pc-windows-gnu
+# - install rustup and set toolchain to: rustup toolchain install stable-msvc
 # - Install cli tauri : cargo install tauri-cli --version "^2.0.0" --locked
 
+# The resulted installer are found in /realeases/VERSION/sources/src-tauri/target/x86-64-pc-windows-msvc/release/bundle
 
-TARGET="${1:?Missing target (x86_64-pc-windows-gnu or universal-apple-darwin)}"
+TARGET="${1:?Missing target (x86_64-pc-windows-msvc or universal-apple-darwin)}"
 ENV="${2:?Missing Env}"
 VERSION="${3:?Missing version}"
 SKIP_SOURCE="${4:-keep}"
 SKIP_BUILD_FRONTEND="${5:-keep}"
 SKIP_BUILD_TAURI="${6:-keep}"
-CONFIG="./src-tauri/tauri.conf.json"
-# Modify the script_dir path to match your
+CONFIG="./tauri.conf.json"
+# Modify the script_dir path to match yours
 SCRIPT_DIR="/c/Users/DINUM/Workspace/tchap-desktop/scripts/code_sign"
 WORK_DIR="${SCRIPT_DIR}/releases/${VERSION}/sources"
 SOURCES_URL="https://github.com/tchapgouv/tchap-desktop/archive/refs/tags/tchap-${VERSION}.tar.gz"
 
+# export PATH="/c/Users/DINUM/.cargo/bin/:$PATH" needs if building for windows-gnu mingw64
 export OPENSSL_NO_VENDOR=1
 export RUSTFLAGS=-Ctarget-feature=+crt-static
 export SSL_CERT_FILE="/c/Users/DINUM/OpenSSL-win64/cacert.pem"
@@ -60,14 +62,24 @@ download_sources() {
 }
 
 get_updater_signing_key() {
-    echo "Enter your updater private signing key"
-    read -s KEY
+    echo "Enter your updater private signing key password"
+    read KEY
     if [ -z "$KEY" ]; then
         echo "KEY cannot be empty"
         exit 1
     fi
-    export TAURI_SIGNING_PRIVATE_KEY="$KEY"
-    echo "KEY set"
+    # Use git bash /c/Users/... style
+    echo "Enter your updater private signing key file path"
+    read KEY_PATH
+    if [ ! -f "$KEY_PATH" ]; then
+        echo "File not found : $KEY_PATH"
+        exit 1
+    fi
+    export TAURI_SIGNING_PRIVATE_KEY="$(<"$KEY_PATH")"
+
+    cat "$KEY_PATH"
+    export TAURI_SIGNING_PRIVATE_KEY_PASSWORD="$KEY"
+    echo "KEY and KEY PATH set"
 }
 
 get_updater_signing_key
@@ -89,25 +101,28 @@ if [ "$SKIP_BUILD_FRONTEND" = "keep" ]; then
     npm run fetch-package -- $ENV
 fi
 
+pushd "src-tauri"
+
 if [ "$SKIP_BUILD_TAURI" = "keep" ]; then
-    #  build apps
-    # build front end
+    #  build tauri
     echo "building tauri"
     cargo tauri build -c $CONFIG -t $TARGET --no-bundle
+    # cargo tauri bundle -c $CONFIG -c "./tauri.conf.noupdater-windows.json" -c "./tauri.conf.sign-windows.json" -t $TARGET -f no-updater --no-bundle
 fi
 
 
 
 # # Sign apps
 echo "Signing the app"
-echo "$pwd"
+
 case "$TARGET" in
-    x86_64-pc-windows-gnu)
-        cargo tauri bundle -c $CONFIG -c "./src-tauri/tauri.conf.sign-windows.json" -t $TARGET
-    ;;
+    x86_64-pc-windows-msvc)
+        cargo tauri bundle -c $CONFIG -c "./tauri.conf.sign-windows.json" -t $TARGET
+        # cargo tauri bundle -c $CONFIG -c "./tauri.conf.noupdater-windows.json" -c "./tauri.conf.sign-windows.json" -t $TARGET -f no-updater
+        ;;
     universal-apple-darwin)
-    cargo tauri bundle -c $CONFIG -t $TARGET
-    ;;
+        cargo tauri bundle -c $CONFIG -t $TARGET
+        ;;
     *)
     echo No correct target found $TARGET
 esac
