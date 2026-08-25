@@ -90,7 +90,7 @@ jobs:
     secrets:
       TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_DEV }}
       TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_DEV_PASSWORD }}
-  
+
   build-tchap-desktop-preprod:
     needs: create-release
     permissions:
@@ -133,15 +133,15 @@ jobs:
 
       - name: Run latest json script for dev
         shell: bash
-        run: ./scripts/get-latest-file-per-env.sh ${{ github.ref_name }} dev
-      
+        run: ./scripts/update-latest-file-per-env_CI.sh ${{ github.ref_name }} dev
+
       - name: Run latest json script for preprod
         shell: bash
-        run: ./scripts/get-latest-file-per-env.sh ${{ github.ref_name }} preprod
+        run: ./scripts/update-latest-file-per-env_CI.sh ${{ github.ref_name }} preprod
 
       - name: Run latest json script for prod
         shell: bash
-        run: ./scripts/get-latest-file-per-env.sh ${{ github.ref_name }} prod
+        run: ./scripts/update-latest-file-per-env_CI.sh ${{ github.ref_name }} prod
 
       - name: Upload all latest.json to release
         uses: softprops/action-gh-release@v3
@@ -150,4 +150,3 @@ jobs:
             latest_prod.json
             latest_preprod.json
             latest_dev.json
-

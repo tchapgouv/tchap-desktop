@@ -1,5 +1,6 @@
-> [!WARNING]
-> Tchap desktop is still experimental, disruptive changes can occur and the stable release is planned for T1 2026
+> [!INFO]
+> Tchap desktop is stable for windows version since 4.21.4
+> Linux and MacOS version are still experimental
 
 <p align="center">
   <a href="https://github.com/tchapgouv">
@@ -29,13 +30,12 @@ Desktop client for Tchap web build on top of Tauri (https://tauri.app). Code is 
 Tchap-desktop is strongly dependant of tchap-web since it is only the desktop wrapper around tchap-web.
 A `TauriPlatform` has been created in tchap-web (which is a soft fork of [element-web](https://github.com/element-hq/element-web)) in order to support Tauri as his backend platform.
 
-## Prerequisites
-
-- Install prerequisites (https://v2.tauri.app/start/prerequisites/)
-
-- Install Node and npm using a version manager like nvm. The frontend required a node version = 20.
 
 ## For windows installation
+> [!INFO]
+> Download link for latest stable version with updater : [here](https://www.tchap.gouv.fr/client/config/download/desktop/windows)
+> Download link for latest stable version with NO autoupdate : [here](https://www.tchap.gouv.fr/client/config/download/desktop/windows-no-updater)
+
 
 Two different type of builds are proposed :
 
@@ -44,11 +44,19 @@ Two different type of builds are proposed :
 
 The .msi installer which include the auto-update is perUser only whereas the .exe is both (will take perMachine mode by default so will ask admin privileges to install). Whereas the .msi installer with no updater is perMachine, it will require admin rights to install the app
 
-|                      | MSI                                    | NSIS (exe)                           |
-| -------------------- | -------------------------------------- | ------------------------------------ |
-| with auto Updates    | perUser (cf custom mmain.wxs template) | both (admin by default cf doc Tauri) |
-| without auto updates | perMachine (admin context)             | both (admin by default)              |
-|                      |                                        |                                      |
+|                      | MSI                                    | NSIS (exe)                           | Download Url                                            |
+| -------------------- | -------------------------------------- | ------------------------------------ | ------------------------------------------------------- |
+| with auto Updates    | perUser (cf custom main.wxs template)  | both (admin by default cf doc Tauri) | .../Tchap-prod_{VERSION}_x64_signed.msi/exe             |
+| without auto updates | perMachine (admin context)             | both (admin by default)              | .../Tchap-prod_{VERSION}_x64_no_udpdater_signed.msi/exe |
+|                      |                                        |                                      |                                                         |
+
+
+## Prerequisites for local developpement
+
+- Install prerequisites (https://v2.tauri.app/start/prerequisites/)
+
+- Install Node and npm using a version manager like nvm. The frontend required a node version = 20.
+
 
 ## Dev local using local frontend
 
@@ -97,7 +105,7 @@ cargo install tauri-cli --version "^2.0.0" --locked
 cargo tauri dev
 ```
 
-## Dev using a github branch from a remote repository
+## Dev using a github branch from a remote repository for the frontend
 
 - You need to remove `build: devUrl` from the `tauri.conf.json` file. Otherwise it will wait for a local frontend to be running.
 
@@ -147,6 +155,10 @@ cargo tauri build
 
 - The workflow will also update the `tchap-web` archive used in the app to the latest version on the `master` branch of the `tchap-web` repository.
 
+## Signing the releas
+
+Go to code signing [doc](./scripts/code_sign/README.md)
+
 ## Updater
 
 To update clients automatically, we use the updater plugin.
@@ -160,5 +172,3 @@ cargo tauri icon
 ```
 
 - This will automatically generate all the icons needed.
-
-## Troubleshoot
