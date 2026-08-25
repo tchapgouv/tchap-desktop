@@ -47,7 +47,7 @@ pub async fn init_event_index<R: Runtime>(
         .expect("could not resolve app local data path")
         .join("seshat_db");
 
-    println!("[Command] init_event_index - db_path {:?}", &db_path);
+    println!("[Command] init_event_index - db_path {:?}", db_path);
 
     let _ = fs::create_dir_all(&db_path);
 
@@ -118,7 +118,7 @@ pub async fn init_event_index<R: Runtime>(
     };
 
     // --- Store the successfully opened database (either first try or after recovery) ---
-    state_lock.database = Some(database.clone());
+    state_lock.database = Some(database);
     println!("[Command] init_event_index completed successfully.");
 
     Ok(())

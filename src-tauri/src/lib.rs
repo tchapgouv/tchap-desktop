@@ -16,7 +16,6 @@ use tauri::{
 use tauri_plugin_autostart::MacosLauncher;
 
 /// A state shared on Tauri.
-#[derive(Clone)]
 pub struct MyState {
     /// Seshat database.
     pub database: Option<Database>,
@@ -47,10 +46,12 @@ pub fn run() {
     #[cfg(desktop)]
     {
         builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            let _ = app
+            let webview_window = app
                 .get_webview_window("main")
-                .expect("no main window")
-                .set_focus();
+                .expect("no main window");
+            let _ = webview_window.unminimize();
+            let _ = webview_window.set_focus();
+            let _ = webview_window.show();
         }));
     }
     // doesnt initialize the updater plugin if the feature no-updater is applied during build
@@ -97,6 +98,7 @@ pub fn run() {
                         ..
                     } = event
                     {
+                        println!("**** Inside left click");
                         let app = tray.app_handle();
                         if let Some(webview_window) = app.get_webview_window("main") {
                             let _ = webview_window.unminimize();
