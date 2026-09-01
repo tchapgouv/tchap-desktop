@@ -50,6 +50,12 @@ The .msi installer which include the auto-update is perUser only whereas the .ex
 | without auto updates | perMachine (admin context)             | both (admin by default)              | .../Tchap-prod_{VERSION}_x64_no_udpdater_signed.msi/exe |
 |                      |                                        |                                      |                                                         |
 
+## For Mac, linux installation (no stable version yet)
+
+Download files for mac and linux platform (dmg, AppImage, deb etc) can be found [here](https://www.tchap.gouv.fr/tchap-desktop/)
+
+Those platforms only contains version with auto updater.
+
 
 ## Prerequisites for local developpement
 

@@ -34,6 +34,3 @@ for file in "$RELEASE_MSI_PATH"/* "$RELEASE_NSIS_PATH"/*; do
   # Take all files under everything RELEASE_MSI_PATH and RELEASE_NSIS_PATH dir and move to the correct OUTPUT_DIR_PATH
   mv "$file" "$OUTPUT_DIR_PATH/$new_name"
 done
-
-
-# Update latest.json files
