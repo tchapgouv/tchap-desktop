@@ -11,6 +11,7 @@
   "permissions": [
     "updater:default",
     "autostart:default",
-    "window-state:default"
+    "window-state:default",
+    "store:default"
   ]
 }

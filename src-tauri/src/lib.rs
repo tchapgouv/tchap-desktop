@@ -4,6 +4,7 @@ mod keyring_commands;
 mod seshat_commands;
 mod seshat_utils;
 
+use serde_json::json;
 use seshat::Database;
 use std::sync::Mutex;
 use tauri::{
@@ -13,7 +14,8 @@ use tauri::{
     utils::config::WebviewUrl,
     webview::{DownloadEvent, WebviewWindowBuilder},
 };
-use tauri_plugin_autostart::MacosLauncher;
+use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
+use tauri_plugin_store::StoreExt;
 
 /// A state shared on Tauri.
 pub struct MyState {
@@ -46,9 +48,7 @@ pub fn run() {
     #[cfg(desktop)]
     {
         builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            let webview_window = app
-                .get_webview_window("main")
-                .expect("no main window");
+            let webview_window = app.get_webview_window("main").expect("no main window");
             let _ = webview_window.unminimize();
             let _ = webview_window.set_focus();
             let _ = webview_window.show();
@@ -75,12 +75,27 @@ pub fn run() {
             MacosLauncher::LaunchAgent,
             Some(vec!["--flag1", "--flag2"]),
         ))
+        .plugin(tauri_plugin_store::Builder::new().build())
         .setup(|app| {
             // Create the initial state
             let initial_state = MyState { database: None };
 
             // Register it with Tauri's state management
             app.manage(Mutex::new(initial_state));
+
+            // Set auto launch default to true if it has never been set before
+            // Should be only call once
+            let store = app.store("store.json")?;
+            if store.get("autolaunch_default").is_some() {
+                println!("Autolaunch default was already set. Now taking value set by user");
+            } else {
+                println!("Autolaunch setting for the first time. Enabling it...");
+                store.set("autolaunch_default", json!({ "value": "SET" }));
+                // Get the autostart manager
+                let autostart_manager = app.autolaunch();
+                // Enable autostart
+                let _ = autostart_manager.enable();
+            }
 
             let show_hide =
                 MenuItem::with_id(app, "show_hide", "Montrer / Cacher", true, None::<&str>)?;
