@@ -2,7 +2,7 @@
 # Using Tauri cli and from sources directly build the project without passing by the CI
 # This script must be run in src-tauri as root (where there is tauri.conf.json file)
 
-# direct-windows-build-and-sign.sh TARGET ENV VERSION SKIP_SOURCE SKIP_BUILD SKIP_TAURI
+# direct-windows-build-and-sign.sh TARGET ENV VERSION NO_UPDATER SKIP_SOURCE SKIP_BUILD SKIP_TAURI
 # TARGET : can be x86_64-pc-windows-msvc or universal-apple-darwin
 # ENV : prod, dev, preprod
 # VERSION : x.y.z
@@ -20,9 +20,10 @@
 TARGET="${1:?Missing target (x86_64-pc-windows-msvc or universal-apple-darwin)}"
 ENV="${2:?Missing Env}"
 VERSION="${3:?Missing version}"
-SKIP_SOURCE="${4:-keep}"
-SKIP_BUILD_FRONTEND="${5:-keep}"
-SKIP_BUILD_TAURI="${6:-keep}"
+NO_UPDATER="${4:-false}"
+SKIP_SOURCE="${5:-keep}"
+SKIP_BUILD_FRONTEND="${6:-keep}"
+SKIP_BUILD_TAURI="${7:-keep}"
 CONFIG="./tauri.conf.json"
 # Modify the script_dir path to match yours
 SCRIPT_DIR="/c/Users/DINUM/Workspace/tchap-desktop/scripts/code_sign"
@@ -37,10 +38,10 @@ export SSL_CERT_FILE="/c/Users/DINUM/OpenSSL-win64/cacert.pem"
 echo "$ENV"
 case "$ENV" in
     dev)
-        CONFIG = "./src-tauri/tauri.conf.dev.json"
+        CONFIG="./tauri.conf.dev.json"
     ;;
     preprod)
-        CONFIG = "./src-tauri/tauri.conf.preprod.json"
+        CONFIG="./tauri.conf.preprod.json"
     ;;
 esac
 
@@ -106,8 +107,11 @@ pushd "src-tauri"
 if [ "$SKIP_BUILD_TAURI" = "keep" ]; then
     #  build tauri
     echo "building tauri"
-    cargo tauri build -c $CONFIG -t $TARGET --no-bundle
-    # cargo tauri bundle -c $CONFIG -c "./tauri.conf.noupdater-windows.json" -c "./tauri.conf.sign-windows.json" -t $TARGET -f no-updater --no-bundle
+    if [ "$NO_UPDATER" = "false" ]; then
+        cargo tauri build -c $CONFIG -t $TARGET --no-bundle
+    else
+        cargo tauri build -c $CONFIG -c "./tauri.conf.noupdater-windows.json" -c "./tauri.conf.sign-windows.json" -t $TARGET -f no-updater --no-bundle
+    fi
 fi
 
 
@@ -117,8 +121,11 @@ echo "Signing the app"
 
 case "$TARGET" in
     x86_64-pc-windows-msvc)
-        cargo tauri bundle -c $CONFIG -c "./tauri.conf.sign-windows.json" -t $TARGET
-        # cargo tauri bundle -c $CONFIG -c "./tauri.conf.noupdater-windows.json" -c "./tauri.conf.sign-windows.json" -t $TARGET -f no-updater
+        if [ "$NO_UPDATER" = "false" ]; then
+            cargo tauri bundle -c $CONFIG -c "./tauri.conf.sign-windows.json" -t $TARGET
+        else
+            cargo tauri bundle -c $CONFIG -c "./tauri.conf.noupdater-windows.json" -c "./tauri.conf.sign-windows.json" -t $TARGET -f no-updater
+        fi
         ;;
     universal-apple-darwin)
         cargo tauri bundle -c $CONFIG -t $TARGET

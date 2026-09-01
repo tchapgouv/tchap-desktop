@@ -15,14 +15,15 @@ VERSION="${1:-4.21.1}" # Default value to 4.21.1
 ENV="${2:?Missing Env}"
 # the script should be launch in the script/code_sign directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WORK_DIR="${SCRIPT_DIR}/releases/${VERSION}"
+WORK_DIR="C:\Users\DINUM\Workspace\tchap-desktop\scripts\code_sign\releases\${VERSION}\${ENV}"
 GITHUB_BASE_URL="https://github.com/tchapgouv/tchap-desktop/releases/download/tchap-${VERSION}"
 # Should be the latest.json file downloaded from github
 LATEST_JSON="${WORK_DIR}/latest_${ENV}.json"
+
 # This file contains the private key content in minisig format.
 # When generated with tauri the key pair return are base64 encoded.
 # Need to decode them and put the content of the private key inside a .minisig file
-PRIVATE_KEY_PATH=${3:?Missing private key path}
+PRIVATE_KEY_PATH=${3}
 
 # Files to download
 FILES_TO_DOWNLOAD=(
@@ -124,6 +125,30 @@ minisign_files() {
     done
 }
 
+# We suppose that the sig files where generated and are inside WORKDIR/$ENV
+# Replace downloaded latest_ENV.json new signature for signed artifacts
+replace_sig() {
+    for file in "$WORK_DIR"/*; do
+      [ -f "$file" ] || continue
+      filename=$(basename "$file")
+      ext="${filename##*.}"
+      signature=""
+      if [[ "$filename" == *.sig ]]; then
+        signature=$(cat $filename)
+        key=""
+        if [[ "$filename" == *.exe.sig ]]; then
+            for key in "${KEYS_TO_UPDATE_EXE[@]}"; do
+                update_latest_file_signature "$key" "$signature"
+            done
+        else
+            for key in "${KEYS_TO_UPDATE_MSI[@]}"; do
+                update_latest_file_signature "$key" "$signature"
+            done
+        fi
+      fi
+    done
+}
+
 update_latest_file_signature() {
     local key="$1"
     local signature="$2"
@@ -174,7 +199,11 @@ main() {
 
     setup_directories
     download_files
-    minisign_files
+    if $PRIVATE_KEY_PATH; then
+        minisign_files
+    else
+        replace_sig
+    fi
     log_success "All signatures updated!"
 }
 
