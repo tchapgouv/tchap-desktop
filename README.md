@@ -1,6 +1,6 @@
-> [!INFO]
-> Tchap desktop is stable for windows version since 4.21.4
-> Linux and MacOS version are still experimental
+> [!NOTE]
+> Tchap desktop is stable for windows version since 4.21.4  
+> Linux and MacOS version are still experimental  
 
 <p align="center">
   <a href="https://github.com/tchapgouv">
@@ -32,9 +32,9 @@ A `TauriPlatform` has been created in tchap-web (which is a soft fork of [elemen
 
 
 ## For windows installation
-> [!INFO]
-> Download link for latest stable version with updater : [here](https://www.tchap.gouv.fr/client/config/download/desktop/windows)
-> Download link for latest stable version with NO autoupdate : [here](https://www.tchap.gouv.fr/client/config/download/desktop/windows-no-updater)
+> [!NOTE]
+> Download link for latest stable version with updater : [here](https://www.tchap.gouv.fr/client/config/download/desktop/windows)  
+> Download link for latest stable version with NO autoupdate : [here](https://www.tchap.gouv.fr/client/config/download/desktop/windows-no-updater)  
 
 
 Two different type of builds are proposed :
