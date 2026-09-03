@@ -22,7 +22,8 @@ tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tauri-plugin-fs = "2"
-tauri-plugin-notification = "2"
+#tauri-plugin-notification = "2"
+tauri-plugin-notification = { path = "../../tauri-plugins-workspace/plugins/notification"}
 tauri-plugin-persisted-scope = "2"
 tauri-plugin-dialog = "2"
 seshat = { git = "https://github.com/tchapgouv/seshat.git", branch = "main_tchap", features = ["bundled-sqlcipher"] }
