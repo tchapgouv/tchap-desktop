@@ -52,3 +52,16 @@ tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
 # In order to have system proxy enabled for updater in official release
 tauri-plugin-updater = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 tauri-plugin-window-state = "2"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+# WebKitGTK ships without WebRTC; the plugin supplies it through a native engine.
+# Pure Rust throughout: TURN over TLS with RustCrypto, and post-quantum key
+# agreement (X25519MLKEM768) with moduletto. For RustCrypto ML-KEM instead of
+# moduletto, replace "pq-moduletto" with "pq-hybrid".
+tauri-plugin-webrtc = { git = "https://github.com/crabnebula-dev/tauri-plugin-webrtc", branch = "main", default-features = false, features = ["turn-tls-rustcrypto", "pq-moduletto"] }
+
+# Testing aid: the same plugin on macOS, registered only when
+# TCHAP_WEBRTC_FORCE_SHIM is set, forced over WKWebView's native WebRTC so the
+# Linux call path can be exercised on a Mac (see tests/webrtc/README.md).
+[target.'cfg(target_os = "macos")'.dependencies]
+tauri-plugin-webrtc = { git = "https://github.com/crabnebula-dev/tauri-plugin-webrtc", branch = "main", default-features = false, features = ["turn-tls-rustcrypto", "pq-moduletto"] }
