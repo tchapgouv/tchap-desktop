@@ -61,6 +61,13 @@ pub fn run() {
         builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
     }
 
+    // WebRTC for WebKitGTK, which has no RTCPeerConnection. The shim installs
+    // only when the webview lacks native WebRTC, so this is Linux-only.
+    #[cfg(target_os = "linux")]
+    {
+        builder = builder.plugin(tauri_plugin_webrtc::init());
+    }
+
     builder
         .plugin(tauri_plugin_window_state::Builder::new().build())
         .plugin(tauri_plugin_deep_link::init())
