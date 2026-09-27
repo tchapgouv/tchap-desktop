@@ -1,0 +1,17 @@
+{
+  "name": "tchap-webrtc-tests",
+  "private": true,
+  "type": "module",
+  "description": "Local fixtures and helpers for checking tauri-plugin-webrtc calls in Tchap desktop",
+  "scripts": {
+    "setup": "node setup.mjs",
+    "fixtures": "node fixtures.mjs",
+    "m4": "node m4-fixtures.mjs",
+    "patch": "node patch-tchap-web.mjs",
+    "probe": "node probe.mjs"
+  },
+  "dependencies": {
+    "livekit-server-sdk": "^2.19.1",
+    "ws": "^8.18.0"
+  }
+}
