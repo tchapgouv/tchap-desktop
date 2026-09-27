@@ -1253,7 +1253,7 @@ dependencies = [
 [[package]]
 name = "dimpl"
 version = "0.7.4"
-source = "git+https://github.com/crabnebula-dev/qrtc?branch=main#e1ba8a721922613208de4c9d8aeb10da53612c20"
+source = "git+https://github.com/crabnebula-dev/qrtc?branch=main#058b1af828c97237ecfb717bee91efcf55a181ff"
 dependencies = [
  "aes",
  "aes-gcm",
@@ -1322,7 +1322,7 @@ dependencies = [
  "libc",
  "option-ext",
  "redox_users 0.5.2",
- "windows-sys 0.60.2",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -1597,7 +1597,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.60.2",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -2727,7 +2727,7 @@ checksum = "6a756c3fac73139e83f14c2d742155dd2b78d3ee56597b419a0579b7bdd6dd78"
 [[package]]
 name = "is"
 version = "0.11.1"
-source = "git+https://github.com/crabnebula-dev/qrtc?branch=main#e1ba8a721922613208de4c9d8aeb10da53612c20"
+source = "git+https://github.com/crabnebula-dev/qrtc?branch=main#058b1af828c97237ecfb717bee91efcf55a181ff"
 dependencies = [
  "crc",
  "serde",
@@ -3279,7 +3279,7 @@ dependencies = [
 [[package]]
 name = "moduletto"
 version = "0.1.0"
-source = "git+https://github.com/crabnebula-dev/moduletto?branch=main#a5a0d97f36b7e9f9508c450714c8e2d06768dcef"
+source = "git+https://github.com/crabnebula-dev/moduletto?branch=main#7440768854538b9e86657f9f66e407be1cef9b6b"
 dependencies = [
  "libm",
  "subtle",
@@ -3313,7 +3313,7 @@ dependencies = [
  "png 0.18.1",
  "serde",
  "thiserror 2.0.20",
- "windows-sys 0.60.2",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -3804,7 +3804,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7d8fae84b431384b68627d0f9b3b1245fcf9f46f6c0e3dc902e9dce64edd1967"
 dependencies = [
  "libc",
- "windows-sys 0.60.2",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -4271,7 +4271,7 @@ checksum = "d55d956fa96f5ec02be2e13af0e20391a5aa83d6a074e3ad368959d0fab299ea"
 [[package]]
 name = "qrtc"
 version = "0.1.0"
-source = "git+https://github.com/crabnebula-dev/qrtc?branch=main#e1ba8a721922613208de4c9d8aeb10da53612c20"
+source = "git+https://github.com/crabnebula-dev/qrtc?branch=main#058b1af828c97237ecfb717bee91efcf55a181ff"
 dependencies = [
  "crc32fast",
  "dimpl",
@@ -4802,7 +4802,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.60.2",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -4859,7 +4859,7 @@ dependencies = [
  "security-framework 3.7.0",
  "security-framework-sys",
  "webpki-root-certs",
- "windows-sys 0.60.2",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -5442,7 +5442,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c3d1e2c7f27f8d4cb10542a02c49005dbd6e93095799d6f3be745fae9f8fedd4"
 dependencies = [
  "libc",
- "windows-sys 0.60.2",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -5591,7 +5591,7 @@ checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
 [[package]]
 name = "str0m"
 version = "0.24.0"
-source = "git+https://github.com/crabnebula-dev/qrtc?branch=main#e1ba8a721922613208de4c9d8aeb10da53612c20"
+source = "git+https://github.com/crabnebula-dev/qrtc?branch=main#058b1af828c97237ecfb717bee91efcf55a181ff"
 dependencies = [
  "arrayvec",
  "base64ct",
@@ -5611,7 +5611,7 @@ dependencies = [
 [[package]]
 name = "str0m-proto"
 version = "0.7.0"
-source = "git+https://github.com/crabnebula-dev/qrtc?branch=main#e1ba8a721922613208de4c9d8aeb10da53612c20"
+source = "git+https://github.com/crabnebula-dev/qrtc?branch=main#058b1af828c97237ecfb717bee91efcf55a181ff"
 dependencies = [
  "base64ct",
  "dimpl",
@@ -5624,7 +5624,7 @@ dependencies = [
 [[package]]
 name = "str0m-rust-crypto"
 version = "0.6.0"
-source = "git+https://github.com/crabnebula-dev/qrtc?branch=main#e1ba8a721922613208de4c9d8aeb10da53612c20"
+source = "git+https://github.com/crabnebula-dev/qrtc?branch=main#058b1af828c97237ecfb717bee91efcf55a181ff"
 dependencies = [
  "aes",
  "aes-gcm",
@@ -6282,7 +6282,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-webrtc"
 version = "0.1.0"
-source = "git+https://github.com/crabnebula-dev/tauri-plugin-webrtc?branch=main#cdd612af9d44fd12a5a2dec6107a5bb4866215fc"
+source = "git+https://github.com/crabnebula-dev/tauri-plugin-webrtc?branch=main#f7e9af593c7dfdd5d9bd2dadf59840d8ed832e12"
 dependencies = [
  "log",
  "qrtc",
@@ -6469,7 +6469,7 @@ dependencies = [
  "getrandom 0.4.3",
  "once_cell",
  "rustix",
- "windows-sys 0.60.2",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -6881,7 +6881,7 @@ dependencies = [
  "png 0.18.1",
  "serde",
  "thiserror 2.0.20",
- "windows-sys 0.60.2",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -6910,7 +6910,7 @@ checksum = "f2f6fb2847f6742cd76af783a2a2c49e9375d0a111c7bef6f71cd9e738c72d6e"
 dependencies = [
  "memoffset 0.9.1",
  "tempfile",
- "windows-sys 0.60.2",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -7354,7 +7354,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.60.2",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
