@@ -67,6 +67,12 @@ pub fn run() {
     {
         builder = builder.plugin(tauri_plugin_webrtc::init());
     }
+    // Testing aid: on macOS, force the shim over WKWebView's native WebRTC
+    // when TCHAP_WEBRTC_FORCE_SHIM is set, to exercise the Linux call path here.
+    #[cfg(target_os = "macos")]
+    if std::env::var_os("TCHAP_WEBRTC_FORCE_SHIM").is_some() {
+        builder = builder.plugin(tauri_plugin_webrtc::Builder::new().force_shim(true).build());
+    }
 
     builder
         .plugin(tauri_plugin_window_state::Builder::new().build())
