@@ -14,27 +14,30 @@ name = "tchap_desktop_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2", features = [] }
+tauri-build = { version = "3.0.0-alpha.1", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = ["devtools", "tray-icon", "image-png"] }
-tauri-plugin-opener = "2"
+tauri = { version = "3.0.0-alpha.2", features = ["devtools", "tray-icon", "image-png"] }
+tauri-plugin-opener = "3.0.0-alpha.1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-tauri-plugin-fs = "2"
-tauri-plugin-notification = "2"
-tauri-plugin-persisted-scope = "2"
-tauri-plugin-dialog = "2"
+tauri-plugin-fs = "3.0.0-alpha.1"
+tauri-plugin-notification = "3.0.0-alpha.1"
+tauri-plugin-persisted-scope = "3.0.0-alpha.1"
+# Use the portal backend to avoid mixing the dialog plugin's GTK3 backend with CEF's GTK4.
+# Linux runtime prerequisites: Zenity and an XDG Desktop Portal backend.
+# (ref: https://github.com/tauri-apps/plugins-workspace/tree/v3/plugins/dialog#linux-xdg-desktop-portal-support)
+tauri-plugin-dialog = { version = "3.0.0-alpha.1", default-features = false, features = ["xdg-portal"] }
 seshat = { git = "https://github.com/tchapgouv/seshat.git", branch = "main_tchap", features = ["bundled-sqlcipher"] }
 thiserror = "2.0.11"
 anyhow = "1.0.97"
 uuid = "1.15.1"
 rand = "0.9.0"
-tauri-plugin-deep-link = "2"
-tauri-plugin-shell = "2"
+tauri-plugin-deep-link = "3.0.0-alpha.1"
+tauri-plugin-shell = "3.0.0-alpha.1"
 keyring = { version = "3.6.3", features = ["apple-native", "windows-native", "sync-secret-service"] }
-tauri-plugin-process = "2"
-tauri-plugin-store = "2"
+tauri-plugin-process = "3.0.0-alpha.1"
+tauri-plugin-store = "3.0.0-alpha.1"
 
 [features]
 # by default Tauri runs in production mode
@@ -46,9 +49,13 @@ custom-protocol = [ "tauri/custom-protocol" ]
 no-updater = []
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
-tauri-plugin-autostart = "2"
-tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
-# Getting the PR https://github.com/tauri-apps/plugins-workspace/pull/3526
-# In order to have system proxy enabled for updater in official release
-tauri-plugin-updater = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
-tauri-plugin-window-state = "2"
+tauri-plugin-autostart = "3.0.0-alpha.1"
+tauri-plugin-single-instance = { version = "3.0.0-alpha.0", features = ["deep-link"] }
+tauri-plugin-updater = "3.0.0-alpha.1"
+tauri-plugin-window-state = "3.0.0-alpha.1"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+tauri-runtime-cef = { version = "3.0.0-alpha.2", features = ["devtools"] }
+
+[target.'cfg(not(target_os = "linux"))'.dependencies]
+tauri-runtime-wry = { version = "3.0.0-alpha.2", features = ["devtools"] }
