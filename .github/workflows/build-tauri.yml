@@ -67,19 +67,23 @@ jobs:
           targets: ${{ inputs.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: Install dependencies for Linux
-        if: inputs.platform == 'ubuntu-22.04'
+        if: inputs.platform == 'ubuntu-24.04'
         run: |
           sudo apt-get update
           echo "--- Installing linux dependencies"
           sudo apt-get install -y \
-            libgtk-3-dev \
-            libwebkit2gtk-4.1-0 \
-            libwebkit2gtk-4.1-dev \
-            libappindicator3-dev \
+            libgtk-4-dev \
+            libx11-dev libxkbcommon-dev libgbm-dev \
+            libnss3 libnspr4 libasound2t64 libxss1 libxtst6 \
+            libatk1.0-0t64 libatk-bridge2.0-0t64 libatspi2.0-0t64 \
+            libclang-dev libssl-dev libdbus-1-dev \
             librsvg2-dev \
-            patchelf
+            patchelf rpm strace xvfb xauth zenity
           echo "PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/share/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
           echo "Finish installing deps"
+
+      - name: Install pinned Tauri 3 CLI
+        run: cargo install tauri-cli --version 3.0.0-alpha.2 --locked
 
       - name: Prepare asset name pattern for normal version
         id: create-pattern-updater
@@ -99,13 +103,14 @@ jobs:
 
       # Uploading the tauri app to a release
       - name: Create Tauri app artifacts for MacOS and Windows
-        if: inputs.platform != 'ubuntu-22.04'
+        if: inputs.platform != 'ubuntu-24.04'
         uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
+          tauriScript: cargo tauri
           releaseId: ${{ inputs.releaseId }}
           args: ${{ inputs.args }}
           uploadWorkflowArtifacts: ${{ inputs.onPR }}
@@ -113,14 +118,17 @@ jobs:
           workflowArtifactNamePattern: ${{ steps.create-pattern-updater.outputs.PATTERN }}
 
       - name: Create Tauri app for linux
-        if: inputs.platform == 'ubuntu-22.04'
+        if: inputs.platform == 'ubuntu-24.04'
         uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           NO_STRIP: true
+          # quick-sharun's default anylinux.c URL returned 404 during local testing.
+          ANYLINUX_LIB_SOURCE: https://raw.githubusercontent.com/FabianLars/Anylinux-AppImages/df9cd3246ccbcf61eb22fc321a52277351047b4b/useful-tools/lib/anylinux.c
         with:
+          tauriScript: cargo tauri
           releaseId: ${{ inputs.releaseId }}
           args: ${{ inputs.args }}
           uploadWorkflowArtifacts: ${{ inputs.onPR }}
@@ -135,6 +143,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
+          tauriScript: cargo tauri
           releaseId: ${{ inputs.releaseId }}
           args: --target x86_64-pc-windows-msvc --config src-tauri/tauri.conf.noupdater-windows.json --features no-updater
           releaseAssetNamePattern: ${{ steps.create-pattern-no-updater.outputs.PATTERN_NO_UPDATER }}
