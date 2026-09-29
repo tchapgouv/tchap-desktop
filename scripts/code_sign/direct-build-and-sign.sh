@@ -13,7 +13,7 @@
 
 # Prerequisites :
 # - install rustup and set toolchain to: rustup toolchain install stable-msvc
-# - Install cli tauri : cargo install tauri-cli --version "^2.0.0" --locked
+# - Install cli tauri : cargo install tauri-cli --version 3.0.0-alpha.2 --locked
 
 # The resulted installer are found in /realeases/VERSION/sources/src-tauri/target/x86-64-pc-windows-msvc/release/bundle
 
