@@ -1,0 +1,18 @@
+{
+  "build": {
+    "features": ["no-updater"]
+  },
+  "bundle": {
+    "targets": ["appimage"],
+    "createUpdaterArtifacts": false,
+    "linux": {
+      "appimage": {
+        "files": {
+          "/usr/lib/libsoftokn3.so": "/usr/lib/aarch64-linux-gnu/libsoftokn3.so",
+          "/usr/lib/libfreeblpriv3.so": "/usr/lib/aarch64-linux-gnu/libfreeblpriv3.so",
+          "/usr/bin/zenity": "/usr/bin/zenity"
+        }
+      }
+    }
+  }
+}
