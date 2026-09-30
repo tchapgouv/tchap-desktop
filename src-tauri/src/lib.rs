@@ -15,7 +15,11 @@ use tauri::{
     webview::{DownloadEvent, WebviewWindowBuilder},
 };
 use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
+#[cfg(target_os = "linux")]
+use tauri_plugin_deep_link::DeepLinkExt;
 use tauri_plugin_store::StoreExt;
+#[cfg(target_os = "linux")]
+use tauri_runtime_cef::{RuntimeStyle, WebviewWindowBuilderCefExt};
 
 /// A state shared on Tauri.
 pub struct MyState {
@@ -42,7 +46,13 @@ fn user_agent(app: &tauri::AppHandle) -> String {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let mut builder = tauri::Builder::default();
+    let builder = tauri::Builder::default();
+
+    #[cfg(target_os = "linux")]
+    let mut builder = builder.runtime(tauri_runtime_cef::Cef::default());
+
+    #[cfg(not(target_os = "linux"))]
+    let mut builder = builder.runtime(tauri_runtime_wry::Wry::default());
 
     // Instanciate single instance plugin, with focus on the main window
     #[cfg(desktop)]
@@ -77,6 +87,17 @@ pub fn run() {
         ))
         .plugin(tauri_plugin_store::Builder::new().build())
         .setup(|app| {
+            // AppImages are not automatically installed as x-scheme handlers.
+            // Register the configured deep-link schemes only when explicitly
+            // requested, so a development AppImage cannot silently replace the
+            // user's existing handler.
+            // ref: https://v3.tauri.app/plugin/deep-linking/#registering-desktop-deep-links-at-runtime
+            #[cfg(target_os = "linux")]
+            match app.deep_link().register_all() {
+                Ok(()) => eprintln!("[deep-link] registration completed; verify with xdg-mime"),
+                Err(error) => eprintln!("[deep-link] registration failed: {error}"),
+            }
+
             // Create the initial state
             let initial_state = MyState { database: None };
 
@@ -152,7 +173,19 @@ pub fn run() {
             let handle_for_on_download = app.app_handle().clone();
             // Needs to remove app: { windows } from tauri conf, otherwise there will be two window creation
             // Only way to setup custom user agents
-            WebviewWindowBuilder::new(&handle, "main", WebviewUrl::App("index.html".into()))
+            let window_builder =
+                WebviewWindowBuilder::new(&handle, "main", WebviewUrl::App("index.html".into()));
+
+            // FIXME: CEF Style due to keyboard issue on ubuntu
+            // Keep CEF's default style unless Alloy is explicitly requested.
+            #[cfg(target_os = "linux")]
+            let window_builder = if std::env::var("TCHAP_CEF_STYLE").as_deref() == Ok("alloy") {
+                window_builder.browser_runtime_style(RuntimeStyle::Alloy)
+            } else {
+                window_builder
+            };
+
+            window_builder
                 .on_download(move |_webview, event| {
                     if let DownloadEvent::Finished { url, path, success } = event {
                         println!("downloaded {} to {:?}, success: {}", url, path, success);
