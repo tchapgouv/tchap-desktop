@@ -164,7 +164,7 @@ pub fn run() {
                 .disable_drag_drop_handler()
                 .title(product_name)
                 .user_agent(&user_agent(&handle))
-                .inner_size(1000.0, 1000.0)
+                .fullscreen(true)
                 .build()?;
 
             Ok(())
