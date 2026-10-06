@@ -17,6 +17,7 @@
       }
     },
     "dev": {
+      "use_github": true,
       "tchap-web_version": "4.23.1",
       "tchap-web_archive_name": "tchap-4.23.1-dev-20261113.tar.gz",
       "tchap-web_github": {
