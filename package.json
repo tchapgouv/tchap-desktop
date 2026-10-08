@@ -17,10 +17,11 @@
       }
     },
     "dev": {
+      "use_github": true,
       "tchap-web_version": "4.21.5",
       "tchap-web_archive_name": "tchap-4.21.5-dev-20260902.tar.gz",
       "tchap-web_github": {
-        "branch": "develop_tchap",
+        "branch": "fix-restart-analytics-value",
         "repo": "https://github.com/tchapgouv/tchap-web-v4"
       }
     },

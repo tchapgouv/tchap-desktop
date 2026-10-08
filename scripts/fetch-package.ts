@@ -81,23 +81,27 @@ async function cloneGitHubRepo(repoUrl: string, branch: string, targetDir: strin
 }
 
 async function buildFromLocalRepo(targetDir: string) {
-  console.log(`----------------  Building from local repo ${targetDir}`);
-  console.log("---------------- Install dependencies");
-  const { stdout: installOut, stderr: installErr } = await exec(
-    `yarn install --frozen-lockfile --no-cache`,
-    { cwd: targetDir }
-  );
-  console.log(installOut);
-  console.log(installErr);
-  // Install dependencies without cache
-  console.log(`---------------- Building tchap web`, targetDir);
-  await exec(`yarn build`, { cwd: targetDir });
+    console.log(`----------------  Building from local repo ${targetDir}`);
+    console.log("---------------- Install dependencies");
+    const { stdout: installOut, stderr: installErr } = await exec(
+        `pnpm install --frozen-lockfile`,
+        { cwd: targetDir }
+    );
+    console.log(installOut);
+    console.log(installErr);
+    // Install dependencies without cache
+    console.log(`---------------- Building tchap web`, targetDir);
+    const buildPath = path.resolve(targetDir, 'apps/web');
+    const { stdout, stderr } = await exec(`pnpm build`, { cwd: buildPath });
+    console.log("**** stdout", stdout)
+    console.log("**** stderr", stderr)
+    console.log("----------------  Build completed successfully");
 
-  console.log("----------------  Build completed successfully");
-
-  console.log("----------------  Copying webapp dist folder to src folder");
-  // copy the dist folder to the src folder
-  await fs.cp(path.join(targetDir, "webapp/"), SRC_DIR, { recursive: true });
+    console.log("----------------  Copying webapp dist folder to src folder");
+    const srcPath = path.join(targetDir, SRC_DIR); 
+    // copy the dist folder to the src folder
+    await fs.mkdir(SRC_DIR);
+    await fs.cp(path.join(targetDir, "apps/web/webapp/"), SRC_DIR, { recursive: true });
 }
 
 //  copy config.json depending on the environment
@@ -105,10 +109,10 @@ async function renameConfig(targetDir: string) {
     // env taken from package.json
     console.log(`Renaming config files by environment`, TCHAP_ENV );
 
-    const prodConfigPath = path.join(targetDir, "config.prod.json");
-    const preprodConfigPath = path.join(targetDir, "config.preprod.json");
-    const devConfigPath = path.join(targetDir, "config.dev.json");
-    const destConfigPath = path.join(targetDir, "config.json");
+    const prodConfigPath = path.join(targetDir, "apps/web/config.prod.json");
+    const preprodConfigPath = path.join(targetDir, "apps/web/config.preprod.json");
+    const devConfigPath = path.join(targetDir, "apps/web/config.dev.json");
+    const destConfigPath = path.join(targetDir, "apps/web/config.json");
 
     const configObj: Record<string, string> = {
         "prod": prodConfigPath,
