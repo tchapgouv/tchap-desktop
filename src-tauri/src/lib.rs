@@ -61,6 +61,19 @@ pub fn run() {
         builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
     }
 
+    // WebRTC for WebKitGTK, which has no RTCPeerConnection. The shim installs
+    // only when the webview lacks native WebRTC, so this is Linux-only.
+    #[cfg(target_os = "linux")]
+    {
+        builder = builder.plugin(tauri_plugin_webrtc::init());
+    }
+    // Testing aid: on macOS, force the shim over WKWebView's native WebRTC
+    // when TCHAP_WEBRTC_FORCE_SHIM is set, to exercise the Linux call path here.
+    #[cfg(target_os = "macos")]
+    if std::env::var_os("TCHAP_WEBRTC_FORCE_SHIM").is_some() {
+        builder = builder.plugin(tauri_plugin_webrtc::Builder::new().force_shim(true).build());
+    }
+
     builder
         .plugin(tauri_plugin_window_state::Builder::new().build())
         .plugin(tauri_plugin_deep_link::init())
@@ -152,7 +165,31 @@ pub fn run() {
             let handle_for_on_download = app.app_handle().clone();
             // Needs to remove app: { windows } from tauri conf, otherwise there will be two window creation
             // Only way to setup custom user agents
-            WebviewWindowBuilder::new(&handle, "main", WebviewUrl::App("index.html".into()))
+            let mut window = WebviewWindowBuilder::new(&handle, "main", WebviewUrl::App("index.html".into()));
+            // Development aid: load the tauri-plugin-webrtc e2e harness into
+            // Tchap's own window when asked (see tests/webrtc). Either the p2p
+            // scenarios (TCHAP_WEBRTC_E2E_SCENARIOS), or any scripts
+            // (TCHAP_WEBRTC_E2E_SCRIPTS, ':'-separated) plus a boot expression
+            // run once the DOM is ready (TCHAP_WEBRTC_E2E_BOOT).
+            if let Ok(ws) = std::env::var("TCHAP_WEBRTC_E2E_WS") {
+                let mut script = format!("window.__E2E_WS__ = {};\n", json!(ws));
+                if let Ok(path) = std::env::var("TCHAP_WEBRTC_E2E_SCENARIOS") {
+                    script += &std::fs::read_to_string(path)?;
+                    script += "\nif (window.top === window) connectHarness('webkit', window.__E2E_WS__);";
+                }
+                if let Ok(paths) = std::env::var("TCHAP_WEBRTC_E2E_SCRIPTS") {
+                    for path in paths.split(':').filter(|p| !p.is_empty()) {
+                        script += &std::fs::read_to_string(path)?;
+                        script += "\n";
+                    }
+                    let boot = std::env::var("TCHAP_WEBRTC_E2E_BOOT").unwrap_or_default();
+                    script += &format!(
+                        "if (window.top === window) document.addEventListener('DOMContentLoaded', () => {{ {boot} }});"
+                    );
+                }
+                window = window.initialization_script(script);
+            }
+            window
                 .on_download(move |_webview, event| {
                     if let DownloadEvent::Finished { url, path, success } = event {
                         println!("downloaded {} to {:?}, success: {}", url, path, success);
