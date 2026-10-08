@@ -2,10 +2,11 @@
 # Using Tauri cli and from sources directly build the project without passing by the CI
 # This script must be run in src-tauri as root (where there is tauri.conf.json file)
 
-# direct-windows-build-and-sign.sh TARGET ENV VERSION NO_UPDATER SKIP_SOURCE SKIP_BUILD SKIP_TAURI
+# direct-build-and-sign.sh TARGET ENV VERSION NO_UPDATER SKIP_SOURCE SKIP_BUILD SKIP_TAURI
 # TARGET : can be x86_64-pc-windows-msvc or universal-apple-darwin
 # ENV : prod, dev, preprod
 # VERSION : x.y.z
+# NO_UPDATER: true or false (default to false)
 # SKIP_SOURCE: true or false (default to false)
 # SKIP_BUILD_FRONTEND: true or false (default to false)
 # SKIP_BUILD_TAURI: true or false (default to false)
@@ -17,7 +18,7 @@
 
 # The resulted installer are found in /realeases/VERSION/sources/src-tauri/target/x86-64-pc-windows-msvc/release/bundle
 
-TARGET="${1:?Missing target (x86_64-pc-windows-msvc or universal-apple-darwin)}"
+TARGET="${1:?Missing target x86_64-pc-windows-msvc or universal-apple-darwin}"
 ENV="${2:?Missing Env}"
 VERSION="${3:?Missing version}"
 NO_UPDATER="${4:-false}"
@@ -85,6 +86,7 @@ get_updater_signing_key() {
 
 get_updater_signing_key
 
+echo "skip_source : $SKIP_SOURCE"
 # Download sources
 if [ "$SKIP_SOURCE" = "keep" ]; then
     setup_directories
@@ -94,6 +96,7 @@ if [ "$SKIP_SOURCE" = "keep" ]; then
 fi
 
 pushd "$WORK_DIR"
+echo "SKIP_BUILD_FRONTEND : $SKIP_BUILD_FRONTEND"
 if [ "$SKIP_BUILD_FRONTEND" = "keep" ]; then
     #  build apps
     # build front end
@@ -103,14 +106,14 @@ if [ "$SKIP_BUILD_FRONTEND" = "keep" ]; then
 fi
 
 pushd "src-tauri"
-
+echo "SKIP_BUILD_TAURI : $SKIP_BUILD_TAURI"
 if [ "$SKIP_BUILD_TAURI" = "keep" ]; then
     #  build tauri
-    echo "building tauri"
+    echo "building tauri no_updater: $NO_UPDATER"
     if [ "$NO_UPDATER" = "false" ]; then
         cargo tauri build -c $CONFIG -t $TARGET --no-bundle
     else
-        cargo tauri build -c $CONFIG -c "./tauri.conf.noupdater-windows.json" -c "./tauri.conf.sign-windows.json" -t $TARGET -f no-updater --no-bundle
+        cargo tauri build -c $CONFIG -c "./tauri.conf.noupdater-windows.json" -c "./tauri.conf.sign-windows.json" -t "$TARGET" -f no-updater --no-bundle
     fi
 fi
 

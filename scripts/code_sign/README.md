@@ -15,14 +15,14 @@ For each env (DEV, PREPROD, PROD). The command needs to be run twice :
 
 Exemple of workflow 
 ```
-1. ./direct-windows-build-and-sign.sh x86_64-pc-windows-msvc dev 4.21.4
+1. ./direct-build-and-sign.sh x86_64-pc-windows-msvc dev 4.21.4
 Once finished move and renamed filed generated to desire places
 
 2. Rename and move the released and signed artifacts into the desire directory by using 
 `./move-and-rename-bundle.sh ENV VERSION`
 
 3.Then re-rrun the command to generate no updater artifacts
-`./direct-windows-build-and-sign.sh x86_64-pc-windows-msvc dev 4.21.4 true skip skip`
+`./direct-build-and-sign.sh x86_64-pc-windows-msvc dev 4.21.4 true skip skip`
 This will rerun the command using the no updater config and without re running the pull of the sources and build of the frontend. We just build tauri and bundle it.
 
 4. Rename and move the released and signed no updater artifacts into the desire directory by using 

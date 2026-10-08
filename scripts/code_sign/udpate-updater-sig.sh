@@ -3,8 +3,8 @@
 ################################################################################
 # Script: update_updater_sig.sh
 # Description: Take the signed build and generate the new latest.json file with updated signature
-# Usage: ./update_updater_sig.sh [VERSION] [ENV]
-# Example: ./update_updater_sig.sh 4.21.1 prod
+# Usage: ./update-updater-sig.sh [VERSION] [ENV]
+# Example: ./update-updater-sig.sh 4.21.1 prod
 ################################################################################
 
 # Prerequisites
@@ -15,7 +15,7 @@ VERSION="${1:-4.21.1}" # Default value to 4.21.1
 ENV="${2:?Missing Env}"
 # the script should be launch in the script/code_sign directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WORK_DIR="C:\Users\DINUM\Workspace\tchap-desktop\scripts\code_sign\releases\${VERSION}\${ENV}"
+WORK_DIR="/c/Users/DINUM/Workspace/tchap-desktop/scripts/code_sign/releases/${VERSION}/${ENV}"
 GITHUB_BASE_URL="https://github.com/tchapgouv/tchap-desktop/releases/download/tchap-${VERSION}"
 # Should be the latest.json file downloaded from github
 LATEST_JSON="${WORK_DIR}/latest_${ENV}.json"
@@ -134,9 +134,9 @@ replace_sig() {
       ext="${filename##*.}"
       signature=""
       if [[ "$filename" == *.sig ]]; then
-        signature=$(cat $filename)
+        signature=$(cat "$WORK_DIR/$filename")
         key=""
-        if [[ "$filename" == *.exe.sig ]]; then
+        if [[ "$filename" == *.exe_signed.sig ]]; then
             for key in "${KEYS_TO_UPDATE_EXE[@]}"; do
                 update_latest_file_signature "$key" "$signature"
             done
@@ -199,7 +199,9 @@ main() {
 
     setup_directories
     download_files
-    if $PRIVATE_KEY_PATH; then
+    echo "PRIVATE_KEY_PATH: $PRIVATE_KEY_PATH"
+    if [ -n "$3" ]; then
+        echo "PRIVATE_KEY_PATH! supplied"
         minisign_files
     else
         replace_sig
