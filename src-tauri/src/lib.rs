@@ -1,6 +1,8 @@
 mod common_commands;
 mod common_error;
 mod keyring_commands;
+#[cfg(target_os = "linux")]
+mod linux_focus;
 mod seshat_commands;
 mod seshat_utils;
 
@@ -185,7 +187,7 @@ pub fn run() {
                 window_builder
             };
 
-            window_builder
+            let main_window = window_builder
                 .on_download(move |_webview, event| {
                     if let DownloadEvent::Finished { url, path, success } = event {
                         println!("downloaded {} to {:?}, success: {}", url, path, success);
@@ -199,6 +201,16 @@ pub fn run() {
                 .user_agent(&user_agent(&handle))
                 .inner_size(1000.0, 1000.0)
                 .build()?;
+
+            #[cfg(target_os = "linux")]
+            if std::env::var("TCHAP_X11_FOCUS_WORKAROUND").as_deref() == Ok("1") {
+                match linux_focus::remove_take_focus(&main_window) {
+                    Ok(outcome) => eprintln!("[x11-focus] {outcome}"),
+                    Err(error) => eprintln!("[x11-focus] Workaround failed: {error}"),
+                }
+            }
+            #[cfg(not(target_os = "linux"))]
+            let _ = main_window;
 
             Ok(())
         })

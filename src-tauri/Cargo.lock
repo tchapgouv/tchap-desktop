@@ -7023,6 +7023,7 @@ dependencies = [
  "anyhow",
  "keyring",
  "rand 0.9.5",
+ "raw-window-handle",
  "serde",
  "serde_json",
  "seshat",
@@ -7045,6 +7046,7 @@ dependencies = [
  "tauri-runtime-wry",
  "thiserror 2.0.20",
  "uuid 1.26.1",
+ "x11rb",
 ]
 
 [[package]]

@@ -56,6 +56,8 @@ tauri-plugin-window-state = "3.0.0-alpha.1"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 tauri-runtime-cef = { version = "3.0.0-alpha.2", features = ["devtools"] }
+raw-window-handle = "0.6"
+x11rb = "0.13"
 
 [target.'cfg(not(target_os = "linux"))'.dependencies]
 tauri-runtime-wry = { version = "3.0.0-alpha.2", features = ["devtools"] }
