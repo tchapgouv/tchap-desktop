@@ -169,7 +169,7 @@ pub fn run() {
                 .build()?;
 
             // Manually apply all the static scheme registered also at runtime
-            #[cfg(not(target_os = "macos"))]
+            #[cfg(any(windows, target_os = "linux"))]
             {
                 use tauri_plugin_deep_link::DeepLinkExt;
                 app.deep_link().register_all()?;
