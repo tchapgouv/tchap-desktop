@@ -83,6 +83,7 @@ pub fn run() {
             // Register it with Tauri's state management
             app.manage(Mutex::new(initial_state));
 
+
             // Set auto launch default to true if it has never been set before
             // Should be only call once
             let store = app.store("store.json")?;
@@ -166,6 +167,13 @@ pub fn run() {
                 .user_agent(&user_agent(&handle))
                 .fullscreen(true)
                 .build()?;
+
+            // Manually apply all the static scheme registered also at runtime
+            #[cfg(any(windows, target_os = "linux"))]
+            {
+                use tauri_plugin_deep_link::DeepLinkExt;
+                app.deep_link().register_all()?;
+            }
 
             Ok(())
         })
