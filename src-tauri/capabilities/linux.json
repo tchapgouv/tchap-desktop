@@ -1,0 +1,12 @@
+{
+  "identifier": "linux-capability",
+  "platforms": [
+    "linux"
+  ],
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "webrtc:default"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "identifier": "macos-webrtc-capability",
+  "description": "webrtc:default on macOS for the shim testing build (TCHAP_WEBRTC_FORCE_SHIM), including the local Element Call widget origin used by tests/webrtc",
+  "platforms": ["macOS"],
+  "windows": ["main"],
+  "remote": { "urls": ["http://127.0.0.1:8081/*"] },
+  "permissions": ["webrtc:default"]
+}
