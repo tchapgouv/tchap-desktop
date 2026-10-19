@@ -165,7 +165,6 @@ pub fn run() {
                 .disable_drag_drop_handler()
                 .title(product_name)
                 .user_agent(&user_agent(&handle))
-                .fullscreen(true)
                 .build()?;
 
             // Manually apply all the static scheme registered also at runtime
