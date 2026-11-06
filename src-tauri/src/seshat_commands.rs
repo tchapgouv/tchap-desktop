@@ -33,7 +33,7 @@ pub async fn init_event_index<R: Runtime>(
 
     // Check if the database is already initialized
     if state_lock.database.is_some() {
-        debug_log!("[Command] Database is already initialized.");
+        info_log!("[Command] Database is already initialized.");
         return Ok(()); // No need to reinitialize
     }
 
