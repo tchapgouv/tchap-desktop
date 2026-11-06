@@ -121,6 +121,15 @@ cargo tauri dev
 
 - Then you can run the same step as the dev using a specific web archive version
 
+## Logging
+
+The Rust backend handles sensitive data (Seshat passphrase, decrypted messages, search terms, room ids, sync tokens, file paths). On macOS and Linux, stdout/stderr end up in OS logs, so this data must never be printed.
+
+- Use the macros from `src-tauri/src/logging.rs`, never `println!` / `eprintln!` / `dbg!` (denied by clippy in CI).
+- `debug_log!` only prints in debug builds (`cargo tauri dev`). It is compiled out of every `cargo tauri build`, as long as the release profile keeps `debug-assertions` off and the CI does not build with `--debug`.
+- `info_log!` and `error_log!` are printed in production too.
+- Whatever the macro, only log fixed messages, counts and booleans: never secrets, message content, identifiers or paths.
+
 ## Build
 
 ```

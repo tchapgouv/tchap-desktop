@@ -1,3 +1,9 @@
+// Logs go through the logging.rs macros only.
+#![deny(clippy::print_stdout, clippy::print_stderr, clippy::dbg_macro)]
+
+#[macro_use]
+mod logging;
+
 mod common_commands;
 mod common_error;
 mod keyring_commands;
@@ -25,7 +31,7 @@ pub struct MyState {
 
 #[tauri::command]
 fn welcome() {
-    println!("Welcome on Tchap desktop app!")
+    debug_log!("Welcome on Tchap desktop app!")
 }
 
 fn user_agent(app: &tauri::AppHandle) -> String {
@@ -88,9 +94,9 @@ pub fn run() {
             // Should be only call once
             let store = app.store("store.json")?;
             if store.get("autolaunch_default").is_some() {
-                println!("Autolaunch default was already set. Now taking value set by user");
+                debug_log!("Autolaunch default was already set. Now taking value set by user");
             } else {
-                println!("Autolaunch setting for the first time. Enabling it...");
+                info_log!("Autolaunch setting for the first time. Enabling it...");
                 store.set("autolaunch_default", json!({ "value": "SET" }));
                 // Get the autostart manager
                 let autostart_manager = app.autolaunch();
@@ -114,7 +120,7 @@ pub fn run() {
                         ..
                     } = event
                     {
-                        println!("**** Inside left click");
+                        debug_log!("Tray icon left click");
                         let app = tray.app_handle();
                         if let Some(webview_window) = app.get_webview_window("main") {
                             let _ = webview_window.unminimize();
@@ -155,8 +161,9 @@ pub fn run() {
             // Only way to setup custom user agents
             WebviewWindowBuilder::new(&handle, "main", WebviewUrl::App("index.html".into()))
                 .on_download(move |_webview, event| {
-                    if let DownloadEvent::Finished { url, path, success } = event {
-                        println!("downloaded {} to {:?}, success: {}", url, path, success);
+                    if let DownloadEvent::Finished { path, success, .. } = event {
+                        // No URL or path: they reveal the file and the OS user name
+                        debug_log!("Download finished, success: {success}");
                         let _ = handle_for_on_download.emit("download-finished", &path);
                     }
                     // let the download start
