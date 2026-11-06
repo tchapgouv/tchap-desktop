@@ -94,7 +94,7 @@ pub fn run() {
             // Should be only call once
             let store = app.store("store.json")?;
             if store.get("autolaunch_default").is_some() {
-                debug_log!("Autolaunch default was already set. Now taking value set by user");
+                info_log!("Autolaunch default was already set. Now taking value set by user");
             } else {
                 info_log!("Autolaunch setting for the first time. Enabling it...");
                 store.set("autolaunch_default", json!({ "value": "SET" }));
