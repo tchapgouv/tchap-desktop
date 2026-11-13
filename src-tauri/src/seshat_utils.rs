@@ -10,29 +10,29 @@ use uuid::Uuid;
 // Helper function for the manual reindex logic (can be kept separate or inlined)
 // This function now takes ownership of RecoveryDatabase and closes it.
 pub fn perform_manual_reindex(mut recovery_db: RecoveryDatabase) -> Result<(), SeshatError> {
-    println!("[Util] Starting manual reindex process using RecoveryDatabase...");
+    log::info!("[Util] Starting manual reindex process using RecoveryDatabase...");
 
     // 1. Delete the existing index files
-    println!("[Util] Deleting existing index...");
+    log::info!("[Util] Deleting existing index...");
     recovery_db.delete_the_index()?;
 
     // 2. Re-open the index (now empty)
-    println!("[Util] Opening new empty index...");
+    log::info!("[Util] Opening new empty index...");
     recovery_db.open_index()?; // This prepares the internal index writer
 
     let batch_size = 500;
-    println!("[Util] Loading and indexing source events in batches of {batch_size}...");
+    log::info!("[Util] Loading and indexing source events in batches of {batch_size}...");
 
     // 3. Load the first batch of source events
     let mut current_batch = recovery_db.load_events_deserialized(batch_size, None)?;
     if !current_batch.is_empty() {
-        println!(
+        log::info!(
             "[Util] Indexing first batch ({} events)...",
             current_batch.len()
         );
         recovery_db.index_events(&current_batch)?;
     } else {
-        println!("[Util] No source events found to index.");
+        log::info!("[Util] No source events found to index.");
     }
 
     // 4. Loop through subsequent batches
@@ -41,26 +41,26 @@ pub fn perform_manual_reindex(mut recovery_db: RecoveryDatabase) -> Result<(), S
         current_batch = recovery_db.load_events_deserialized(batch_size, last_event_cursor)?;
 
         if current_batch.is_empty() {
-            println!("[Util] No more events in subsequent batches.");
+            log::info!("[Util] No more events in subsequent batches.");
             break;
         }
 
-        println!(
+        log::info!(
             "[Util] Indexing next batch ({} events)...",
             current_batch.len()
         );
         recovery_db.index_events(&current_batch)?;
 
         // Commit periodically
-        println!("[Util] Committing batch...");
+        log::info!("[Util] Committing batch...");
         recovery_db.commit()?;
     }
 
     // 5. Final commit and close
-    println!("[Util] Final commit and close...");
+    log::info!("[Util] Final commit and close...");
     recovery_db.commit_and_close()?; // Consumes the recovery_db instance
 
-    println!("[Util] Manual reindex process completed successfully.");
+    log::info!("[Util] Manual reindex process completed successfully.");
     Ok(())
 }
 
@@ -299,7 +299,8 @@ pub(crate) fn add_historic_events_helper(
 
                 parsed_events.push((event, profile));
             } else {
-                println!("[Warning] Skipping invalid event: {event_value:?}");
+                // Never dump the event: it holds the decrypted body
+                log::debug!("[Warning] Skipping invalid event");
             }
         }
     }
