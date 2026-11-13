@@ -44,7 +44,7 @@ pub fn delete_password<R: Runtime>(
 ) -> Result<(), CommonError> {
     let config = app_handle.config();
     let service = get_service_url(config);
-    println!("delete password {:?}", service);
+    log::info!("[Keyring] delete_password");
     keyring::Entry::new(service, user)?.delete_credential()?;
     Ok(())
 }

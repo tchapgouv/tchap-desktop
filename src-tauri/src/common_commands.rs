@@ -8,7 +8,7 @@ use crate::common_error::CommonError;
 
 #[tauri::command]
 pub async fn clear_storage<R: Runtime>(app_handle: AppHandle<R>) -> Result<(), String> {
-    println!("Clearing storage!");
+    log::info!("[Command] clear_storage");
     // Get app data dir
     let app_data_dir = app_handle
         .path()
@@ -106,8 +106,7 @@ pub async fn user_download_action<R: Runtime>(
     }
 
     let path_str = full_path.to_string_lossy().into_owned();
-    println!("*** downloads_dir path_str {:?}", path_str);
-    println!("*** in command user download action {:?}", filename);
+    log::debug!("[Command] user_download_action");
     let message = format!("Voulez vous ouvrir le fichier {filename} ?");
 
     app_handle
@@ -118,10 +117,10 @@ pub async fn user_download_action<R: Runtime>(
         .buttons(MessageDialogButtons::YesNo)
         .show(move |result| match result {
             true => {
-                println!("in command user download action true");
+                log::debug!("[Command] user_download_action: open accepted");
                 let _ = app_handle.opener().open_path(path_str, None::<&str>);
             }
-            false => println!("in command user download action false"),
+            false => log::debug!("[Command] user_download_action: open declined"),
         });
     Ok(())
 }
@@ -132,7 +131,7 @@ pub async fn settings_get_value<R: Runtime>(
     app_handle: AppHandle<R>,
     name: String,
 ) -> Result<String, CommonError> {
-    println!("in get_setting {:?}", name);
+    log::debug!("[Command] settings_get_value {name:?}");
     match name.as_str() {
         "Tauri.autoLaunch" => {
             let autostart_manager = app_handle.autolaunch();
@@ -146,7 +145,8 @@ pub async fn settings_get_value<R: Runtime>(
                     }
                 }
                 Err(e) => {
-                    println!("Autolaunch error: {:?}", e);
+                    // Detail is returned to the caller, may contain a path
+                    log::debug!("[Command] settings_get_value: autolaunch error");
                     Err(CommonError::String(format!(
                         "Failed to launch auto start: {e}"
                     ))) // adapt to your error type
@@ -164,7 +164,7 @@ pub async fn settings_set_value<R: Runtime>(
     name: String,
     value: String,
 ) -> Result<(), CommonError> {
-    println!("in update_setting {:?}", name);
+    log::debug!("[Command] settings_set_value {name:?}");
     if name.as_str() == "Tauri.autoLaunch" {
         let autostart_manager = app_handle.autolaunch();
 

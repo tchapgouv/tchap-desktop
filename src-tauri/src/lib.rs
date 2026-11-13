@@ -1,3 +1,6 @@
+// Logs go through the `log` crate only, see run().
+#![deny(clippy::print_stdout, clippy::print_stderr, clippy::dbg_macro)]
+
 mod common_commands;
 mod common_error;
 mod keyring_commands;
@@ -15,6 +18,7 @@ use tauri::{
     webview::{DownloadEvent, WebviewWindowBuilder},
 };
 use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
+use tauri_plugin_log::{Target, TargetKind};
 use tauri_plugin_store::StoreExt;
 
 /// A state shared on Tauri.
@@ -25,7 +29,7 @@ pub struct MyState {
 
 #[tauri::command]
 fn welcome() {
-    println!("Welcome on Tchap desktop app!")
+    log::debug!("[Command] Welcome on Tchap desktop app!")
 }
 
 fn user_agent(app: &tauri::AppHandle) -> String {
@@ -42,7 +46,19 @@ fn user_agent(app: &tauri::AppHandle) -> String {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let mut builder = tauri::Builder::default();
+    // Logs go to stdout (OS logs) and to the webview, where tchap-web hands them to
+    // rageshake: never log secrets, message content, ids or paths. No log file.
+    // First plugin, so the logger is ready before the others start.
+    let mut builder = tauri::Builder::default().plugin(
+        tauri_plugin_log::Builder::new()
+            .targets([
+                Target::new(TargetKind::Stdout),
+                Target::new(TargetKind::Webview),
+            ])
+            // No level here: everything in dev, warn/error only in release
+            // (log `release_max_level_warn` in Cargo.toml), for every crate.
+            .build(),
+    );
 
     // Instanciate single instance plugin, with focus on the main window
     #[cfg(desktop)]
@@ -83,14 +99,15 @@ pub fn run() {
             // Register it with Tauri's state management
             app.manage(Mutex::new(initial_state));
 
-
             // Set auto launch default to true if it has never been set before
             // Should be only call once
             let store = app.store("store.json")?;
             if store.get("autolaunch_default").is_some() {
-                println!("Autolaunch default was already set. Now taking value set by user");
+                log::info!(
+                    "[App] Autolaunch default was already set. Now taking value set by user"
+                );
             } else {
-                println!("Autolaunch setting for the first time. Enabling it...");
+                log::info!("[App] Autolaunch setting for the first time. Enabling it...");
                 store.set("autolaunch_default", json!({ "value": "SET" }));
                 // Get the autostart manager
                 let autostart_manager = app.autolaunch();
@@ -114,7 +131,7 @@ pub fn run() {
                         ..
                     } = event
                     {
-                        println!("**** Inside left click");
+                        log::debug!("[App] Tray icon left click");
                         let app = tray.app_handle();
                         if let Some(webview_window) = app.get_webview_window("main") {
                             let _ = webview_window.unminimize();
@@ -155,8 +172,9 @@ pub fn run() {
             // Only way to setup custom user agents
             WebviewWindowBuilder::new(&handle, "main", WebviewUrl::App("index.html".into()))
                 .on_download(move |_webview, event| {
-                    if let DownloadEvent::Finished { url, path, success } = event {
-                        println!("downloaded {} to {:?}, success: {}", url, path, success);
+                    if let DownloadEvent::Finished { path, success, .. } = event {
+                        // No URL or path: they reveal the file and the OS user name
+                        log::debug!("[App] Download finished, success: {success}");
                         let _ = handle_for_on_download.emit("download-finished", &path);
                     }
                     // let the download start
